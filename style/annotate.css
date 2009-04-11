@@ -1,0 +1,72 @@
+.comment {
+    position: absolute;
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    background-color: #ffffb0;
+    font-family: arial, sans;
+    font-size: 12px;
+    cursor: move;
+    width: 120px;
+}
+
+.comment textarea {
+    font-family: arial, sans;
+    font-size: 12px;
+    width: 100%;
+}
+
+.comment .resizehandle {
+    background-image: url('resize.gif');
+    width: 15px;
+    height: 15px;
+    top: 100%;
+    left: 100%;
+    margin-top: -15px;
+    margin-left: -15px;
+    position: absolute;
+    cursor: e-resize;
+    -moz-background-clip: -moz-initial;
+    -moz-background-origin: -moz-initial;
+    -moz-background-inline-policy: -moz-initial;
+}
+
+#pdfholder .pagewait {
+    background-image: url('pagewait.gif');
+    width: 24px;
+    height: 24px;
+    top: 0px;
+    left: 0px;
+    position: absolute;
+    -moz-background-clip: -moz-initial;
+    -moz-background-origin: -moz-initial;
+    -moz-background-inline-policy: -moz-initial;
+}
+
+.comment .wait {
+    background-image: url('wait.gif');
+    width: 16px;
+    height: 16px;
+    top: 0px;
+    left: 100%;
+    margin-left: -17px;
+    position: absolute;
+    -moz-background-clip: -moz-initial;
+    -moz-background-origin: -moz-initial;
+    -moz-background-inline-policy: -moz-initial;
+}
+
+#pdfholder {
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.error {
+    border-width: 1px;
+    border-color: red;
+    border-style: dashed;
+}
