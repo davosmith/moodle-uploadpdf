@@ -5,6 +5,10 @@
 require_once($CFG->libdir.'/formslib.php');
 require_once('mypdflib.php');
 
+if (!class_exists('assignment_base')) {
+    require_once('../../lib.php');
+}
+
 if (!defined('ASSIGNMENT_STATUS_SUBMITTED')) {
     define('ASSIGNMENT_STATUS_SUBMITTED', 'submitted');
 }
@@ -1020,6 +1024,69 @@ class assignment_uploadpdf extends assignment_base {
         }
         return 0;
     }
+
+    function edit_comment_page($userid, $pageno) {
+        global $CFG;
+
+        if (!$user = get_record('user', 'id', $userid)) {
+            error('No such user!');
+        }
+
+        if (!$submission = $this->get_submission($user->id)) {
+            error('User has no submission to comment on!');
+        }
+
+        // Must check has capability to do this
+        
+
+       
+        $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
+        check_dir_exists($imagefolder, true, true);
+        $pdffile = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission/submission.pdf'; // Check folder exists + file exists
+        
+        $pdf = new MyPDFLib();
+        $pdf->set_image_folder($imagefolder);
+        $pdf->load_pdf($pdffile); // Make sure this works!
+        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$pdf->get_image($pageno);
+        
+        print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
+
+        // Need to echo my javascript and load my css file
+        
+        if ($pageno > 1) {
+            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'">&lt;--Prev</a> ';
+        } else {
+            echo '&lt;--Prev ';
+        }
+
+        for ($i=1; $i<=$pdf->page_count(); $i++) {
+            if ($i == $pageno) {
+                echo "$i ";
+            } else {
+                echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$i.'">'.$i.'</a> ';
+            }
+            if (($i % 20) == 0) {
+                echo '<br />';
+            }
+        }
+       
+        if ($pageno < $pdf->page_count()) {
+            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'">Next--&gt;</a>';
+        } else {
+            echo 'Next--&gt;';
+        }
+        
+        //        echo ' <a style="margin-left: 30px;" href="generate.php?id='.$pdfdetails['id'].'&uid='.$pdfdetails['uid'].'">Generate PDF</a>';
+        
+        echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
+        echo '<img id="pdfimg" src="'.$imageurl.'" />';
+        echo '</div></div>';
+
+        //        echo '<script type="text/javascript">  server = new ServerComm('. $id;, ' echo $uid; ', php echo $pageno; );</script>';
+
+        print_footer('none');
+    }
+
 
     function setup_elements(&$mform) {
         global $CFG, $COURSE;
