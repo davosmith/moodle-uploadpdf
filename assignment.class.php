@@ -1028,6 +1028,8 @@ class assignment_uploadpdf extends assignment_base {
     function edit_comment_page($userid, $pageno) {
         global $CFG;
 
+        require_capability('mod/assignment:grade', $this->context);
+
         if (!$user = get_record('user', 'id', $userid)) {
             error('No such user!');
         }
@@ -1036,18 +1038,29 @@ class assignment_uploadpdf extends assignment_base {
             error('User has no submission to comment on!');
         }
 
-        // Must check has capability to do this
-        
-
-       
         $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
         check_dir_exists($imagefolder, true, true);
         $pdffile = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission/submission.pdf'; // Check folder exists + file exists
+        if (!file_exists($pdffile)) {
+            error('Attempting to comment on non-existing submission');
+        }
         
         $pdf = new MyPDFLib();
         $pdf->set_image_folder($imagefolder);
-        $pdf->load_pdf($pdffile); // Make sure this works!
-        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$pdf->get_image($pageno);
+        if ($pdf->load_pdf($pdffile) == 0) {
+            error('Error loading submitted PDF');
+        }
+        if (!$imgname = $pdf->get_image($pageno)) {
+            error('Unable to generate image from PDF - check ghostscript is installed and this module has been configured to use it');
+        }
+
+        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
+
+        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools.js');
+        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
         
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
 
@@ -1078,13 +1091,108 @@ class assignment_uploadpdf extends assignment_base {
         
         //        echo ' <a style="margin-left: 30px;" href="generate.php?id='.$pdfdetails['id'].'&uid='.$pdfdetails['uid'].'">Generate PDF</a>';
         
-        echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
+        echo '<div style="clear: all;"><div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
-        echo '</div></div>';
+        echo '</div></div></div>';
+
+        $server = array(
+                        'id' => $this->cm->id,
+                        'userid' => $userid,
+                        'pageno' => $pageno,
+                        'sesskey' => sesskey(),
+                        'updatepage' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/updatecomment.php'
+                        );
+        
+        //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
+        echo '<script type="text/javascript">server_config = {';
+        foreach ($server as $key => $value) {
+            echo $key.": '$value',\n";
+        }
+        echo '}</script>';
 
         //        echo '<script type="text/javascript">  server = new ServerComm('. $id;, ' echo $uid; ', php echo $pageno; );</script>';
 
         print_footer('none');
+    }
+
+    function update_comment_page($userid, $pageno) {
+        $resp = array('error'=> ASSIGNMENT_UPLOADPDF_ERR_NONE);
+        require_capability('mod/assignment:grade', $this->context);
+
+        if (!$user = get_record('user', 'id', $userid)) {
+            send_error('No such user!');
+        }
+        
+        if (!$submission = $this->get_submission($user->id)) {
+            send_error('User has no submission to comment on!');
+        }
+
+        $action = optional_param('action','', PARAM_ALPHA);
+
+        if ($action == 'update') {
+            $comment = new Object();
+            $comment->id = optional_param('comment_id', -1, PARAM_INT);
+            $comment->posx = optional_param('comment_position_x', -1, PARAM_INT);
+            $comment->posy = optional_param('comment_position_y', -1, PARAM_INT);
+            $comment->width = optional_param('comment_width', -1, PARAM_INT);
+            $comment->rawtext = optional_param('comment_text', null, PARAM_TEXT);
+            $comment->pageno = $pageno;
+
+            if (($comment->posx < 0) || ($comment->posy < 0) || ($comment->width < 0) || ($comment->rawtext === null)) {
+                send_error('Missing comment data');
+            }
+            
+            if ($comment->id === -1) {
+                unset($comment->id);
+                $comment->assignment_submission = $submission->id;
+                $comment->id = insert_record('assignment_uploadpdf_comment', $comment);
+            } else {
+                $oldcomment = get_record('assignment_uploadpdf_comment', 'id', $comment->id);
+                if (!$oldcomment) {
+                    unset($comment->id);
+                    $comment->id = insert_record('assignment_uploadpdf_comment', $comment);
+                } else if (($oldcomment->assignment_submission != $submission->id) || ($oldcomment->pageno != $pageno)) {
+                    send_error('Comment id is for a different submission or page');
+                } else {
+                    update_record('assignment_uploadpdf_comment', $comment);
+                }
+            }
+
+            $resp['id'] = $comment->id;
+               
+        } elseif ($action == 'getcomments') {
+            $comments = get_records_select('assignment_uploadpdf_comment', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
+            $respcomments = array();
+            if ($comments) {
+                foreach ($comments as $comment) {
+                    $respcomment = array();
+                    $respcomment['id'] = ''.$comment->id;
+                    $respcomment['text'] = $comment->rawtext;
+                    $respcomment['width'] = $comment->width;
+                    $respcomment['position'] = array('x'=> $comment->posx, 'y'=> $comment->posy);
+                    $respcomments[] = $respcomment;
+                }
+            }
+
+            $resp['comments'] = $respcomments;
+            
+        } elseif ($action == 'delete') {
+            $commentid = optional_param('commentid', -1, PARAM_INT);
+            if ($commentid < 0) {
+                send_error('No comment id provided');
+            }
+            $oldcomment = get_record('assignment_uploadpdf_comment', 'id', $commentid, 'assignment_submission', $submission->id, 'pageno', $pageno);
+            if (!($oldcomment)) {
+                send_error('Could not find a comment with that id on this page');
+            } else {
+                delete_records('assignment_uploadpdf_comment', 'id', $commentid);
+            }
+            
+        } else {
+            send_error('Invalid action "'.$action.'"', ASSIGNMENT_UPLOADPDF_ERR_INVALID_ACTION);
+        }
+
+        echo json_encode($resp);
     }
 
 

@@ -7,13 +7,17 @@ var server = null;		// The object use to send data back to the server
 var ServerComm = new Class({
 	Implements: [Events],
 	id: null,
-	uid: null,
+	userid: null,
 	pageno: null,
+	sesskey: null,
+	url: null,
 
-	initialize: function(id, uid, pageno) {
-	    this.id = id;
-	    this.uid = uid;
-	    this.pageno = pageno;
+	initialize: function(settings) {
+	    this.id = settings.id;
+	    this.userid = settings.userid;
+	    this.pageno = settings.pageno;
+	    this.sesskey = settings.sesskey;
+	    this.url = settings.updatepage;
 	},
 
 	updatecomment: function(comment) {
@@ -21,7 +25,7 @@ var ServerComm = new Class({
 	    waitel.set('class', 'wait');
 	    comment.adopt(waitel);
 	    var request = new Request.JSON({
-		    url: 'updatecomment.php',
+		    url: this.url,
 		    
 		    onSuccess: function(resp) {
 			waitel.destroy();
@@ -55,22 +59,22 @@ var ServerComm = new Class({
 	    request.send({
 		    data: {
 		        action: 'update',
-			comment: {
-			    position: { x: comment.getStyle('left'), y: comment.getStyle('top') },
-			    width: comment.getStyle('width'),
-			    text: comment.retrieve('rawtext'),
-			    id: comment.retrieve('id')
-			    },
+			comment_position_x: comment.getStyle('left'), 
+			comment_position_y: comment.getStyle('top'),
+			comment_width: comment.getStyle('width'),
+			comment_text: comment.retrieve('rawtext'),
+    		        comment_id: comment.retrieve('id'),
 			id: this.id,
-			uid: this.uid,
-			pageno: this.pageno
+			userid: this.userid,
+			pageno: this.pageno,
+			sesskey: this.sesskey
 			    }
 		});
 	},
 
 	removecomment: function(cid) {
 	    var request = new Request.JSON({
-		    url: 'updatecomment.php',
+		    url: this.url,
 		    onSuccess: function(resp) {
 			if (resp.error != 0) {
 			    if (confirm('Error message: '+resp.errmsg+'\nOK to try again')) {
@@ -90,8 +94,9 @@ var ServerComm = new Class({
   			    action: 'delete',
 			    commentid: cid,
 			    id: this.id,
-			    uid: this.uid,
-			    pageno: this.pageno
+			    userid: this.userid,
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
 			    }
 		});
 	},
@@ -102,14 +107,16 @@ var ServerComm = new Class({
 	    $('pdfholder').adopt(waitel);
 	    
 	    var request = new Request.JSON({
-		    url: 'updatecomment.php',
+		    url: this.url,
 
 		    onSuccess: function(resp) {
 			if (resp.error == 0) {
 			    waitel.destroy();
 			    resp.comments.each(function(comment) {
 				    cb = makecommentbox(comment.position, comment.text);
-				    cb.setStyle('width', comment.width);
+				    var style = cb.get('style')+' width:'+comment.width+'px;';
+				    cb.set('style',style);
+				    //cb.setStyle('width',comment.width); // This should work, but doesn't
 				    cb.store('id', comment.id);
 				});
 			} else {
@@ -133,35 +140,12 @@ var ServerComm = new Class({
 	    request.send({ data: {
 			    action: 'getcomments',
 			    id: this.id,
-			    uid: this.uid,
-			    pageno: this.pageno
+			    userid: this.userid,
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
 			    } });
 	}
     });
-
-    // Wordwrap the text
-    /*
-      var pos=0;
-      var count=0;
-      var lastspace = -1;
-
-      while (pos < content.length) {
-      if (lastspace >= 0) {
-      content = content.slice(0, lastspace)+'\n'+content.slice(lastspace+1);
-      count = pos - lastspace;
-      } 
-      lastspace = -1;
-      do {
-      if (content.charAt(pos) == ' ') {
-      lastspace = pos;
-      } else if (content.charAt(pos) == '\n') {
-      count = 0;
-      lastspace = -1;
-      } 
-      count++;
-      pos++;
-      } while ((count < editwidth) && (pos < content.length)) 
-      }*/
 
 function setcommentcontent(el, content) {
     el.store('rawtext', content);
@@ -169,7 +153,7 @@ function setcommentcontent(el, content) {
     // Replace special characters with html entities
     content = content.replace(/</gi,'&lt;');
     content = content.replace(/>/gi,'&gt;');
-    content = content.replace(/\n/gi, '<br>');
+    content = content.replace(/\n/gi, '<br />');
     var resizehandle = el.retrieve('resizehandle');
     el.set('html',content);
     el.adopt(resizehandle);
@@ -231,7 +215,8 @@ function makecommentbox(position, content) {
     // Create the comment box
     newcomment = new Element('div');
     newcomment.set('class', 'comment');
-    newcomment.setStyles({ left: position.x, top: position.y });
+    //    newcomment.setStyles({ left: position.x, top: position.y }); // This should work, but doesn't
+    newcomment.set('style', 'position:absolute; left:'+position.x+'px; top:'+position.y+'px;');
     newcomment.store('id', -1);
     var drag = newcomment.makeDraggable({
 	    container: 'pdfholder',
@@ -322,6 +307,8 @@ function typingcomment(e) {
 }
 
 window.addEvent('domready', function() {
+	new Asset.css('style/annotate.css');
+	server = new ServerComm(server_config);
 	server.getcomments();
 	$('pdfimg').addEvent('click', addcomment);
     });
