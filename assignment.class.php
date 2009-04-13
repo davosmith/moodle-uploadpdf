@@ -1095,7 +1095,7 @@ class assignment_uploadpdf extends assignment_base {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
                 print_heading('Response generated OK');
                 print $this->update_main_listing($submission);
-                //                close_window();
+                close_window();
                 die;
             } else {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));

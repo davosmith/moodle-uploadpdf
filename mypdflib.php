@@ -1,8 +1,9 @@
 <?php
 
-//require_once('../../../../config.php');
+require_once('../../../../config.php');
 require_once('tcpdf/tcpdf.php');
 require_once('fpdi/fpdi.php');
+require_once('uploadpdf_config.php');
 
 class MyPDFLib extends FPDI {
 
@@ -96,6 +97,8 @@ class MyPDFLib extends FPDI {
     }
 
     public function get_image($pageno) {
+        global $CFG;
+
         if (!$this->filename) {
             //            echo 'no filename';
             return false;
@@ -113,7 +116,7 @@ class MyPDFLib extends FPDI {
 
         $imagefile = $this->imagefolder.'/image_page'.$pageno.'.png';
         if (!file_exists($imagefile)) {
-            $gsexec = 'gs';
+            $gsexec = $CFG->gs_path;
             $imageres = 100;
             $filename = $this->filename;
             $command = "$gsexec -q -sDEVICE=png16m -dBATCH -dNOPAUSE -r$imageres -dFirstPage=$pageno -dLastPage=$pageno -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -sOutputFile=$imagefile $filename 2>&1";
