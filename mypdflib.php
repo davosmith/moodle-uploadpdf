@@ -1,6 +1,6 @@
 <?php
 
-require_once('../../../../config.php');
+//require_once('../../../../config.php');
 require_once('tcpdf/tcpdf.php');
 require_once('fpdi/fpdi.php');
 require_once('uploadpdf_config.php');
