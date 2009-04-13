@@ -118,7 +118,7 @@ class MyPDFLib extends FPDI {
         $generate = true;
         if (file_exists($imagefile)) {
             if (filemtime($imagefile) > filemtime($this->filename)) {
-                // Make sure the image is newer than the PDF
+                // Make sure the image is newer than the PDF file
                 $generate = false;
             }
         }
