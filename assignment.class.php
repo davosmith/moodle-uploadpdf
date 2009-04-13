@@ -1056,6 +1056,8 @@ class assignment_uploadpdf extends assignment_base {
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
 
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/firebug-lite-compressed.js');
+
         //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools.js');
         //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
@@ -1064,8 +1066,8 @@ class assignment_uploadpdf extends assignment_base {
         
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
 
-        // Need to echo my javascript and load my css file
-        
+        echo '<button onclick="startjs();">Start</button>';
+
         if ($pageno > 1) {
             echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'">&lt;--Prev</a> ';
         } else {
@@ -1106,11 +1108,10 @@ class assignment_uploadpdf extends assignment_base {
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
         echo '<script type="text/javascript">server_config = {';
         foreach ($server as $key => $value) {
-            echo $key.": '$value',\n";
+            echo $key.": '$value', \n";
         }
-        echo '}</script>';
-
-        //        echo '<script type="text/javascript">  server = new ServerComm('. $id;, ' echo $uid; ', php echo $pageno; );</script>';
+        echo "ignore: ''\n"; // Just there so IE does not complain
+        echo '};</script>';
 
         print_footer('none');
     }

@@ -11,7 +11,7 @@ var ServerComm = new Class({
 	pageno: null,
 	sesskey: null,
 	url: null,
-
+	
 	initialize: function(settings) {
 	    this.id = settings.id;
 	    this.userid = settings.userid;
@@ -19,7 +19,7 @@ var ServerComm = new Class({
 	    this.sesskey = settings.sesskey;
 	    this.url = settings.updatepage;
 	},
-
+	
 	updatecomment: function(comment) {
 	    var waitel = new Element('div');
 	    waitel.set('class', 'wait');
@@ -71,7 +71,7 @@ var ServerComm = new Class({
 			    }
 		});
 	},
-
+	
 	removecomment: function(cid) {
 	    var request = new Request.JSON({
 		    url: this.url,
@@ -100,12 +100,12 @@ var ServerComm = new Class({
 			    }
 		});
 	},
-
+	
 	getcomments: function() {
 	    var waitel = new Element('div');
 	    waitel.set('class', 'pagewait');
 	    $('pdfholder').adopt(waitel);
-	    
+	    	    
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -134,7 +134,7 @@ var ServerComm = new Class({
 			} else {
 			    waitel.destroy();
 			}
-		    },
+		    }
 		});
 
 	    request.send({ data: {
@@ -144,6 +144,7 @@ var ServerComm = new Class({
 			    pageno: this.pageno,
 			    sesskey: this.sesskey
 			    } });
+	    
 	}
     });
 
@@ -306,9 +307,16 @@ function typingcomment(e) {
     }
 }
 
+function startjs() {
+    	new Asset.css('style/annotate.css');
+    	server = new ServerComm(server_config);
+    	server.getcomments();
+    	$('pdfimg').addEvent('click', addcomment);
+}    
+
+
 window.addEvent('domready', function() {
-	new Asset.css('style/annotate.css');
-	server = new ServerComm(server_config);
-	server.getcomments();
-	$('pdfimg').addEvent('click', addcomment);
+	startjs();
     });
+
+
