@@ -100,17 +100,17 @@ class MyPDFLib extends FPDI {
         global $CFG;
 
         if (!$this->filename) {
-            //            echo 'no filename';
+            echo 'no filename';
             return false;
         }
 
         if (!$this->imagefolder) {
-            //            echo 'no image folder';
+            echo 'no image folder';
             return false;
         }
 
         if (!is_dir($this->imagefolder)) {
-            //            echo 'bad folder: '.$this->imagefolder;
+            echo 'bad folder: '.$this->imagefolder;
             return false;
         }
 
@@ -119,11 +119,11 @@ class MyPDFLib extends FPDI {
             $gsexec = $CFG->gs_path;
             $imageres = 100;
             $filename = $this->filename;
-            $command = "$gsexec -q -sDEVICE=png16m -dBATCH -dNOPAUSE -r$imageres -dFirstPage=$pageno -dLastPage=$pageno -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -sOutputFile=$imagefile $filename 2>&1";
+            $command = "$gsexec -q -sDEVICE=png16m -dBATCH -dNOPAUSE -r$imageres -dFirstPage=$pageno -dLastPage=$pageno -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -sOutputFile=\"$imagefile\" \"$filename\" 2>&1";
             $result = exec($command);
             if (!file_exists($imagefile)) {
-                //                echo htmlspecialchars($command).'<br/>';
-                //                echo htmlspecialchars($result).'<br/>';
+                echo htmlspecialchars($command).'<br/>';
+                echo htmlspecialchars($result).'<br/>';
                 return false;
             }
         }
