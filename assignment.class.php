@@ -284,7 +284,12 @@ class assignment_uploadpdf extends assignment_base {
                         $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                         $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file,
                                                         700, 1000, 'Annotate Submission', 'none', true, 'editcommentbutton'.$userid); // FIXME: get_string for 'annotate submission'
-                        //$ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // FIXME: Link to viewing file not downloading
+                        if (file_exists($basedir.'/responses/response.pdf')) {
+                            $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
+                            $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
+                            $output .= '<br /><a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+                        }
+                        //$ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; 
                         //$output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
                     }
                 }
@@ -1025,6 +1030,43 @@ class assignment_uploadpdf extends assignment_base {
         return 0;
     }
 
+    function create_response_pdf($userid, $submissionid) {
+        global $CFG;
+
+        $filearea = $CFG->dataroot.'/'.$this->file_area_name($userid);
+        $sourcearea = $filearea.'/submission';
+        $sourcefile = $sourcearea.'/submission.pdf';
+        if (!is_dir($sourcearea) || !file_exists($sourcefile)) {
+            error('Submitted PDF not found');
+            return false;
+        }
+        
+        $destarea = $filearea.'/responses';
+        $destfile = $destarea.'/response.pdf';
+        check_dir_exists($destarea, true, true);
+
+        $mypdf = new MyPDFLib();
+        $mypdf->load_pdf($sourcefile);
+
+        $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submissionid, 'pageno');
+        if ($comments) {
+            foreach ($comments as $comment) {
+                while ($comment->pageno > $mypdf->current_page()) {
+                    if (!$mypdf->copy_page()) {
+                        error('Ran out of pages - this should not happen! - comment.pageno = '.$comment->pageno.'; currrentpage = '.$mypdf->CurrentPage());
+                        return false;
+                    }
+                }
+                $mypdf->add_comment($comment->rawtext, $comment->posx, $comment->posy, $comment->width);
+            }
+        }
+        
+        $mypdf->copy_remaining_pages();
+        $mypdf->save_pdf($destfile);
+        
+        return true;
+    }
+
     function edit_comment_page($userid, $pageno) {
         global $CFG;
 
@@ -1036,6 +1078,31 @@ class assignment_uploadpdf extends assignment_base {
 
         if (!$submission = $this->get_submission($user->id)) {
             error('User has no submission to comment on!');
+        }
+
+        $savedraft = optional_param('savedraft', null, PARAM_TEXT);
+        $generateresponse = optional_param('generateresponse', null, PARAM_TEXT);
+
+        if ($savedraft) {
+            print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+            print_heading('Draft Saved');
+            close_window();
+            die;
+        }
+
+        if ($generateresponse) {
+            if ($this->create_response_pdf($userid, $submission->id)) {
+                print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+                print_heading('Response generated OK');
+                print $this->update_main_listing($submission);
+                //                close_window();
+                die;
+            } else {
+                print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+                error('There was a problem creating the response');
+                close_window();
+                die;
+            }
         }
 
         $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
@@ -1066,7 +1133,13 @@ class assignment_uploadpdf extends assignment_base {
         
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
 
-        echo '<button onclick="startjs();">Start</button>';
+        echo '<div><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post">';
+        echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+        echo '<input type="hidden" name="userid" value="'.$userid.'" />';
+        echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
+        echo '<input type="submit" name="savedraft" value="Save Draft and Close" />';
+        echo '<input type="submit" name="generateresponse" value="Generate Response" />';
+        echo '</form></div>';
 
         if ($pageno > 1) {
             echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'">&lt;--Prev</a> ';

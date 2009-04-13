@@ -29,7 +29,7 @@ class MyPDFLib extends FPDI {
             }
         }
 
-        $this->save_file($output);
+        $this->save_pdf($output);
     
         return $totalpagecount;
     }
@@ -78,6 +78,8 @@ class MyPDFLib extends FPDI {
         $x *= $this->scale;
         $y *= $this->scale;
         $width *= $this->scale;
+        $text = str_replace('&lt;','<', $text);
+        $text = str_replace('&gt;','>', $text);
         $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
         $newy = $this->GetY();
         $this->Rect($x, $y, $width, $newy-$y, 'DF');
@@ -85,7 +87,7 @@ class MyPDFLib extends FPDI {
         return true;
     }
   
-    public function save_file($filename) {
+    public function save_pdf($filename) {
         $this->Output($filename, 'F');
     }
 
