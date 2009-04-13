@@ -1094,6 +1094,10 @@ class assignment_uploadpdf extends assignment_base {
             if ($this->create_response_pdf($userid, $submission->id)) {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
                 print_heading('Response generated OK');
+				require_once($CFG->dirroot.'/version.php');
+				if ($version >= 2007101500) {
+					require_once($CFG->libdir.'/gradelib.php');
+				}
                 print $this->update_main_listing($submission);
                 close_window();
                 die;
