@@ -1,4 +1,8 @@
-<XMLDB PATH="mod/assignment/type/uploadpdf/db" VERSION="2009040900" COMMENT="XMLDB file for Moodle mod/assignment/type/uploadpdf" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/assignment/type/uploadpdf/db" VERSION="2009040900" COMMENT="XMLDB file for Moodle mod/assignment/type/uploadpdf"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
+>
 <TABLES>
 <TABLE NAME="assignment_uploadpdf_comment" COMMENT="assignment_uploadpdf_comment table retrofitted from MySQL - stores comments/annotations added to pdfs submitted by students ">
 <FIELDS>
