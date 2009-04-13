@@ -1,6 +1,5 @@
 var currentcomment = null;	// The comment that is currently being edited
 var editbox = null;		// The edit box that is currently displayed
-//var editwidth = 20;
 var resizing = false;		// A box is being resized (so disable dragging)
 var server = null;		// The object use to send data back to the server
 
@@ -59,7 +58,7 @@ var ServerComm = new Class({
 	    request.send({
 		    data: {
 		        action: 'update',
-			comment_position_x: comment.getStyle('left'), 
+			comment_position_x: comment.getStyle('left'),
 			comment_position_y: comment.getStyle('top'),
 			comment_width: comment.getStyle('width'),
 			comment_text: comment.retrieve('rawtext'),
@@ -114,9 +113,15 @@ var ServerComm = new Class({
 			    waitel.destroy();
 			    resp.comments.each(function(comment) {
 				    cb = makecommentbox(comment.position, comment.text);
-				    var style = cb.get('style')+' width:'+comment.width+'px;';
-				    cb.set('style',style);
-				    //cb.setStyle('width',comment.width); // This should work, but doesn't
+				    if (Browser.Engine.trident) {
+					// Does not work with FF & Moodle
+					cb.setStyle('width',comment.width);
+				    } else {
+					// Does not work with IE
+					var style = cb.get('style')+' width:'+comment.width+'px;';
+					cb.set('style',style);
+				    }
+
 				    cb.store('id', comment.id);
 				});
 			} else {
@@ -215,10 +220,18 @@ function makeeditbox(comment, content) {
 function makecommentbox(position, content) {
     // Create the comment box
     newcomment = new Element('div');
+    $('pdfholder').adopt(newcomment);
+
     newcomment.set('class', 'comment');
-    //    newcomment.setStyles({ left: position.x, top: position.y }); // This should work, but doesn't
-    newcomment.set('style', 'position:absolute; left:'+position.x+'px; top:'+position.y+'px;');
+    if (Browser.Engine.trident) {
+	// Does not work with FF & Moodle
+	newcomment.setStyles({ left: position.x, top: position.y });
+    } else {
+	// Does not work with IE
+	newcomment.set('style', 'position:absolute; top:'+position.y+'px; left:'+position.x+'px;');
+    }
     newcomment.store('id', -1);
+    
     var drag = newcomment.makeDraggable({
 	    container: 'pdfholder',
 	    onCancel: editcomment, // Click without drag = edit
@@ -261,7 +274,6 @@ function makecommentbox(position, content) {
     newcomment.store('resize', resize);
     newcomment.store('resizehandle', resizehandle);
 
-    $('pdfholder').adopt(newcomment);
     // Add the edit box to it
     if ($defined(content)) {
 	setcommentcontent(newcomment, content);

@@ -1056,7 +1056,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
 
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/firebug-lite-compressed.js');
+        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/firebug-lite-compressed.js');
 
         //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools.js');
         //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
