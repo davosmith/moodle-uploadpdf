@@ -115,7 +115,15 @@ class MyPDFLib extends FPDI {
         }
 
         $imagefile = $this->imagefolder.'/image_page'.$pageno.'.png';
-        if (!file_exists($imagefile)) {
+        $generate = true;
+        if (file_exists($imagefile)) {
+            if (filemtime($imagefile) > filemtime($this->filename)) {
+                // Make sure the image is newer than the PDF
+                $generate = false;
+            }
+        }
+        
+        if ($generate) {
             $gsexec = $CFG->gs_path;
             $imageres = 100;
             $filename = $this->filename;
