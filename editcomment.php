@@ -36,7 +36,6 @@
 
     require_capability('mod/assignment:grade', get_context_instance(CONTEXT_MODULE, $cm->id));
 
-
 require('assignment.class.php');
 $assignmentinstance = new assignment_uploadpdf($cm->id, $assignment, $cm, $course);
 $assignmentinstance->edit_comment_page($userid, $pageno);

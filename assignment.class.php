@@ -223,19 +223,19 @@ class assignment_uploadpdf extends assignment_base {
 
         /*        $output = get_string('responsefiles', 'assignment').': ';
 
-        $output .= '<form enctype="multipart/form-data" method="post" '.
-            "action=\"$CFG->wwwroot/mod/assignment/upload.php\">";
-        $output .= '<div>';
-        $output .= '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-        $output .= '<input type="hidden" name="action" value="uploadresponse" />';
-        $output .= '<input type="hidden" name="mode" value="'.$mode.'" />';
-        $output .= '<input type="hidden" name="offset" value="'.$offset.'" />';
-        $output .= '<input type="hidden" name="userid" value="'.$submission->userid.'" />';
-        require_once($CFG->libdir.'/uploadlib.php');
-        $output .= upload_print_form_fragment(1,array('newfile'),null,false,null,0,0,true);
-        $output .= '<input type="submit" name="save" value="'.get_string('uploadthisfile').'" />';
-        $output .= '</div>';
-        $output .= '</form>';
+                  $output .= '<form enctype="multipart/form-data" method="post" '.
+                  "action=\"$CFG->wwwroot/mod/assignment/upload.php\">";
+                  $output .= '<div>';
+                  $output .= '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                  $output .= '<input type="hidden" name="action" value="uploadresponse" />';
+                  $output .= '<input type="hidden" name="mode" value="'.$mode.'" />';
+                  $output .= '<input type="hidden" name="offset" value="'.$offset.'" />';
+                  $output .= '<input type="hidden" name="userid" value="'.$submission->userid.'" />';
+                  require_once($CFG->libdir.'/uploadlib.php');
+                  $output .= upload_print_form_fragment(1,array('newfile'),null,false,null,0,0,true);
+                  $output .= '<input type="submit" name="save" value="'.get_string('uploadthisfile').'" />';
+                  $output .= '</div>';
+                  $output .= '</form>';
         */
 
         $output = '';
@@ -281,20 +281,23 @@ class assignment_uploadpdf extends assignment_base {
                     foreach ($files as $key => $file) {
                         require_once($CFG->libdir.'/filelib.php');
                         $icon = mimeinfo('icon', $file);
-                        $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
-                        $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file,
+                        if (mimeinfo('type', $file) == 'application/pdf') {
+                            $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
+                            $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file,
                                                         700, 1000, 'Annotate Submission', 'none', true, 'editcommentbutton'.$userid); // FIXME: get_string for 'annotate submission'
-                        if (file_exists($basedir.'/responses/response.pdf')) {
-                            $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
-                            $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
-                            $output .= '<br /><a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+                        } else {
+                            $ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; 
+                            $output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
                         }
-                        //$ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; 
-                        //$output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
+                    }
+                    if (file_exists($basedir.'/responses/response.pdf')) {
+                        $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
+                        $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
+                        $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
                     }
                 }
             } else {
-                if ($files = get_directory_list($basedir, array('responses','submission'))) {
+                if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
                     foreach ($files as $key => $file) {
                         require_once($CFG->libdir.'/filelib.php');
                         $icon = mimeinfo('icon', $file);
@@ -362,8 +365,8 @@ class assignment_uploadpdf extends assignment_base {
                             if (has_capability('mod/assignment:grade', $this->context)) {
                                 $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                                 $output .= link_to_popup_window($ffurl, 'editcomment'.$userid,
-                                                            '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
-                                                            'Annotate Submission', 'none', true, 'editcommentbutton'.$userid); // FIXME: get_string for 'annotate submission'
+                                                                '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
+                                                                'Annotate Submission', 'none', true, 'editcommentbutton'.$userid); // FIXME: get_string for 'annotate submission'
                             } else {
                                 $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
                                 $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
@@ -380,7 +383,7 @@ class assignment_uploadpdf extends assignment_base {
                 
             } else {
                 if ($basedir = $this->file_area($userid)) {
-                    if ($files = get_directory_list($basedir, array('responses','submission'))) {
+                    if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
                         require_once($CFG->libdir.'/filelib.php');
                         foreach ($files as $key => $file) {
 
@@ -638,6 +641,8 @@ class assignment_uploadpdf extends assignment_base {
         global $USER;
 
         $confirm = optional_param('confirm', 0, PARAM_BOOL);
+        $confirmnotpdf = optional_param('confirmnotpdf', 0, PARAM_BOOL);
+        $requirepdf = false;     /* FIXME - make this an option for the assignment */
 
         $returnurl = 'view.php?id='.$this->cm->id;
         $submission = $this->get_submission($USER->id);
@@ -648,16 +653,30 @@ class assignment_uploadpdf extends assignment_base {
 
         // Check that all files submitted are PDFs
         if ($file = $this->get_not_pdf($USER->id)) {
-            $this->view_header();
-            notify("The file $file is not a PDF - please resubmit in that format"); //FIXME get_string
-            print_continue($returnurl);
-            $this->view_footer();
-            die;
+            if (!$confirmnotpdf) {
+                $this->view_header();
+                print_heading('Non-PDF File found');  /* FIXME: use get_string */
+                if ($requirepdf) {
+                    notify("The file '$file' is not a PDF - you must resubmit it in that format"); /* FIXME: use get_string */
+                    print_continue($returnurl);
+                } else {
+                    if ($this->get_pdf_count($USER->id) < 1) {
+                        notify("None of the files submitted are PDFs, you must submit at least one file in that format"); /* FIXME: use get_string */
+                        print_continue($returnurl);
+                    } else {
+                        $optionsno = array('id'=>$this->cm->id);
+                        $optionsyes = array('id'=>$this->cm->id, 'confirmnotpdf'=>1, 'action'=>'finalize');
+                        notice_yesno("The file '$file' is not a PDF - are you sure you want to continue?", 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get'); //FIXME get_string
+                    }
+                }
+                $this->view_footer();
+                die;
+            }
         }
 
         if (!data_submitted('nomatch') or !$confirm) {
             $optionsno = array('id'=>$this->cm->id);
-            $optionsyes = array ('id'=>$this->cm->id, 'confirm'=>1, 'action'=>'finalize');
+            $optionsyes = array ('id'=>$this->cm->id, 'confirm'=>1, 'action'=>'finalize', 'confirmnotpdf'=>1);
             $this->view_header(get_string('submitformarking', 'assignment'));
             print_heading(get_string('submitformarking', 'assignment'));
             notice_yesno(get_string('onceassignmentsent', 'assignment'), 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get');
@@ -971,7 +990,7 @@ class assignment_uploadpdf extends assignment_base {
         $filearea = $this->file_area_name($userid);
 
         if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
-            if ($files = get_directory_list($basedir, array('responses','submission'))) {
+            if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
                 return count($files);
             }
         }
@@ -993,10 +1012,12 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function get_not_pdf($userid) {
+        // FIXME - find some way of returning if NONE of the files are PDFs
+        
         global $CFG;
 
         $filearea = $this->file_area_name($userid);
-
+        
         if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
             if ($files = get_directory_list($basedir)) {
                 require_once($CFG->libdir.'/filelib.php');
@@ -1008,6 +1029,25 @@ class assignment_uploadpdf extends assignment_base {
             }
         }
         return false;
+    }
+
+    function get_pdf_count($userid) {
+        global $CFG;
+
+        $count = 0;
+        $filearea = $this->file_area_name($userid);
+        
+        if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
+            if ($files = get_directory_list($basedir)) {
+                //                require_once($CFG->libdir.'/filelib.php');
+                foreach ($files as $key => $file) {
+                    if (mimeinfo('type', $file) == 'application/pdf') {
+                        $count++;
+                    }
+                }
+            }
+        }
+        return $count;
     }
 
     function create_submission_pdf($userid) {
@@ -1023,8 +1063,19 @@ class assignment_uploadpdf extends assignment_base {
         $mypdf = new MyPDFLib();
       
         if ( is_dir($filearea) ) {
-            if ($files = get_directory_list($filearea, array('submission','response'))) {
-                return $mypdf->combine_pdfs($filearea, $files, $destfile);
+            if ($files = get_directory_list($filearea, array('submission','response','images'))) {
+                foreach ($files as $key=>$fl) { 
+                    if (mimeinfo('type', $fl) != 'application/pdf') {
+                        echo $filearea.'/'.$fl.' => '.$filearea.'/submission/'.$fl;
+                        copy($filearea.'/'.$fl, $filearea.'/submission/'.$fl); /* Copy any non-PDF files to submission folder */
+                        unset($files[$key]);
+                    }
+                }
+                if (count($files) > 0) { /* Should have already checked there is at least 1 PDF */
+                    return $mypdf->combine_pdfs($filearea, $files, $destfile);
+                } else {
+                    return 0;
+                }
             }
         }
         return 0;
