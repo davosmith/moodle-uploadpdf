@@ -611,6 +611,12 @@ class assignment_uploadpdf extends assignment_base {
         $um = new upload_manager('newfile',false,true,$this->course,false,$this->assignment->maxbytes,true);
 
         if ($um->process_file_uploads($dir)) {
+            $fp = $um->get_new_filepath();
+            $fn = $um->get_new_filename();
+            if ($fp && $fn) {
+                $dest = $CFG->dataroot.'/'.$dir.'/'.sprintf('%02d',$filecount+1).'-'.$fn;
+                rename($fp, $dest);
+            }
             $submission = $this->get_submission($USER->id, true); //create new submission if needed
             $updated = new object();
             $updated->id           = $submission->id;
@@ -713,6 +719,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function unfinalize() {
+        global $CFG;
 
         $userid = required_param('userid', PARAM_INT);
         $mode   = required_param('mode', PARAM_ALPHA);
@@ -723,6 +730,12 @@ class assignment_uploadpdf extends assignment_base {
         if (data_submitted('nomatch')
             and $submission = $this->get_submission($userid)
             and $this->can_unfinalize($submission)) {
+            
+            require_once($CFG->libdir.'/filelib.php');
+            $subpath = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission';
+            $imgpath = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
+            fulldelete($subpath);
+            fulldelete($imgpath);
 
             $updated = new object();
             $updated->id = $submission->id;
@@ -859,6 +872,7 @@ class assignment_uploadpdf extends assignment_base {
                     add_to_log($this->course->id, 'assignment', 'upload', //TODO: add delete action to log
                                'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
                 }
+                $this->renumber_files($userid);
                 redirect($returnurl);
             }
         }
@@ -1012,14 +1026,13 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function get_not_pdf($userid) {
-        // FIXME - find some way of returning if NONE of the files are PDFs
         
         global $CFG;
 
         $filearea = $this->file_area_name($userid);
         
         if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
-            if ($files = get_directory_list($basedir)) {
+            if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
                 require_once($CFG->libdir.'/filelib.php');
                 foreach ($files as $key => $file) {
                     if (mimeinfo('type', $file) != 'application/pdf') {
@@ -1038,11 +1051,32 @@ class assignment_uploadpdf extends assignment_base {
         $filearea = $this->file_area_name($userid);
         
         if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
-            if ($files = get_directory_list($basedir)) {
+            if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
                 //                require_once($CFG->libdir.'/filelib.php');
                 foreach ($files as $key => $file) {
                     if (mimeinfo('type', $file) == 'application/pdf') {
                         $count++;
+                    }
+                }
+            }
+        }
+        return $count;
+    }
+
+    function renumber_files($userid) {
+        global $CFG;
+
+        $count = 0;
+        $filearea = $this->file_area_name($userid);
+                
+        if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
+            if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
+                foreach ($files as $key => $file) {
+                    $count++;
+                    $prefix = sprintf('%02d', $count).'-';
+                    if (substr($file,0,3) != $prefix) {
+                        $newname = $prefix.substr($file,3);
+                        rename($basedir.'/'.$file, $basedir.'/'.$newname);
                     }
                 }
             }
@@ -1066,7 +1100,6 @@ class assignment_uploadpdf extends assignment_base {
             if ($files = get_directory_list($filearea, array('submission','response','images'))) {
                 foreach ($files as $key=>$fl) { 
                     if (mimeinfo('type', $fl) != 'application/pdf') {
-                        echo $filearea.'/'.$fl.' => '.$filearea.'/submission/'.$fl;
                         copy($filearea.'/'.$fl, $filearea.'/submission/'.$fl); /* Copy any non-PDF files to submission folder */
                         unset($files[$key]);
                     }
