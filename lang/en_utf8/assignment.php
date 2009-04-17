@@ -2,6 +2,12 @@
 
 $string['typeuploadpdf'] = 'Upload PDF';
 
+//Configuration
+$string['coversheet'] = 'Coversheet';
+$string['coversheettemplate'] = 'Template';
+$string['notemplate'] = 'None';
+$string['coversheetnotpdf'] = 'Coversheet must be a PDF (or blank)';
+
 //Teacher marking
 $string['annotatesubmission'] = 'Annotate Submission';
 $string['draftsaved'] = 'Draft Saved';

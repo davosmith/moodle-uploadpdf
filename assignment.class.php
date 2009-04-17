@@ -1350,8 +1350,15 @@ class assignment_uploadpdf extends assignment_base {
 
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
 
-        // FIXME: Add form elements for coversheet upload + template choice
-        //        $mform->addElement('select', ');        
+        $mform->addElement('choosecoursefile', 'coversheet', get_string('coversheet','assignment'));
+        //        $mform->addRule('coversheet', get_string('coversheetnotpdf','assignment'), 'regex', '\.pdf$', 'client');
+        $mform->addRule('coversheet', get_string('coversheetnotpdf','assignment'), 'callback', 'check_coversheet_pdf');
+
+        $templates = array();
+        $templates[0] = get_string('notemplate','assignment');
+        $templates[] = 'Test2';
+        $mform->addElement('select', 'template', get_string('coversheettemplate','assignment'), $templates);
+        $mform->setDefault('template', 'None');
 
         $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
         $choices[1] = get_string('uploadnotallowed');
@@ -1385,6 +1392,41 @@ class assignment_uploadpdf extends assignment_base {
 
 
     }
+
+    function add_instance($assignment) {
+        $assignment_extra = new Object();
+        $assignment_extra->coversheet = $assignment->coversheet; // FIXME: This should be sanitised and checked it is a PDF
+        $assignment_extra->template = $assignment->template;
+        unset($assignment->coversheet);
+        unset($assignment->template);
+
+        $newid = parent::add_instance($assignment);
+
+        if ($newid) {
+            $assignment_extra->assignment = $newid;
+            insert_record('assignment_uploadpdf', $assignment_extra);
+        }
+
+        return $newid;
+    }
+
+    function update_instance($assignment) {
+        $coversheet = $assignment->coversheet; // FIXME - this should be sanitised and checked that it is a PDF
+        $template = $assignment->template;
+        unset($assignment->coversheet);
+        unset($assignment->template);
+
+        $assignmentid = parent::update_instance($assignment);
+        
+        if ($assignmentid) {
+            $assignment_extra = get_record('assignment_uploadpdf', 'assignment', $assignmentid);
+            $assignment_extra->coversheet = $coversheet;
+            $assignment_extra->template = $template;
+            update_record('assignment_uploadpdf', $assignment_extra);
+        }
+
+        return $assignmentid;
+    }
 }
 
 if (!class_exists('mod_assignment_upload_notes_form')) {
@@ -1408,5 +1450,18 @@ if (!class_exists('mod_assignment_upload_notes_form')) {
         }
     }
 }
+
+function check_coversheet_pdf($value) {
+    if ($value['value'] == '') {
+        return true;
+    }
+
+    if (strtolower(substr($value['value'], -4)) == '.pdf') {
+        return true;
+    }
+    
+    return false;
+}
+
 
 ?>
