@@ -138,8 +138,5 @@ class MyPDFLib extends FPDI {
         
         return 'image_page'.$pageno.'.png';
     }
-
-    public function clear_images() {
-    }
 }
 ?>

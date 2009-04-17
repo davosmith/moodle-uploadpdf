@@ -284,7 +284,7 @@ class assignment_uploadpdf extends assignment_base {
                         if (mimeinfo('type', $file) == 'application/pdf') {
                             $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                             $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file,
-                                                        700, 1000, 'Annotate Submission', 'none', true, 'editcommentbutton'.$userid); // FIXME: get_string for 'annotate submission'
+                                                            700, 1000, get_string('annotatesubmission', 'assignment'), 'none', true, 'editcommentbutton'.$userid);
                         } else {
                             $ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; 
                             $output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
@@ -366,7 +366,7 @@ class assignment_uploadpdf extends assignment_base {
                                 $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                                 $output .= link_to_popup_window($ffurl, 'editcomment'.$userid,
                                                                 '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
-                                                                'Annotate Submission', 'none', true, 'editcommentbutton'.$userid); // FIXME: get_string for 'annotate submission'
+                                                                get_string('annotatesubmission', 'assignment'), 'none', true, 'editcommentbutton'.$userid);
                             } else {
                                 $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
                                 $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
@@ -444,25 +444,18 @@ class assignment_uploadpdf extends assignment_base {
                 foreach ($files as $key => $file) {
 
                     $icon = mimeinfo('icon', $file);
-
                     $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
-
                     $output .= '<a href="'.$ffurl.'" ><img class="align" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>';
-
                     if ($candelete) {
                         $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;action=response";
-
                         $output .= '<a href="'.$delurl.'">&nbsp;'
                             .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt=""/></a> ';
                     }
-
                     $output .= '&nbsp;';
                 }
             }
 
-
             $output = '<div class="responsefiles">'.$output.'</div>';
-
         }
 
         if ($return) {
@@ -661,18 +654,18 @@ class assignment_uploadpdf extends assignment_base {
         if ($file = $this->get_not_pdf($USER->id)) {
             if (!$confirmnotpdf) {
                 $this->view_header();
-                print_heading('Non-PDF File found');  /* FIXME: use get_string */
+                print_heading(get_string('nonpdfheading', 'assignment'));
                 if ($requirepdf) {
-                    notify("The file '$file' is not a PDF - you must resubmit it in that format"); /* FIXME: use get_string */
+                    notify(sprintf(get_string('filenotpdf', 'assignment'), $file));
                     print_continue($returnurl);
                 } else {
                     if ($this->get_pdf_count($USER->id) < 1) {
-                        notify("None of the files submitted are PDFs, you must submit at least one file in that format"); /* FIXME: use get_string */
+                        notify(get_string('nopdf', 'assignment'));
                         print_continue($returnurl);
                     } else {
                         $optionsno = array('id'=>$this->cm->id);
                         $optionsyes = array('id'=>$this->cm->id, 'confirmnotpdf'=>1, 'action'=>'finalize');
-                        notice_yesno("The file '$file' is not a PDF - are you sure you want to continue?", 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get'); //FIXME get_string
+                        notice_yesno(sprintf(get_string('filenotpdf_continue', 'assignment'),$file), 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get');
                     }
                 }
                 $this->view_footer();
@@ -692,7 +685,7 @@ class assignment_uploadpdf extends assignment_base {
         } else {
             if (!($pagecount = $this->create_submission_pdf($USER->id))) {
                 $this->view_header(get_string('submitformarking', 'assignment'));
-                notify('Unable to create submission PDF');//FIXME: get_string
+                notify(get_string('createsubmissionfailed', 'assignment'));
                 print_continue($returnurl);
                 $this->view_footer();
                 die;
@@ -1052,7 +1045,6 @@ class assignment_uploadpdf extends assignment_base {
         
         if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
             if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
-                //                require_once($CFG->libdir.'/filelib.php');
                 foreach ($files as $key => $file) {
                     if (mimeinfo('type', $file) == 'application/pdf') {
                         $count++;
@@ -1086,8 +1078,6 @@ class assignment_uploadpdf extends assignment_base {
 
     function create_submission_pdf($userid) {
         global $CFG;
-
-        //      require_once($CFG->libdir.'/filelib.php');
 
         $filearea = $CFG->dataroot.'/'.$this->file_area_name($userid);
         $destarea = $filearea.'/submission';
@@ -1169,7 +1159,7 @@ class assignment_uploadpdf extends assignment_base {
 
         if ($savedraft) {
             print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-            print_heading('Draft Saved');
+            print_heading(get_string('draftsaved', 'assignment'));
             close_window();
             die;
         }
@@ -1177,7 +1167,7 @@ class assignment_uploadpdf extends assignment_base {
         if ($generateresponse) {
             if ($this->create_response_pdf($userid, $submission->id)) {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-                print_heading('Response generated OK');
+                print_heading(get_string('responseok', 'assignment'));
 				require_once($CFG->dirroot.'/version.php');
 				if ($version >= 2007101500) {
 					require_once($CFG->libdir.'/gradelib.php');
@@ -1187,7 +1177,7 @@ class assignment_uploadpdf extends assignment_base {
                 die;
             } else {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-                error('There was a problem creating the response');
+                error(get_string('responseproblem', 'assignment'));
                 close_window();
                 die;
             }
@@ -1203,18 +1193,14 @@ class assignment_uploadpdf extends assignment_base {
         $pdf = new MyPDFLib();
         $pdf->set_image_folder($imagefolder);
         if ($pdf->load_pdf($pdffile) == 0) {
-            error('Error loading submitted PDF');
+            error(get_string('errorloadingpdf', 'assignment'));
         }
         if (!$imgname = $pdf->get_image($pageno)) {
-            error('Unable to generate image from PDF - check ghostscript is installed and this module has been configured to use it');
+            error(get_string('errorgenerateimage', 'assignment'));
         }
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
 
-        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/firebug-lite-compressed.js');
-
-        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools.js');
-        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
@@ -1225,8 +1211,8 @@ class assignment_uploadpdf extends assignment_base {
         echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
         echo '<input type="hidden" name="userid" value="'.$userid.'" />';
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-        echo '<input type="submit" name="savedraft" value="Save Draft and Close" />';
-        echo '<input type="submit" name="generateresponse" value="Generate Response" />';
+        echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment').'" />';
+        echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment').'" />';
         echo '</form></div>';
 
         if ($pageno > 1) {
@@ -1252,8 +1238,6 @@ class assignment_uploadpdf extends assignment_base {
             echo 'Next--&gt;';
         }
         
-        //        echo ' <a style="margin-left: 30px;" href="generate.php?id='.$pdfdetails['id'].'&uid='.$pdfdetails['uid'].'">Generate PDF</a>';
-        
         echo '<div style="clear: all;"><div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
@@ -1263,7 +1247,10 @@ class assignment_uploadpdf extends assignment_base {
                         'userid' => $userid,
                         'pageno' => $pageno,
                         'sesskey' => sesskey(),
-                        'updatepage' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/updatecomment.php'
+                        'updatepage' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/updatecomment.php',
+                        'lang_servercommfailed' => get_string('servercommfailed', 'assignment'),
+                        'lang_errormessage' => get_string('errormessage', 'assignment'),
+                        'lang_okagain' => get_string('okagain', 'assignment')
                         );
         
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
@@ -1362,6 +1349,9 @@ class assignment_uploadpdf extends assignment_base {
         global $CFG, $COURSE;
 
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
+
+        // FIXME: Add form elements for coversheet upload + template choice
+        //        $mform->addElement('select', ');        
 
         $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
         $choices[1] = get_string('uploadnotallowed');

@@ -35,7 +35,7 @@ var ServerComm = new Class({
 			    // Re-attach drag and resize ability
 			    comment.retrieve('drag').attach();
 			} else {
-			    if (confirm('Error message: '+resp.errmsg+'\nOK to try again')) {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.updatecomment(comment);
 			    } else {
 				// Re-attach drag and resize ability
@@ -46,7 +46,7 @@ var ServerComm = new Class({
 		    
 		    onFailure: function(req) {
 			waitel.destroy();
-			if (confirm('Server communication failed - OK to try again')) {
+			if (confirm(server_config.lang_servercommfailed)) {
 			    server.updatecomment(comment);
 			} else {
 			    comment.retrieve('drag').attach();
@@ -76,13 +76,13 @@ var ServerComm = new Class({
 		    url: this.url,
 		    onSuccess: function(resp) {
 			if (resp.error != 0) {
-			    if (confirm('Error message: '+resp.errmsg+'\nOK to try again')) {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.removecomment(cid);
 			    }
 			}
 		    },
 		    onFailure: function(resp) {
-			if (confirm('Server communication failed - OK to try again')) {
+			if (confirm(server_config.lang_servercommfailed)) {
 			    server.removecomment(cid);
 			}
 		    }
@@ -125,7 +125,7 @@ var ServerComm = new Class({
 				    cb.store('id', comment.id);
 				});
 			} else {
-			    if (confirm('Error from server - '+resp.errmsg+'\nOK to try again')) {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.getcomments();
 			    } else {
 				waitel.destroy();
@@ -134,7 +134,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			if (confirm('Server communication failed - OK to try again')) {
+			if (confirm(server_config.lang_servercommfailed)) {
 			    server.getcomments();
 			} else {
 			    waitel.destroy();
@@ -330,5 +330,3 @@ function startjs() {
 window.addEvent('domready', function() {
 	startjs();
     });
-
-
