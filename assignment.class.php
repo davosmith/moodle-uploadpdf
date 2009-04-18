@@ -284,7 +284,7 @@ class assignment_uploadpdf extends assignment_base {
                         if (mimeinfo('type', $file) == 'application/pdf') {
                             $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                             $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file,
-                                                            700, 1000, get_string('annotatesubmission', 'assignment'), 'none', true, 'editcommentbutton'.$userid);
+                                                            700, 1000, get_string('annotatesubmission', 'assignment_uploadpdf'), 'none', true, 'editcommentbutton'.$userid);
                         } else {
                             $ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; 
                             $output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
@@ -366,7 +366,7 @@ class assignment_uploadpdf extends assignment_base {
                                 $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                                 $output .= link_to_popup_window($ffurl, 'editcomment'.$userid,
                                                                 '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
-                                                                get_string('annotatesubmission', 'assignment'), 'none', true, 'editcommentbutton'.$userid);
+                                                                get_string('annotatesubmission', 'assignment_uploadpdf'), 'none', true, 'editcommentbutton'.$userid);
                             } else {
                                 $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
                                 $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
@@ -654,18 +654,18 @@ class assignment_uploadpdf extends assignment_base {
         if ($file = $this->get_not_pdf($USER->id)) {
             if (!$confirmnotpdf) {
                 $this->view_header();
-                print_heading(get_string('nonpdfheading', 'assignment'));
+                print_heading(get_string('nonpdfheading', 'assignment_uploadpdf'));
                 if ($requirepdf) {
-                    notify(sprintf(get_string('filenotpdf', 'assignment'), $file));
+                    notify(sprintf(get_string('filenotpdf', 'assignment_uploadpdf'), $file));
                     print_continue($returnurl);
                 } else {
                     if ($this->get_pdf_count($USER->id) < 1) {
-                        notify(get_string('nopdf', 'assignment'));
+                        notify(get_string('nopdf', 'assignment_uploadpdf'));
                         print_continue($returnurl);
                     } else {
                         $optionsno = array('id'=>$this->cm->id);
                         $optionsyes = array('id'=>$this->cm->id, 'confirmnotpdf'=>1, 'action'=>'finalize');
-                        notice_yesno(sprintf(get_string('filenotpdf_continue', 'assignment'),$file), 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get');
+                        notice_yesno(sprintf(get_string('filenotpdf_continue', 'assignment_uploadpdf'),$file), 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get');
                     }
                 }
                 $this->view_footer();
@@ -685,7 +685,7 @@ class assignment_uploadpdf extends assignment_base {
         } else {
             if (!($pagecount = $this->create_submission_pdf($USER->id))) {
                 $this->view_header(get_string('submitformarking', 'assignment'));
-                notify(get_string('createsubmissionfailed', 'assignment'));
+                notify(get_string('createsubmissionfailed', 'assignment_uploadpdf'));
                 print_continue($returnurl);
                 $this->view_footer();
                 die;
@@ -1159,7 +1159,7 @@ class assignment_uploadpdf extends assignment_base {
 
         if ($savedraft) {
             print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-            print_heading(get_string('draftsaved', 'assignment'));
+            print_heading(get_string('draftsaved', 'assignment_uploadpdf'));
             close_window();
             die;
         }
@@ -1167,7 +1167,7 @@ class assignment_uploadpdf extends assignment_base {
         if ($generateresponse) {
             if ($this->create_response_pdf($userid, $submission->id)) {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-                print_heading(get_string('responseok', 'assignment'));
+                print_heading(get_string('responseok', 'assignment_uploadpdf'));
 				require_once($CFG->dirroot.'/version.php');
 				if ($version >= 2007101500) {
 					require_once($CFG->libdir.'/gradelib.php');
@@ -1177,7 +1177,7 @@ class assignment_uploadpdf extends assignment_base {
                 die;
             } else {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-                error(get_string('responseproblem', 'assignment'));
+                error(get_string('responseproblem', 'assignment_uploadpdf'));
                 close_window();
                 die;
             }
@@ -1193,10 +1193,10 @@ class assignment_uploadpdf extends assignment_base {
         $pdf = new MyPDFLib();
         $pdf->set_image_folder($imagefolder);
         if ($pdf->load_pdf($pdffile) == 0) {
-            error(get_string('errorloadingpdf', 'assignment'));
+            error(get_string('errorloadingpdf', 'assignment_uploadpdf'));
         }
         if (!$imgname = $pdf->get_image($pageno)) {
-            error(get_string('errorgenerateimage', 'assignment'));
+            error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
         }
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
@@ -1211,8 +1211,8 @@ class assignment_uploadpdf extends assignment_base {
         echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
         echo '<input type="hidden" name="userid" value="'.$userid.'" />';
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-        echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment').'" />';
-        echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment').'" />';
+        echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment_uploadpdf').'" />';
+        echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment_uploadpdf').'" />';
         echo '</form></div>';
 
         if ($pageno > 1) {
@@ -1248,9 +1248,9 @@ class assignment_uploadpdf extends assignment_base {
                         'pageno' => $pageno,
                         'sesskey' => sesskey(),
                         'updatepage' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/updatecomment.php',
-                        'lang_servercommfailed' => get_string('servercommfailed', 'assignment'),
-                        'lang_errormessage' => get_string('errormessage', 'assignment'),
-                        'lang_okagain' => get_string('okagain', 'assignment')
+                        'lang_servercommfailed' => get_string('servercommfailed', 'assignment_uploadpdf'),
+                        'lang_errormessage' => get_string('errormessage', 'assignment_uploadpdf'),
+                        'lang_okagain' => get_string('okagain', 'assignment_uploadpdf')
                         );
         
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
@@ -1350,15 +1350,31 @@ class assignment_uploadpdf extends assignment_base {
 
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
 
-        $mform->addElement('choosecoursefile', 'coversheet', get_string('coversheet','assignment'));
-        //        $mform->addRule('coversheet', get_string('coversheetnotpdf','assignment'), 'regex', '\.pdf$', 'client');
-        $mform->addRule('coversheet', get_string('coversheetnotpdf','assignment'), 'callback', 'check_coversheet_pdf');
+        $assignment_extra = false;
+        $update = optional_param('update', 0, PARAM_INT);
+        if (!empty($update)) {
+            if (! $cm = get_record("course_modules", "id", $update)) {
+                error("This course module doesn't exist");
+            }
+
+            $assignment_extra = get_record('assignment_uploadpdf', 'assignment', $cm->instance);
+        }
+
+        if (!$assignment_extra) {
+            $assignment_extra = new Object;
+            $assignment_extra->template = 0;
+            $assignment_extra->coversheet = '';
+        }
+
+        $mform->addElement('choosecoursefile', 'coversheet', get_string('coversheet','assignment_uploadpdf'));
+        $mform->addRule('coversheet', get_string('coversheetnotpdf','assignment_uploadpdf'), 'callback', 'check_coversheet_pdf');
+        $mform->setDefault('coversheet', $assignment_extra->coversheet);
 
         $templates = array();
-        $templates[0] = get_string('notemplate','assignment');
+        $templates[0] = get_string('notemplate','assignment_uploadpdf');
         $templates[] = 'Test2';
-        $mform->addElement('select', 'template', get_string('coversheettemplate','assignment'), $templates);
-        $mform->setDefault('template', 'None');
+        $mform->addElement('select', 'template', get_string('coversheettemplate','assignment_uploadpdf'), $templates);
+        $mform->setDefault('template', $assignment_extra->template);
 
         $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
         $choices[1] = get_string('uploadnotallowed');
@@ -1389,8 +1405,6 @@ class assignment_uploadpdf extends assignment_base {
         $mform->addElement('select', 'emailteachers', get_string("emailteachers", "assignment"), $ynoptions);
         $mform->setHelpButton('emailteachers', array('emailteachers', get_string('emailteachers', 'assignment'), 'assignment'));
         $mform->setDefault('emailteachers', 0);
-
-
     }
 
     function add_instance($assignment) {
@@ -1416,16 +1430,26 @@ class assignment_uploadpdf extends assignment_base {
         unset($assignment->coversheet);
         unset($assignment->template);
 
-        $assignmentid = parent::update_instance($assignment);
+        $retval = parent::update_instance($assignment);
         
-        if ($assignmentid) {
+        if ($retval) {
+            $assignmentid = $assignment->id;
             $assignment_extra = get_record('assignment_uploadpdf', 'assignment', $assignmentid);
-            $assignment_extra->coversheet = $coversheet;
-            $assignment_extra->template = $template;
-            update_record('assignment_uploadpdf', $assignment_extra);
+            if ($assignment_extra) {
+                $assignment_extra->coversheet = $coversheet;
+                $assignment_extra->template = $template;
+                update_record('assignment_uploadpdf', $assignment_extra);
+            } else {
+                // This shouldn't happen (unless an old development version of this plugin has already been used)
+                $assignment_extra = new Object;
+                $assignment_extra->assignment = $assignmentid;
+                $assignment_extra->coversheet = $coversheet;
+                $assignment_extra->template = $template;
+                insert_record('assignment_uploadpdf', $assignment_extra);
+            }
         }
 
-        return $assignmentid;
+        return $retval;
     }
 }
 
