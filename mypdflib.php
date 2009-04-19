@@ -13,12 +13,22 @@ class MyPDFLib extends FPDI {
     var $imagefolder = null;
     var $filename = null;
 
-    function combine_pdfs($basedir, $pdf_list, $output, $comments=null) {
+    function combine_pdfs($basedir, $pdf_list, $output, $coversheet=null, $comments=null) {
 
         $this->setPrintHeader(false);
         $this->setPrintFooter(false);
 
         $totalpagecount = 0;
+        if ($coversheet) {
+            $pagecount = $this->setSourceFile($coversheet);
+            $totalpagecount += $pagecount;
+            for ($i=1; $i<=$pagecount; $i++) {
+                $template = $this->ImportPage($i);
+                $size = $this->getTemplateSize($template);
+                $this->AddPage('P', array($size['w'], $size['h']));
+                $this->useTemplate($template);
+            }
+        }
         foreach ($pdf_list as $key => $file) {
             $pagecount = $this->setSourceFile($basedir.'/'.$file);
             $totalpagecount += $pagecount;

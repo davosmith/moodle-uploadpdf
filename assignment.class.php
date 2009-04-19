@@ -643,6 +643,8 @@ class assignment_uploadpdf extends assignment_base {
         $confirmnotpdf = optional_param('confirmnotpdf', 0, PARAM_BOOL);
         $requirepdf = false;     /* FIXME - make this an option for the assignment */
 
+        /* FIXME - need to generate a list of the submitted data (for annotating the coversheet */
+
         $returnurl = 'view.php?id='.$this->cm->id;
         $submission = $this->get_submission($USER->id);
 
@@ -1095,7 +1097,17 @@ class assignment_uploadpdf extends assignment_base {
                     }
                 }
                 if (count($files) > 0) { /* Should have already checked there is at least 1 PDF */
-                    return $mypdf->combine_pdfs($filearea, $files, $destfile);
+                    $coversheet = null;
+                    $extra = get_record('assignment_uploadpdf', 'assignment', $this->assignment->id);
+                    if ($extra) {
+                        $coversheet = $CFG->dataroot.'/'.$this->course->id.'/'.$extra->coversheet;
+                        if (!file_exists($coversheet)) {
+                            // FIXME - Add a meaningful error message onto the screen at this point!
+                            $coversheet = null;
+                        }
+                    }
+                    
+                    return $mypdf->combine_pdfs($filearea, $files, $destfile, $coversheet);
                 } else {
                     return 0;
                 }
@@ -1372,7 +1384,13 @@ class assignment_uploadpdf extends assignment_base {
 
         $templates = array();
         $templates[0] = get_string('notemplate','assignment_uploadpdf');
-        $templates[] = 'Test2';
+        $templates_data = get_records('assignment_uploadpdf_template');
+        if ($templates_data) {
+            foreach ($templates_data as $td) {
+                $templates[$td->id] = $td->name;
+            }
+        }
+
         $mform->addElement('select', 'template', get_string('coversheettemplate','assignment_uploadpdf'), $templates);
         $mform->setDefault('template', $assignment_extra->template);
 
