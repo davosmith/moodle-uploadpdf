@@ -17,12 +17,40 @@ class MyPDFLib extends FPDI {
 
         $this->setPrintHeader(false);
         $this->setPrintFooter(false);
+        $this->scale = 72.0 / 100.0;
+        $this->SetFont('helvetica','', 12.0 * $this->scale);
+        $this->SetTextColor(0,0,0);
 
         $totalpagecount = 0;
         if ($coversheet) {
             $pagecount = $this->setSourceFile($coversheet);
             $totalpagecount += $pagecount;
-            for ($i=1; $i<=$pagecount; $i++) {
+            $template = $this->ImportPage(1);
+            $size = $this->getTemplateSize($template);
+            $this->AddPage('P', array($size['w'], $size['h']));
+            $this->useTemplate($template);
+            if ($comments) {
+                foreach ($comments as $c) {
+                    $x = $c->xpos * $this->scale;
+                    $y = $c->ypos * $this->scale;
+                    $width = 0;
+                    
+                    if ($c->type == 'text') {
+                        $width = $c->width * $this->scale;
+                        $text = $c->data;
+                    } elseif ($c->type == 'shorttext') {
+                        $text = $c->data;
+                    } elseif ($c->type == 'date') {
+                        $text = date($c->setting);
+                    }
+
+                    $text = str_replace('&lt;','<', $text);
+                    $text = str_replace('&gt;','>', $text);
+                    $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
+                }
+            }
+            
+            for ($i=2; $i<=$pagecount; $i++) {
                 $template = $this->ImportPage($i);
                 $size = $this->getTemplateSize($template);
                 $this->AddPage('P', array($size['w'], $size['h']));
@@ -41,7 +69,7 @@ class MyPDFLib extends FPDI {
         }
 
         $this->save_pdf($output);
-    
+
         return $totalpagecount;
     }
 
