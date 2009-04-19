@@ -8,7 +8,7 @@ function assignment_uploadpdf_upgrade($oldversion) {
         CREATE TABLE `{$CFG->prefix}assignment_uploadpdf` (
         `id` int(10) unsigned NOT NULL auto_increment,
         `assignment` int(10) unsigned NOT NULL default '0',
-        `coversheet` text NULL default '',
+        `coversheet` varchar(255) NULL default '',
         `template` int(10) unsigned NOT NULL default '0',
         PRIMARY KEY  (`id`),
         KEY `assignment` (`assignment`)
@@ -18,9 +18,24 @@ function assignment_uploadpdf_upgrade($oldversion) {
         execute_sql("
         CREATE TABLE `{$CFG->prefix}assignment_uploadpdf_template` (
         `id` int(10) unsigned NOT NULL auto_increment,
-        `name` text NOT NULL default '',
-        `config` text NOT NULL default '',
-        PRIMARY KEY (`id`)
+        `name` varchar(255) NOT NULL default '',
+        `course` int(10) NOT NULL default '0',
+        PRIMARY KEY (`id`),
+        KEY `course` (`course`)
+        );
+        ");
+
+        execute_sql("
+        CREATE TABLE `{$CFG->prefix}assignment_uploadpdf_template_item` (
+        `id` int(10) unsigned NOT NULL auto_increment,
+        `template` int(10) unsigned NOT NULL default '0',
+        `type` varchar(15) NOT NULL default 'shorttext',
+        `xpos` int(10) NOT NULL default '0',
+        `ypos` int(10) NOT NULL default '0',
+        `width` int(10) NULL default '0',
+        `setting` varchar(255) NOT NULL default '',
+        PRIMARY KEY (`id`),
+        KEY `template` (`template`)
         );
         ");
     }

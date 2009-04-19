@@ -11,7 +11,7 @@
 	<FIELD NAME="posx" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="x-position of the top-left corner of the comment (in pixels - image resolution is set to 100 pixels per inch)" PREVIOUS="assignment_submission" NEXT="posy"/>
 	<FIELD NAME="posy" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="y-position of the top-left corner of the comment (in pixels - image resolution is set to 100 pixels per inch)" PREVIOUS="posx" NEXT="width"/>
 	<FIELD NAME="width" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="120" SEQUENCE="false" ENUM="false" COMMENT="width, in pixels, of the comment box" PREVIOUS="posy" NEXT="rawtext"/>
-	<FIELD NAME="rawtext" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Raw text of the comment" PREVIOUS="width" NEXT="pageno"/>
+	<FIELD NAME="rawtext" TYPE="varchar" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Raw text of the comment" PREVIOUS="width" NEXT="pageno"/>
 	<FIELD NAME="pageno" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The page in the PDF that this comment appears on" PREVIOUS="rawtext"/>
       </FIELDS>
       <KEYS>
@@ -26,7 +26,7 @@
       <FIELDS>
 	<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="assignment"/>
 	<FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="posx"/>
-	<FIELD NAME="coversheet" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Filename of the coversheet to attach" PREVIOUS="assignment" NEXT="template"/>
+	<FIELD NAME="coversheet" TYPE="varchar" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Filename of the coversheet to attach" PREVIOUS="assignment" NEXT="template"/>
 	<FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="ID of the template to use when a student submits work with this coversheet" PREVIOUS="coversheet" />
       </FIELDS>
       <KEYS>
@@ -37,15 +37,35 @@
 	<INDEX NAME="template" UNIQUE="false" FIELDS="template" COMMENT="Used when deleting a template" PREVIOUS="assignment"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="assignment_uploadpdf_template" COMMENT="Stores the data describing a coversheet template" PREVIOUS="assignment_uploadpdf">
+    <TABLE NAME="assignment_uploadpdf_template" COMMENT="Stores the data describing a coversheet template" PREVIOUS="assignment_uploadpdf" NEXT="assignment_uploadpdf_template_item">
       <FIELDS>
 	<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="coversheet"/>
-	<FIELD NAME="name" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Name that the template is known by" PREVIOUS="id" NEXT="config"/>
-	<FIELD NAME="config" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="String defining the template layout" PREVIOUS="name"/>
+	<FIELD NAME="name" TYPE="varchar" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Name that the template is known by" PREVIOUS="id" NEXT="course"/>
+	<FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Courseid that this template belongs to (0 for global)" PREVIOUS="name"/>
       </FIELDS>
       <KEYS>
 	<KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for assignment_uploadpdf_template"/>
       </KEYS>
+      <INDEXES>
+	<INDEX NAME="course" UNIQUE="false" FIELDS="course" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="assignment_uploadpdf_template_item" COMMENT="Stores the data describing a coversheet template" PREVIOUS="assignment_uploadpdf_template">
+      <FIELDS>
+	<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="template"/>
+	<FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="type"/>
+	<FIELD NAME="type" TYPE="varchar" LENGTH="15" NOTNULL="true" SEQUENCE="false" ENUM="false"  PREVIOUS="template" NEXT="posx"/>
+	<FIELD NAME="posx" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="type" NEXT="posy"/>
+	<FIELD NAME="posy" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="posx" NEXT="width"/>
+	<FIELD NAME="width" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="posy" NEXT="setting"/>
+	<FIELD NAME="setting" TYPE="varchar" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="width"/>
+      </FIELDS>
+      <KEYS>
+	<KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for assignment_uploadpdf_template_item"/>
+      </KEYS>
+      <INDEXES>
+	<INDEX NAME="template" UNIQUE="false" FIELDS="template" />
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>
