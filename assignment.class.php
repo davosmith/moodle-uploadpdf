@@ -1362,14 +1362,18 @@ class assignment_uploadpdf extends assignment_base {
 
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
 
+        $courseid = 0;
         $assignment_extra = false;
         $update = optional_param('update', 0, PARAM_INT);
+        $add = optional_param('add', 0, PARAM_INT);
         if (!empty($update)) {
             if (! $cm = get_record("course_modules", "id", $update)) {
                 error("This course module doesn't exist");
             }
-
+            $courseid = $cm->course;
             $assignment_extra = get_record('assignment_uploadpdf', 'assignment', $cm->instance);
+        } elseif (!empty($add)) {
+            $courseid = required_param('course', PARAM_INT);
         }
 
         if (!$assignment_extra) {
@@ -1384,7 +1388,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $templates = array();
         $templates[0] = get_string('notemplate','assignment_uploadpdf');
-        $templates_data = get_records('assignment_uploadpdf_template');
+        $templates_data = get_records_sql("SELECT id, name FROM {$CFG->prefix}assignment_uploadpdf_template WHERE course = 0 OR course = {$courseid}");
         if ($templates_data) {
             foreach ($templates_data as $td) {
                 $templates[$td->id] = $td->name;
