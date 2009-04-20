@@ -6,7 +6,12 @@ $string['typeuploadpdf'] = 'Upload PDF';
 $string['coversheet'] = 'Coversheet';
 $string['coversheettemplate'] = 'Template';
 $string['notemplate'] = 'None';
+$string['edittemplate'] = 'Edit Templates';
+$string['edittemplatetip'] = 'Edit Templates';
+$string['choosetemplate'] = 'Choose a template to edit';
+$string['newtemplate'] = 'New...';
 $string['coversheetnotpdf'] = 'Coversheet must be a PDF (or blank)';
+
 
 //Teacher marking
 $string['annotatesubmission'] = 'Annotate Submission';

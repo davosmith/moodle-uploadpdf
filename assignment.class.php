@@ -1457,6 +1457,10 @@ class assignment_uploadpdf extends assignment_base {
         $mform->addElement('select', 'template', get_string('coversheettemplate','assignment_uploadpdf'), $templates);
         $mform->setDefault('template', $assignment_extra->template);
 
+        $edittemplate = $mform->addElement('button', 'edittemplate', get_string('edittemplate', 'assignment_uploadpdf').'...');
+        $buttonattributes = array('title'=>get_string('edittemplatetip', 'assignment_uploadpdf'), 'onclick'=>"return window.open('$CFG->wwwroot/mod/assignment/type/uploadpdf/edittemplates.php?courseid=$courseid', 'edittemplates', 'menubar=0,location=0,directories=0,toolbar=0,scrollbars,resizable,width=800,height=600');");
+        $edittemplate->updateAttributes($buttonattributes);
+
         $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
         $choices[1] = get_string('uploadnotallowed');
         $choices[0] = get_string('courseuploadlimit') . ' ('.display_size($COURSE->maxbytes).')';
