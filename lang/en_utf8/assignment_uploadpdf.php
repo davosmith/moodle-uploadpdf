@@ -2,6 +2,29 @@
 
 $string['typeuploadpdf'] = 'Upload PDF';
 
+//Configuration
+$string['coversheet'] = 'Coversheet';
+$string['coversheettemplate'] = 'Template';
+$string['notemplate'] = 'None';
+$string['edittemplate'] = 'Edit Templates';
+$string['edittemplatetip'] = 'Edit Templates';
+$string['choosetemplate'] = 'Choose a template to edit';
+$string['newtemplate'] = 'New Template...';
+$string['coversheetnotpdf'] = 'Coversheet must be a PDF (or blank)';
+
+//Editing template
+$string['select'] = 'Select';
+$string['templateusecount'] = 'Warning: this template is currently used by $a assignment(s) - be careful when making changes';
+$string['templatenotused'] = 'This template is not currently being used';
+$string['templatename'] = 'Template name';
+$string['sitetemplate'] = 'Whole site template';
+$string['sitetemplatehelp'] = '(uncheck to limit template to just this course)';
+$string['savetemplate'] = 'Save template';
+$string['deletetemplate'] = 'Delete template';
+$string['chooseitem'] = 'Choose an item to edit';
+$string['newitem'] = 'New Item...';
+$string['itemdate'] = 'Date';
+
 //Teacher marking
 $string['annotatesubmission'] = 'Annotate Submission';
 $string['draftsaved'] = 'Draft Saved';
@@ -22,5 +45,7 @@ $string['filenotpdf'] = 'The file \'%s\' is not a PDF - you must resubmit it in 
 $string['nopdf'] = 'None of the files submitted are PDFs, you must submit at least one file in that format';
 $string['filenotpdf_continue'] = 'The file \'%s\' is not a PDF - are you sure you want to continue?';
 $string['createsubmissionfailed'] = 'Unable to create submission PDF';
+$string['heading_templatedatamissing'] = 'Coversheet information not filled in';
+$string['templatedatamissing'] = 'You need to fill in all the requested details to create a coversheet for this assignment';
 
 ?>

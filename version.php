@@ -1,9 +1,10 @@
 <?php
 
-$submodule->version  = 2009041200;
-$submodule->requires = 2007020200;
-
-$plugin->version = 2009041200;
+$plugin->version = 2009041700;
 $plugin->requires = 2007020200;
+
+$submodule->version  = $plugin->version;
+$submodule->requires = $plugin->requires;
+
 
 ?>

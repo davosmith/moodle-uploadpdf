@@ -39,3 +39,5 @@
 require('assignment.class.php');
 $assignmentinstance = new assignment_uploadpdf($cm->id, $assignment, $cm, $course);
 $assignmentinstance->edit_comment_page($userid, $pageno);
+
+?>
