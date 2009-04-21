@@ -15,15 +15,32 @@ $string['coversheetnotpdf'] = 'Coversheet must be a PDF (or blank)';
 //Editing template
 $string['select'] = 'Select';
 $string['templateusecount'] = 'Warning: this template is currently used by $a assignment(s) - be careful when making changes';
+$string['showwhereused'] = 'Show';
+$string['showused'] = 'This template is used in the following assignments';
 $string['templatenotused'] = 'This template is not currently being used';
+$string['cannotedit'] = 'Only administrators can edit site templates';
 $string['templatename'] = 'Template name';
 $string['sitetemplate'] = 'Whole site template';
-$string['sitetemplatehelp'] = '(uncheck to limit template to just this course)';
+$string['sitetemplatehelp'] = '(only an administrator can edit this setting)';
 $string['savetemplate'] = 'Save template';
 $string['deletetemplate'] = 'Delete template';
 $string['chooseitem'] = 'Choose an item to edit';
 $string['newitem'] = 'New Item...';
+$string['itemtype'] = 'Item type';
 $string['itemdate'] = 'Date';
+$string['itemtext'] = 'Text';
+$string['itemshorttext'] = 'Short Text';
+$string['itemx'] = 'X Position (pixels)';
+$string['itemy'] = 'Y Position (pixels)';
+$string['itemwidth'] = 'Width (pixels)';
+$string['textonly'] = "(only 'Text' items)";
+$string['itemsetting'] = 'Value';
+$string['itemsettingmore'] = 'name of the field (for text fields) or date format (e.g. d/m/Y)';
+$string['dateformatlink'] = 'Date Format help';
+$string['saveitem'] = 'Save item';
+$string['deleteitem'] = 'Delete item';
+$string['previewinstructions'] = 'Please upload a coversheet (PDF) to help preview this template';
+$string['uploadpreview'] = 'Upload';
 
 //Teacher marking
 $string['annotatesubmission'] = 'Annotate Submission';
