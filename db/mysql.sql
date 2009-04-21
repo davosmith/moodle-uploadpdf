@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_comment` (
   `width` int(10) NOT NULL default '0',
   `rawtext` varchar(255) NOT NULL default '',
   `pageno` int(10) NOT NULL default '0',
+  `colour` varchar(10) NULL default 'yellow',
   PRIMARY KEY  (`id`),
   KEY `assignment_submission` (`assignment_submission`)
 ) ; 
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf` (
   `assignment` int(10) unsigned NOT NULL default '0',
   `coversheet` varchar(255) NULL default '',
   `template` int(10) unsigned NOT NULL default '0',
+  `onlypdf` int(2) unsigned NULL default '1',
   PRIMARY KEY  (`id`),
   KEY `assignment` (`assignment`)
 ) ; 

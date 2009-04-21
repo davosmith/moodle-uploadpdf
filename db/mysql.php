@@ -10,6 +10,7 @@ function assignment_uploadpdf_upgrade($oldversion) {
         `assignment` int(10) unsigned NOT NULL default '0',
         `coversheet` varchar(255) NULL default '',
         `template` int(10) unsigned NOT NULL default '0',
+        `onlypdf` int(2) unsigned NULL default '1',
         PRIMARY KEY  (`id`),
         KEY `assignment` (`assignment`)
         );
@@ -37,6 +38,10 @@ function assignment_uploadpdf_upgrade($oldversion) {
         PRIMARY KEY (`id`),
         KEY `template` (`template`)
         );
+        ");
+
+        execute_sql("
+        ALTER TABLE `{$CFG->prefix}assignment_uploadpdf_comment` ADD `colour` varchar(10) NULL default 'yellow';
         ");
     }
 

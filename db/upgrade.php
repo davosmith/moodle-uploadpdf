@@ -38,6 +38,11 @@ function xmldb_assignment_uploadpdf_upgrade($oldversion=0) {
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('template', XMLDB_INDEX_NOTUNIQUE, array('template'));
         $result = $result && create_table($table);
+
+        $table = new XMLDBTable('assignment_uploadpdf_comment');
+        $field = new XMLDBField('colour');
+        $field->setAttributes(XMLDB_TYPE_CHAR, '10', null, XMLDB_NULL, null, null, null, null, 'yellow');
+        $result = $result && add_field($table, $field);
     }
 
     return $result;
