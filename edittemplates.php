@@ -15,10 +15,12 @@ if (! $course = get_record("course", "id", $courseid)) {
 
 require_login($course->id, false);
 
-require_capability('mod/assignment:grade', get_context_instance(CONTEXT_COURSE, $course->id));
+require_capability('moodle/course:manageactivities', get_context_instance(CONTEXT_COURSE, $course->id));
+$caneditsite = has_capability('moodle/site:config', get_context_instance(CONTEXT_SITE));
 
 if ($savetemplate) {
     if ($templateid != 0) {
+
         if ($templateid == -1) {
             $template = new Object;
         } else {
@@ -26,9 +28,13 @@ if ($savetemplate) {
             if (!$template) {
                 error("Template not found");
             }
+            if (($template->course == 0) && (!$caneditsite)) {
+                error("No permission to edit site templates");
+            }
         }
         $template->name = required_param('templatename', PARAM_TEXT);
-        if (optional_param('sitetemplate', false, PARAM_BOOL)) {
+
+        if (optional_param('sitetemplate', false, PARAM_BOOL) && $caneditsite) {
             $template->course = 0;
         } else {
             $template->course = $courseid;
@@ -43,6 +49,10 @@ if ($savetemplate) {
 } elseif ($deletetemplate) {
     $uses = count_records('assignment_uploadpdf','template', $templateid);
     if ($uses == 0) {
+        $template = get_record('assignment_uploadpdf_template','id',$templateid);
+        if ($template && $template->course == 0 && !$caneditsite) {
+            error("No permission to edit site templates");
+        }
         delete_records('assignment_uploadpdf_template_items','template',$templateid);
         delete_records('assignment_uploadpdf_template','id', $templateid);
         $templateid = 0;
@@ -56,7 +66,7 @@ show_select_template($course->id, $hidden, $templateid);
 
 if ($templateid != 0) {
     $hidden .= '<input type="hidden" name="templateid" value="'.$templateid.'" />';
-    show_template_edit_form($templateid, $itemid, $hidden);
+    show_template_edit_form($templateid, $itemid, $hidden, $caneditsite);
 }
 
 if ($itemid != 0) {
@@ -100,9 +110,7 @@ function show_select_template($courseid, $hidden, $templateid = 0) {
     echo '</form>';
 }
 
-function show_template_edit_form($templateid, $itemid, $hidden) {
-    // FIXME restrict editing of template to those with suitable site/course permissions
-
+function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
     echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';
     $uses = count_records('assignment_uploadpdf','template', $templateid);
@@ -120,12 +128,12 @@ function show_template_edit_form($templateid, $itemid, $hidden) {
         $templatename = $template->name;
         if ($template->course == 0) {
             $sitetemplate = ' checked="checked" ';
-            if (0 /* has no suitable permissions to edit site templates */) {
+            if (!$caneditsite) {
                 $editdisabled = ' disabled="disabled" ';
             }
         }
     }
-    if (0 /*has no suitable permissions to edit site templates */) {
+    if (!$caneditsite) {
         $sitetemplate .= ' disabled="disabled" ';
     } 
     echo '<label for="templatename">'.get_string('templatename', 'assignment_uploadpdf').': </label>';
