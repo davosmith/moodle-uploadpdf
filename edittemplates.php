@@ -61,17 +61,15 @@ if ($templateid != 0) {
 
 if ($itemid != 0) {
     $hidden .= '<input type="hidden" name="itemid" value="'.$itemid.'" />';
-    show_item_form($itemid, $hidden);
+    show_item_form($itemid, $hidden, $canedit);
 }
 
 print_footer($course);
 
 // Form to:
-// Give template a name
 // For each item in template (type, x, y, width (only text), setting
 // Upload a PDF to act as the background whilst editing the template
 // (Put this file in $CFG->dataroot/$courseid/moddate/assignment/template
-
 
 function show_select_template($courseid, $hidden, $templateid = 0) {
     global $CFG;
@@ -103,6 +101,8 @@ function show_select_template($courseid, $hidden, $templateid = 0) {
 }
 
 function show_template_edit_form($templateid, $itemid, $hidden) {
+    // FIXME restrict editing of template to those with suitable site/course permissions
+
     echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';
     $uses = count_records('assignment_uploadpdf','template', $templateid);
@@ -113,20 +113,29 @@ function show_template_edit_form($templateid, $itemid, $hidden) {
     }
     echo $hidden;
     $templatename = '';
-    $sitetemplate = ' checked="checked" ';
+    $sitetemplate = '';
+    $editdisabled = '';
     $template = get_record('assignment_uploadpdf_template','id', $templateid);
     if ($template) {
         $templatename = $template->name;
-        $sitetemplate = ($template->course == 0) ? ' checked="checked" ' : '';
+        if ($template->course == 0) {
+            $sitetemplate = ' checked="checked" ';
+            if (0 /* has no suitable permissions to edit site templates */) {
+                $editdisabled = ' disabled="disabled" ';
+            }
+        }
     }
+    if (0 /*has no suitable permissions to edit site templates */) {
+        $sitetemplate .= ' disabled="disabled" ';
+    } 
     echo '<label for="templatename">'.get_string('templatename', 'assignment_uploadpdf').': </label>';
-    echo '<input type="text" name="templatename" value="'.$templatename.'" /><br />';
+    echo '<input type="text" name="templatename" value="'.$templatename.'"'.$editddisabled.' /><br />';
     echo '<input type="checkbox" name="sitetemplate"'.$sitetemplate.' >'.get_string('sitetemplate', 'assignment_uploadpdf').' </input>';
     echo get_string('sitetemplatehelp','assignment_uploadpdf');
     echo '<br /><br />';
-    echo '<input type="submit" name="savetemplate" value="'.get_string('savetemplate','assignment_uploadpdf').'" />';
+    echo '<input type="submit" name="savetemplate" value="'.get_string('savetemplate','assignment_uploadpdf').'"'.$editdisabled.' />';
     if (($templateid > 0) && ($uses == 0)) {
-        $deletedisabled = '';
+        $deletedisabled = $editdisabled;
     } else {
         $deletedisabled = ' disabled="disabled" ';
     }
@@ -165,12 +174,15 @@ function show_template_edit_form($templateid, $itemid, $hidden) {
         }
         echo '<input type="submit" name="selectitem" value="'.get_string('select','assignment_uploadpdf').'" />';
     }
+    
     echo '</fieldset>';
     echo '</form>';
 }
 
-function show_item_form($itemid, $hidden) {
-    
+function show_item_form($itemid, $hidden, $canedit=true) {
+    // Remember to check if it can be edited
+    // Yes if course template
+    // yes if site template and have site edit permissions
 }
 
 ?>
