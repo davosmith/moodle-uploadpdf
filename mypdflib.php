@@ -111,19 +111,39 @@ class MyPDFLib extends FPDI {
         while ($this->copy_page());
     }
   
-    public function add_comment($text, $x, $y, $width) { /* Add a comment to the current page */
+    public function add_comment($text, $x, $y, $width, $colour='yellow') { /* Add a comment to the current page */
         if (!$this->filename) {
             return false;
         }
+        switch($colour) {
+        case 'red':
+            $this->SetFillColor(255, 176, 176);
+            break;
+        case 'green':
+            $this->SetFillColor(176, 255, 176);
+            break;
+        case 'blue':
+            $this->SetFillColor(208, 208, 255);
+            break;
+        case 'white':
+            $this->SetFillColor(255, 255, 255);
+            break;
+        default:                /* Yellow */
+            $this->SetFillColor(255, 255, 176);
+            break;
+        }
+        
         $x *= $this->scale;
         $y *= $this->scale;
         $width *= $this->scale;
         $text = str_replace('&lt;','<', $text);
         $text = str_replace('&gt;','>', $text);
         $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
-        $newy = $this->GetY();
-        $this->Rect($x, $y, $width, $newy-$y, 'DF');
-        $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
+        if ($colour != 'clear') {
+            $newy = $this->GetY();
+            $this->Rect($x, $y, $width, $newy-$y, 'DF');
+            $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
+        }
         return true;
     }
   

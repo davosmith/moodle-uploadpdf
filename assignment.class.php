@@ -1202,7 +1202,7 @@ class assignment_uploadpdf extends assignment_base {
                         return false;
                     }
                 }
-                $mypdf->add_comment($comment->rawtext, $comment->posx, $comment->posy, $comment->width);
+                $mypdf->add_comment($comment->rawtext, $comment->posx, $comment->posy, $comment->width, $comment->colour);
             }
         }
         
