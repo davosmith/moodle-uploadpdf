@@ -15,6 +15,7 @@ class MyPDFLib extends FPDI {
 
     function combine_pdfs($basedir, $pdf_list, $output, $coversheet=null, $comments=null) {
 
+        $this->setPageUnit('pt');
         $this->setPrintHeader(false);
         $this->setPrintFooter(false);
         $this->scale = 72.0 / 100.0;
@@ -34,7 +35,7 @@ class MyPDFLib extends FPDI {
                     $x = $c->xpos * $this->scale;
                     $y = $c->ypos * $this->scale;
                     $width = 0;
-                    
+
                     if ($c->type == 'text') {
                         $width = $c->width * $this->scale;
                         $text = $c->data;
