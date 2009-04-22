@@ -1271,7 +1271,8 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
-
+        list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
+  
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
@@ -1282,13 +1283,13 @@ class assignment_uploadpdf extends assignment_base {
         echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
         echo '<input type="hidden" name="userid" value="'.$userid.'" />';
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-        echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment_uploadpdf').'" />';
-        echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment_uploadpdf').'" />';
-        echo '</form>';
+        echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment_uploadpdf').'" /> ';
+        echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment_uploadpdf').'" /> ';
 		$pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
 		echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a>';
+        echo '</form>';
 		echo '</div>';
-		echo '<div style="float: left;" id="pageselector">';
+		echo '<div style="float: left; margin-top: 5px; margin-right: 10px;" id="pageselector">';
 
         if ($pageno > 1) {
             echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'">&lt;--Prev</a> ';
@@ -1313,16 +1314,18 @@ class assignment_uploadpdf extends assignment_base {
             echo 'Next--&gt;';
         }
 		echo '</div><div id="colourselector">';
+        echo ' '.get_string('commentcolour','assignment_uploadpdf').': ';
 		echo '<select id="choosecolour" name="choosecolour">';
-		echo '<option value="yellow" selected="selected">'.get_string('colouryellow','assignment_uploadpdf').'</option>';
 		echo '<option value="red">'.get_string('colourred','assignment_uploadpdf').'</option>';
+		echo '<option value="yellow" selected="selected">'.get_string('colouryellow','assignment_uploadpdf').'</option>';
 		echo '<option value="green">'.get_string('colourgreen','assignment_uploadpdf').'</option>';
 		echo '<option value="blue">'.get_string('colourblue','assignment_uploadpdf').'</option>';
 		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
 		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
 		echo '</select></div>';
         
-        echo '<div style="clear: all;"><div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
+        echo '<div style="clear: all; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
+        echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
 

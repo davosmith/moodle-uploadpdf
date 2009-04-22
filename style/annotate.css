@@ -1,13 +1,35 @@
 .comment {
     position: absolute;
-    border-width: 1px;
-    border-color: black;
-    border-style: solid;
-    background-color: #ffffb0;
+    border: black 1px solid;
     font-family: helvetica, arial, sans;
     font-size: 12px;
     cursor: move;
     width: 120px;
+}
+
+.commentyellow {
+    background-color: #ffffb0;
+}
+
+.commentred {
+    background-color: #ffb0b0;
+}
+
+.commentgreen {
+    background-color: #b0ffb0;
+}
+
+.commentblue {
+    background-color: #d0d0ff;
+}
+
+.commentwhite {
+    background-color: #ffffff;
+}
+
+.commentclear {
+    background-color: transparent;
+    border-style: none;
 }
 
 .comment textarea {

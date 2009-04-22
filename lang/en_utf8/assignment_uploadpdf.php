@@ -52,6 +52,14 @@ $string['errorgenerateimage'] = 'Unable to generate image from PDF - check ghost
 $string['savedraft'] = 'Save Draft and Close';
 $string['generateresponse'] = 'Generate Response';
 $string['downloadoriginal'] = 'Download original submission PDF';
+$string['commentcolour'] = 'Background colour for comment';
+$string['colourred'] = 'Red';
+$string['colouryellow'] = 'Yellow';
+$string['colourgreen'] = 'Green';
+$string['colourblue'] = 'Blue';
+$string['colourwhite'] = 'White';
+$string['colourclear'] = 'Clear';
+
 
 $string['servercommfailed'] = 'Server communication failed - Click OK to try again';
 $string['errormessage'] = 'Error message: ';
