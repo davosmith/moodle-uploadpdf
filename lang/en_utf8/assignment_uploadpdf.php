@@ -22,6 +22,7 @@ $string['errorloadingpdf'] = 'Error loading submitted PDF';
 $string['errorgenerateimage'] = 'Unable to generate image from PDF - check ghostscript is installed and this module has been configured to use it (see README.txt for more details)';
 $string['savedraft'] = 'Save Draft and Close';
 $string['generateresponse'] = 'Generate Response';
+$string['downloadoriginal'] = 'Download original submission PDF';
 
 $string['servercommfailed'] = 'Server communication failed - Click OK to try again';
 $string['errormessage'] = 'Error message: ';

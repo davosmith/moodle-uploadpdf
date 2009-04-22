@@ -1278,13 +1278,17 @@ class assignment_uploadpdf extends assignment_base {
         
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
 
-        echo '<div><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post">';
+        echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post">';
         echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
         echo '<input type="hidden" name="userid" value="'.$userid.'" />';
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
         echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment_uploadpdf').'" />';
         echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment_uploadpdf').'" />';
-        echo '</form></div>';
+        echo '</form>';
+		$pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
+		echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a>';
+		echo '</div>';
+		echo '<div style="float: left;" id="pageselector">';
 
         if ($pageno > 1) {
             echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'">&lt;--Prev</a> ';
@@ -1308,6 +1312,15 @@ class assignment_uploadpdf extends assignment_base {
         } else {
             echo 'Next--&gt;';
         }
+		echo '</div><div id="colourselector">';
+		echo '<select id="choosecolour" name="choosecolour">';
+		echo '<option value="yellow" selected="selected">'.get_string('colouryellow','assignment_uploadpdf').'</option>';
+		echo '<option value="red">'.get_string('colourred','assignment_uploadpdf').'</option>';
+		echo '<option value="green">'.get_string('colourgreen','assignment_uploadpdf').'</option>';
+		echo '<option value="blue">'.get_string('colourblue','assignment_uploadpdf').'</option>';
+		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
+		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
+		echo '</select></div>';
         
         echo '<div style="clear: all;"><div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
@@ -1356,6 +1369,7 @@ class assignment_uploadpdf extends assignment_base {
             $comment->posy = optional_param('comment_position_y', -1, PARAM_INT);
             $comment->width = optional_param('comment_width', -1, PARAM_INT);
             $comment->rawtext = optional_param('comment_text', null, PARAM_TEXT);
+			$comment->colour = optional_param('comment_colour', null, PARAM_TEXT);
             $comment->pageno = $pageno;
 
             if (($comment->posx < 0) || ($comment->posy < 0) || ($comment->width < 0) || ($comment->rawtext === null)) {
@@ -1390,6 +1404,7 @@ class assignment_uploadpdf extends assignment_base {
                     $respcomment['text'] = $comment->rawtext;
                     $respcomment['width'] = $comment->width;
                     $respcomment['position'] = array('x'=> $comment->posx, 'y'=> $comment->posy);
+					$respcomment['colour'] = $comment->colour;
                     $respcomments[] = $respcomment;
                 }
             }

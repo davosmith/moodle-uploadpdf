@@ -63,6 +63,7 @@ var ServerComm = new Class({
 			comment_width: comment.getStyle('width'),
 			comment_text: comment.retrieve('rawtext'),
     		        comment_id: comment.retrieve('id'),
+			comment_colour: comment.retrieve('colour'),
 			id: this.id,
 			userid: this.userid,
 			pageno: this.pageno,
@@ -112,7 +113,7 @@ var ServerComm = new Class({
 			if (resp.error == 0) {
 			    waitel.destroy();
 			    resp.comments.each(function(comment) {
-				    cb = makecommentbox(comment.position, comment.text);
+				    cb = makecommentbox(comment.position, comment.text, comment.colour);
 				    if (Browser.Engine.trident) {
 					// Does not work with FF & Moodle
 					cb.setStyle('width',comment.width);
@@ -217,12 +218,17 @@ function makeeditbox(comment, content) {
     comment.retrieve('drag').detach(); // No dragging whilst editing (it messes up the text selection)
 }
 
-function makecommentbox(position, content) {
+function makecommentbox(position, content, colour) {
     // Create the comment box
     newcomment = new Element('div');
     $('pdfholder').adopt(newcomment);
 
-    newcomment.set('class', 'comment');
+	if ($defined(colour)) {
+		setcolourclass(colour, newcomment);
+	} else {
+		setcolourclass(getcurrentcolour(), newcomment);
+	}
+    //newcomment.set('class', 'comment');
     if (Browser.Engine.trident) {
 	// Does not work with FF & Moodle
 	newcomment.setStyles({ left: position.x, top: position.y });
@@ -276,9 +282,9 @@ function makecommentbox(position, content) {
 
     // Add the edit box to it
     if ($defined(content)) {
-	setcommentcontent(newcomment, content);
+		setcommentcontent(newcomment, content);
     } else {
-	makeeditbox(newcomment);
+		makeeditbox(newcomment);
     }
 
     return newcomment;
@@ -310,6 +316,7 @@ function editcomment(el) {
     currentcomment.adopt(resizehandle);
     var content = currentcomment.retrieve('rawtext');
     makeeditbox(currentcomment, content);
+	setcurrentcolour(currentcomment.retrieve('colour'));
 }
 
 function typingcomment(e) {
@@ -319,11 +326,58 @@ function typingcomment(e) {
     }
 }
 
+function getcurrentcolour() {
+	var el = $('choosecolour');
+	var idx = el.selectedIndex;
+	return el[idx].value;
+}
+
+function setcurrentcolour(colour) {
+	var el = $('choosecolour');
+	var i;
+	for (i=0; i<el.length; i++) {
+		if (el[i].value == colour) {
+			el.selectedIndex = i;
+			return;
+		}
+	}
+}
+
+function setcolourclass(colour, comment) {
+	if (comment) {
+		if (colour == 'red') {
+			comment.set('class','commentred');
+		} else if (colour == 'green') {
+			comment.set('class','commentgreen');
+		} else if (colour == 'blue') {
+			comment.set('class','commentblue');
+		} else if (colour == 'white') {
+			comment.set('class','commentwhite');
+		} else if (colour == 'clear') {
+			comment.set('class','commentclear');
+		} else {
+			// Default: yellow comment box
+			comment.set('class','comment');
+			colour = 'yellow';
+		}
+
+		comment.store('colour', colour);
+	}
+}
+
+function changecolour(e) {
+	alert("New colour"+getcurrentcolour());
+	if (currentcomment) {
+		setcurrentcolourclass(getcurrentcolour(), currentcomment);
+    }
+}
+
 function startjs() {
     	new Asset.css('style/annotate.css');
     	server = new ServerComm(server_config);
     	server.getcomments();
     	$('pdfimg').addEvent('click', addcomment);
+		$('choosecolour').addEvent('change', changecolour);
 }    
 
 
