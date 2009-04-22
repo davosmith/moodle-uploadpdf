@@ -1,50 +1,48 @@
 <?php
 
 function assignment_uploadpdf_upgrade($oldversion) {
-    global $CFG;
+    global $CFG, $THEME, $db;
 
-    if ($oldversion < 2009041700) {
-        execute_sql("
-        CREATE TABLE `{$CFG->prefix}assignment_uploadpdf` (
-        `id` int(10) unsigned NOT NULL auto_increment,
-        `assignment` int(10) unsigned NOT NULL default '0',
-        `coversheet` varchar(255) NULL default '',
-        `template` int(10) unsigned NOT NULL default '0',
-        `onlypdf` int(2) unsigned NULL default '1',
-        PRIMARY KEY  (`id`),
-        KEY `assignment` (`assignment`)
-        );
-        ");
-        
-        execute_sql("
-        CREATE TABLE `{$CFG->prefix}assignment_uploadpdf_template` (
-        `id` int(10) unsigned NOT NULL auto_increment,
-        `name` varchar(255) NOT NULL default '',
-        `course` int(10) NOT NULL default '0',
-        PRIMARY KEY (`id`),
-        KEY `course` (`course`)
-        );
-        ");
+    $result = true;
 
-        execute_sql("
-        CREATE TABLE `{$CFG->prefix}assignment_uploadpdf_template_item` (
-        `id` int(10) unsigned NOT NULL auto_increment,
-        `template` int(10) unsigned NOT NULL default '0',
-        `type` varchar(15) NOT NULL default 'shorttext',
-        `xpos` int(10) NOT NULL default '0',
-        `ypos` int(10) NOT NULL default '0',
-        `width` int(10) NULL default '0',
-        `setting` varchar(255) NOT NULL default '',
-        PRIMARY KEY (`id`),
-        KEY `template` (`template`)
-        );
-        ");
+    if ($result && $oldversion < 2009041700) {
+        $table =  new XMLDBTable('assignment_uploadpdf');
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
+        $table->addFieldInfo('assignment', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('coversheet', XMLDB_TYPE_CHAR, '255', null, null, null, null, null, '');
+        $table->addFieldInfo('template', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('onlypdf', XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, null, null, null, null, '1');
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->addIndexInfo('assignment', XMLDB_INDEX_UNIQUE, array('assignment'));
+        $table->addIndexInfo('template', XMLDB_INDEX_NOTUNIQUE, array('template'));
+        $result = $result && create_table($table);
 
-        execute_sql("
-        ALTER TABLE `{$CFG->prefix}assignment_uploadpdf_comment` ADD `colour` varchar(10) NULL default 'yellow';
-        ");
+        $table =  new XMLDBTable('assignment_uploadpdf_template');
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
+        $table->addFieldInfo('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, null, '');
+        $table->addFieldInfo('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->addIndexInfo('course', XMLDB_INDEX_NOTUNIQUE, array('course'));
+        $result = $result && create_table($table);
+
+        $table =  new XMLDBTable('assignment_uploadpdf_template_item');
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
+        $table->addFieldInfo('template', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('type', XMLDB_TYPE_CHAR, '15', null, XMLDB_NOTNULL, null, null, null, 'shorttext');
+        $table->addFieldInfo('xpos', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('ypos', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('width', XMLDB_TYPE_INTEGER, '10', null, null, null, null, null, '0');
+        $table->addFieldInfo('setting', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, null, '');
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->addIndexInfo('template', XMLDB_INDEX_NOTUNIQUE, array('template'));
+        $result = $result && create_table($table);
+
+        $table = new XMLDBTable('assignment_uploadpdf_comment');
+        $field = new XMLDBField('colour');
+        $field->setAttributes(XMLDB_TYPE_CHAR, '10', null, null, null, null, null, 'yellow', null);
+        $result = $result && add_field($table, $field);
     }
 
-    return true;
+    return $result;
 }
 ?>
