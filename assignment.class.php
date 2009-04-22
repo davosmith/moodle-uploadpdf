@@ -667,7 +667,6 @@ class assignment_uploadpdf extends assignment_base {
 
         $confirm = optional_param('confirm', 0, PARAM_BOOL);
         $confirmnotpdf = optional_param('confirmnotpdf', 0, PARAM_BOOL);
-        $requirepdf = false;     /* FIXME - make this an option for the assignment */
 
         $returnurl = 'view.php?id='.$this->cm->id;
         $submission = $this->get_submission($USER->id);
@@ -709,8 +708,8 @@ class assignment_uploadpdf extends assignment_base {
             if (!$confirmnotpdf) {
                 $this->view_header();
                 print_heading(get_string('nonpdfheading', 'assignment_uploadpdf'));
-                if ($requirepdf) {
-                    notify(sprintf(get_string('filenotpdf', 'assignment_uploadpdf'), $file));
+                if ($extra && $extra->onlypdf) {
+                    notify(get_string('filenotpdf', 'assignment_uploadpdf', $file));
                     print_continue($returnurl);
                 } else {
                     if ($this->get_pdf_count($USER->id) < 1) {
@@ -718,7 +717,7 @@ class assignment_uploadpdf extends assignment_base {
                         print_continue($returnurl);
                     } else {
                         $optionsyes['confirmnotpdf'] = 1;
-                        notice_yesno(sprintf(get_string('filenotpdf_continue', 'assignment_uploadpdf'),$file), 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get');
+                        notice_yesno(get_string('filenotpdf_continue', 'assignment_uploadpdf', $file), 'upload.php', 'view.php', $optionsyes, $optionsno, 'post', 'get');
                     }
                 }
                 $this->view_footer();
@@ -1457,6 +1456,7 @@ class assignment_uploadpdf extends assignment_base {
             $assignment_extra = new Object;
             $assignment_extra->template = 0;
             $assignment_extra->coversheet = '';
+            $assignment_extra->onlypdf = 1;
         }
 
         $mform->addElement('choosecoursefile', 'coversheet', get_string('coversheet','assignment_uploadpdf'));
@@ -1484,6 +1484,9 @@ class assignment_uploadpdf extends assignment_base {
         $choices[0] = get_string('courseuploadlimit') . ' ('.display_size($COURSE->maxbytes).')';
         $mform->addElement('select', 'maxbytes', get_string('maximumsize', 'assignment'), $choices);
         $mform->setDefault('maxbytes', $CFG->assignment_maxbytes);
+
+        $mform->addElement('select', 'onlypdf', get_string('onlypdf', 'assignment_uploadpdf'), $ynoptions);
+        $mform->setDefault('onlypdf', $assignment_extra->onlypdf);
 
         $mform->addElement('select', 'resubmit', get_string("allowdeleting", "assignment"), $ynoptions);
         $mform->setHelpButton('resubmit', array('allowdeleting', get_string('allowdeleting', 'assignment'), 'assignment'));
@@ -1514,8 +1517,10 @@ class assignment_uploadpdf extends assignment_base {
         $assignment_extra = new Object();
         $assignment_extra->coversheet = $assignment->coversheet; // FIXME: This should be sanitised and checked it is a PDF
         $assignment_extra->template = $assignment->template;
+        $assignment_extra->onlypdf = $assignment->onlypdf;
         unset($assignment->coversheet);
         unset($assignment->template);
+        unset($assignment->onlypdf);
 
         $newid = parent::add_instance($assignment);
 
@@ -1530,8 +1535,10 @@ class assignment_uploadpdf extends assignment_base {
     function update_instance($assignment) {
         $coversheet = $assignment->coversheet; // FIXME - this should be sanitised and checked that it is a PDF
         $template = $assignment->template;
+        $onlypdf = $assignment->onlypdf;
         unset($assignment->coversheet);
         unset($assignment->template);
+        unset($assignment->onlypdf);
 
         $retval = parent::update_instance($assignment);
         
@@ -1541,6 +1548,7 @@ class assignment_uploadpdf extends assignment_base {
             if ($assignment_extra) {
                 $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
+                $assignment_extra->onlypdf = $onlypdf;
                 update_record('assignment_uploadpdf', $assignment_extra);
             } else {
                 // This shouldn't happen (unless an old development version of this plugin has already been used)
@@ -1548,6 +1556,7 @@ class assignment_uploadpdf extends assignment_base {
                 $assignment_extra->assignment = $assignmentid;
                 $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
+                $assignment_extra->onlypdf = $onlypdf;
                 insert_record('assignment_uploadpdf', $assignment_extra);
             }
         }
