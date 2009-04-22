@@ -9,9 +9,21 @@ $string['notemplate'] = 'None';
 $string['edittemplate'] = 'Edit Templates';
 $string['edittemplatetip'] = 'Edit Templates';
 $string['choosetemplate'] = 'Choose a template to edit';
-$string['newtemplate'] = 'New...';
+$string['newtemplate'] = 'New Template...';
 $string['coversheetnotpdf'] = 'Coversheet must be a PDF (or blank)';
 
+//Editing template
+$string['select'] = 'Select';
+$string['templateusecount'] = 'Warning: this template is currently used by $a assignment(s) - be careful when making changes';
+$string['templatenotused'] = 'This template is not currently being used';
+$string['templatename'] = 'Template name';
+$string['sitetemplate'] = 'Whole site template';
+$string['sitetemplatehelp'] = '(uncheck to limit template to just this course)';
+$string['savetemplate'] = 'Save template';
+$string['deletetemplate'] = 'Delete template';
+$string['chooseitem'] = 'Choose an item to edit';
+$string['newitem'] = 'New Item...';
+$string['itemdate'] = 'Date';
 
 //Teacher marking
 $string['annotatesubmission'] = 'Annotate Submission';
