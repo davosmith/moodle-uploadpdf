@@ -37,12 +37,27 @@ tested with IIS (but that should happen in a few weeks time).
 * Add a new activity of the type 'Upload PDF' to a course. (This may
   well show up as '[[typeuploadpdf]]' see 'Known Issues', below).
 
-* Configure all the usual settings (unchanged from 'Advanced Uploading
-  of Files').
+* Configure all the usual settings - you should be aware of the
+  following additions: 
 
+  Coversheet - this is a PDF that will be automatically prepended to
+  the start of any files submitted by your students
+
+  Template - before submission your students can be (optionally) asked
+  to fill in some text fields, the template is used to add these
+  entries to the coversheet
+
+  Edit Templates... - see section below 
+
+  All files must be PDFs - set to 'No', if you want to collect in some
+  supporting documents, which could not be marked as PDFs (e.g. a
+  spreadsheet, with formulas you want to check)
+
+  
 * When a student uploads their files and clicks 'Submit' they will be
-  checked to see if they are all PDFs, before combining them together
-  into a single 'submission.pdf'.
+  checked to see if they are all PDFs (depending on the setting
+  above), before combining them together into a single
+  'submission.pdf'.
 
 (Hint: to help students generate PDF files, either use OpenOffice.org
 - http://www.openoffice.org - which has PDF export built in, or
@@ -71,15 +86,51 @@ will just join them in alphabetical order).
 
 * Add any feedback / grades to the usual form and save them.
 
+==Edit Templates==
+
+* Click on the 'Edit Templates...' button on the 'Settings' page
+
+* Choose the name of the Template to edit (or select 'New
+  Template...')
+
+* You can change the name of the template, delete the template or make
+  it available to everyone on the site (administrators only, for this
+  last option). Only administrators can edit site templates.
+  Note: you cannot delete templates that are in use (click 'show' to
+  find out where it is currently being used)
+
+* The list at the bottom allows you to choose an item in the template
+  to edit, or choose 'New Item...' to add a new one.
+
+* The types of item you can add are:
+  text - a block of text, which will re-flow at 'width' pixels
+      'value' will be the prompt the student sees to fill this in
+  shorttext - similar to text, but without word-wrapping
+      useful for 'name' or 'type your initials to state this is all
+      your own work'
+  date - fills in the date that the assignment was submitted
+      'value' is the format to record the date
+
+* To position the items on the template, upload an example PDF 
+  coversheet (using the bottom form) then type in the position
+  you want to place the PDF (x position, y position, in pixels)
+
+* When you are finished, save any items you have changed, then
+  close the window. The list of templates on the 'settings'
+  page should have been updated.
+
 ==Uninstall==
 
 * Delete any instances of the module from courses.
 
 * Delete the contents of <siteroot>/mod/assignment/type/uploadpdf.
 
-* Use mysql/phpmyadmin to delete the 'assignment_uploadpdf_comment'
-  table (if someone can tell me a better way of doing this, which
-  works with Moodle 1.8 and above, then please do so!).
+* Use mysql/phpmyadmin to delete the following tables:
+  'assignment_uploadpdf', 'assignment_uploadpdf_comment',
+  'assignment_uploadpdf_template' and
+  'assignment_uploadpdf_template_item' (if someone can tell me a
+  better way of doing this, which works with Moodle 1.8 and above,
+  then please do so!).
 
 ==Known issues==
 
@@ -96,6 +147,15 @@ limitiation, again).
 
 The comment/annotation data is not included in a backup/restore/copy
 course process (not sure how to do this for a submodule plugin).
+
+Deleted templates are not immediately removed from the list on the 
+'settings' page - JavaScript defeated me at this point
+
+Images generated of the PDFs are never currently deleted, I intend to
+add a 'cron' job to do this at some point
+
+There is no way to annotate the PDFs without JavaScript (I may add
+this in the future, but it would be *very* fiddly to operate)
 
 ==Contact==
 moodle AT davosmith DOT co DOT uk
