@@ -1,6 +1,6 @@
 <?php
 
-function xmldb_assignment_uploadpdf_upgrade($oldversion=0) {
+function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
     global $CFG, $THEME, $db;
 
     $result = true;
@@ -19,7 +19,7 @@ function xmldb_assignment_uploadpdf_upgrade($oldversion=0) {
 
         $table =  new XMLDBTable('assignment_uploadpdf_template');
         $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
-        $table->addFieldInfo('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, null, '');
+        $table->addFieldInfo('name', XMLDB_TYPE_CHAR, '255', null, null, null, null, null, '');
         $table->addFieldInfo('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('course', XMLDB_INDEX_NOTUNIQUE, array('course'));
@@ -32,7 +32,7 @@ function xmldb_assignment_uploadpdf_upgrade($oldversion=0) {
         $table->addFieldInfo('xpos', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
         $table->addFieldInfo('ypos', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
         $table->addFieldInfo('width', XMLDB_TYPE_INTEGER, '10', null, null, null, null, null, '0');
-        $table->addFieldInfo('setting', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, null, '');
+        $table->addFieldInfo('setting', XMLDB_TYPE_CHAR, '255', null, null, null, null, null, '');
         $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->addIndexInfo('template', XMLDB_INDEX_NOTUNIQUE, array('template'));
         $result = $result && create_table($table);
