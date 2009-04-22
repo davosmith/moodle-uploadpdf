@@ -23,6 +23,7 @@ require_login($course->id, false);
 
 require_capability('moodle/course:manageactivities', get_context_instance(CONTEXT_COURSE, $course->id));
 $caneditsite = has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM));
+$extrajs = '';
 
 if ($savetemplate) {
     if ($templateid != 0) {
@@ -48,6 +49,13 @@ if ($savetemplate) {
 
         if ($templateid == -1) {
             $templateid = insert_record('assignment_uploadpdf_template', $template);
+            $extrajs = '<script type="text/javascript">';
+            $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
+            $extrajs .= 'if (el) {';
+            $extrajs .= 'var newtemp = document.createElement("option"); newtemp.value = "'.$templateid.'"; newtemp.innerHTML = "'.s($template->name).'";';
+            $extrajs .= 'el.appendChild(newtemp); ';
+            $extrajs .= '}';
+            $extrajs .= '</script>';
         } else {
             update_record('assignment_uploadpdf_template', $template);
         }
@@ -62,6 +70,20 @@ if ($savetemplate) {
             }
             delete_records('assignment_uploadpdf_template_item','template',$templateid);
             delete_records('assignment_uploadpdf_template','id', $templateid);
+            /*
+            $extrajs = '<script type="text/javascript">';
+            $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
+            $extrajs .= 'if (el) {';
+            $extrajs .= 'alert(el.innerHTML);';
+            $extrajs .= 'for (var opt=el.firstChild; opt != el.lastChild; opt=opt.nextSibling) {';
+            $extrajs .= 'if (opt.tagName == "option") {';
+            $extrajs .= 'alert(opt.getAttribute("value"));';
+            $extrajs .= 'if (opt.getAttribute("value") ==  "'.$templateid.'") {';
+            $extrajs .= 'el.removeChild(opt);';
+            $extrajs .= '}}}}';
+            $extrajs .= '</script>';
+            */
+            
             $templateid = 0;
         }
     }
@@ -134,6 +156,7 @@ if ($savetemplate) {
 
 print_header('Edit Templates', $course->fullname);
 
+echo $extrajs;
 $hidden = '<input type="hidden" name="courseid" value="'.$courseid.'" />';
 if ($imagename) {
     $hidden .= '<input type="hidden" name="imagename" value="'.$imagename.'" />';
