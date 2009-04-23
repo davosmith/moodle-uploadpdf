@@ -23,6 +23,7 @@ var ServerComm = new Class({
 	    var waitel = new Element('div');
 	    waitel.set('class', 'wait');
 	    comment.adopt(waitel);
+	    comment.store('oldcolour', comment.retrieve('colour'));
 	    var request = new Request.JSON({
 		    url: this.url,
 		    
@@ -186,7 +187,9 @@ function updatelastcomment() {
 	    currentcomment.destroy();
 
 	} else {
-	    if ((content == currentcomment.retrieve('rawtext')) || (currentcomment.retrieve('changed'))) {
+	    oldcolour = currentcomment.retrieve('oldcolour');
+	    newcolour = currentcomment.retrieve('colour');
+	    if ((content == currentcomment.retrieve('rawtext')) && (newcolour == oldcolour)) {
 		setcommentcontent(currentcomment, content);
 		currentcomment.retrieve('drag').attach();
 		// Do not update the server when the text is unchanged
@@ -223,12 +226,12 @@ function makecommentbox(position, content, colour) {
     newcomment = new Element('div');
     $('pdfholder').adopt(newcomment);
 
-    newcomment.store('changed',false);
     if ($defined(colour)) {
 	setcolourclass(colour, newcomment);
     } else {
 	setcolourclass(getcurrentcolour(), newcomment);
     }
+    newcomment.store('oldcolour',colour);
     //newcomment.set('class', 'comment');
     if (Browser.Engine.trident) {
 	// Does not work with FF & Moodle
@@ -370,7 +373,6 @@ function changecolour(e) {
 	var col = getcurrentcolour();
 	if (col != currentcomment.retrieve('colour')) {
 	    setcolourclass(getcurrentcolour(), currentcomment);
-	    currentcomment.store('changed', true);
 	}
     }
 }
