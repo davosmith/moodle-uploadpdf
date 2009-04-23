@@ -67,6 +67,7 @@ $string['errormessage'] = 'Error message: ';
 $string['okagain'] = 'Click OK to try again';
 
 //Student upload
+$string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';
 $string['nonpdfheading'] = 'Non-PDF file found';
 $string['filenotpdf'] = 'The file \'$a\' is not a PDF - you must resubmit it in that format';
 $string['nopdf'] = 'None of the files submitted are PDFs, you must submit at least one file in that format';
