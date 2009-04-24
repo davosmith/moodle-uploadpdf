@@ -52,7 +52,7 @@ if ($savetemplate) {
             $extrajs = '<script type="text/javascript">';
             $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
             $extrajs .= 'if (el) {';
-            $extrajs .= 'var newtemp = document.createElement("option"); newtemp.value = "'.$templateid.'"; newtemp.innerHTML = "'.s($template->name).'";';
+            $extrajs .= 'var newtemp = window.opener.document.createElement("option"); newtemp.value = "'.$templateid.'"; newtemp.innerHTML = "'.s($template->name).'";';
             $extrajs .= 'el.appendChild(newtemp); ';
             $extrajs .= '}';
             $extrajs .= '</script>';
@@ -70,20 +70,17 @@ if ($savetemplate) {
             }
             delete_records('assignment_uploadpdf_template_item','template',$templateid);
             delete_records('assignment_uploadpdf_template','id', $templateid);
-            /*
+
             $extrajs = '<script type="text/javascript">';
             $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
             $extrajs .= 'if (el) {';
-            $extrajs .= 'alert(el.innerHTML);';
-            $extrajs .= 'for (var opt=el.firstChild; opt != el.lastChild; opt=opt.nextSibling) {';
-            $extrajs .= 'if (opt.tagName == "option") {';
-            $extrajs .= 'alert(opt.getAttribute("value"));';
-            $extrajs .= 'if (opt.getAttribute("value") ==  "'.$templateid.'") {';
-            $extrajs .= 'el.removeChild(opt);';
-            $extrajs .= '}}}}';
+            $extrajs .= 'var opts = el.getElementsByTagName("option"); var i=0;';
+            $extrajs .= 'for (i=0; i<opts.length; i++) {';
+            $extrajs .= 'if (opts[i].value == document.getElementById("'.$templateid.'").value) {';
+            $extrajs .= 'el.removeChild(opts[i]);';
+            $extrajs .= '}}}';
             $extrajs .= '</script>';
-            */
-            
+
             $templateid = 0;
         }
     }
@@ -132,7 +129,7 @@ if ($savetemplate) {
     }
 
 } elseif ($uploadpreview) {
-    
+
     $partdest = $courseid.IMAGE_PATH;
     $fulldest = $CFG->dataroot.'/'.$partdest;
     check_dir_exists($fulldest);
@@ -303,7 +300,7 @@ function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
         }
         echo '<input type="submit" name="selectitem" value="'.get_string('select','assignment_uploadpdf').'" />';
     }
-    
+
     echo '</fieldset>';
     echo '</form>';
 }
@@ -360,7 +357,7 @@ function show_item_form($itemid, $hidden, $canedit) {
 
 function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
     global $CFG;
-    
+
     if ($imagename) {
         $partpath = '/'.$courseid.IMAGE_PATH.'/'.$imagename;
         $fullpath = $CFG->dataroot.$partpath;
@@ -399,7 +396,7 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
             echo '</div>';
             return;
         }
-    } 
+    }
 
     echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';

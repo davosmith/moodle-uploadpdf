@@ -1159,7 +1159,7 @@ class assignment_uploadpdf extends assignment_base {
         $mypdf = new MyPDFLib();
       
         if ( is_dir($filearea) ) {
-            if ($files = get_directory_list($filearea, array('submission','response','images'))) {
+            if ($files = get_directory_list($filearea, array('responses','submission','images'))) {
                 foreach ($files as $key=>$fl) { 
                     if (mimeinfo('type', $fl) != 'application/pdf') {
                         copy($filearea.'/'.$fl, $filearea.'/submission/'.$fl); /* Copy any non-PDF files to submission folder */
@@ -1283,7 +1283,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
         list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
-  
+
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
@@ -1461,7 +1461,7 @@ class assignment_uploadpdf extends assignment_base {
             $courseid = $cm->course;
             $assignment_extra = get_record('assignment_uploadpdf', 'assignment', $cm->instance);
         } elseif (!empty($add)) {
-            $courseid = required_param('course', PARAM_INT);
+            $courseid = required_param('id', PARAM_INT);
         }
 
         if (!$assignment_extra) {
