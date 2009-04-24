@@ -1453,7 +1453,7 @@ class assignment_uploadpdf extends assignment_base {
         $courseid = 0;
         $assignment_extra = false;
         $update = optional_param('update', 0, PARAM_INT);
-        $add = optional_param('add', 0, PARAM_INT);
+        $add = optional_param('add', 0, PARAM_ALPHA);
         if (!empty($update)) {
             if (! $cm = get_record("course_modules", "id", $update)) {
                 error("This course module doesn't exist");
@@ -1461,7 +1461,7 @@ class assignment_uploadpdf extends assignment_base {
             $courseid = $cm->course;
             $assignment_extra = get_record('assignment_uploadpdf', 'assignment', $cm->instance);
         } elseif (!empty($add)) {
-            $courseid = required_param('id', PARAM_INT);
+            $courseid = required_param('course', PARAM_INT);
         }
 
         if (!$assignment_extra) {
