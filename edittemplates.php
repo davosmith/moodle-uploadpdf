@@ -76,7 +76,7 @@ if ($savetemplate) {
             $extrajs .= 'if (el) {';
             $extrajs .= 'var opts = el.getElementsByTagName("option"); var i=0;';
             $extrajs .= 'for (i=0; i<opts.length; i++) {';
-            $extrajs .= 'if (opts[i].value == document.getElementById("'.$templateid.'").value) {';
+            $extrajs .= 'if (opts[i].value == "'.$templateid.'") {';
             $extrajs .= 'el.removeChild(opts[i]);';
             $extrajs .= '}}}';
             $extrajs .= '</script>';
