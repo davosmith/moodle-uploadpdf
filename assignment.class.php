@@ -9,9 +9,7 @@ if (!class_exists('assignment_base')) {
     require_once('../../lib.php');
 }
 
-if (!defined('ASSIGNMENT_STATUS_SUBMITTED')) {
-    define('ASSIGNMENT_STATUS_SUBMITTED', 'submitted');
-}
+define('ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED', 'submitted');
 
 /**
  * Extend the base assignment class for assignments where you upload a single file
@@ -533,7 +531,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $returnurl = 'view.php?id='.$this->cm->id;
 
-        $mform = new mod_assignment_upload_notes_form();
+        $mform = new mod_assignment_uploadpdf_notes_form();
 
         $defaults = new object();
         $defaults->id = $this->cm->id;
@@ -765,7 +763,7 @@ class assignment_uploadpdf extends assignment_base {
 
             $updated = new object();
             $updated->id = $submission->id;
-            $updated->data2 = ASSIGNMENT_STATUS_SUBMITTED;
+            $updated->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
             $updated->timemodified = time();
             $updated->numfiles = $pagecount;
             if (update_record('assignment_submissions', $updated)) {
@@ -1002,7 +1000,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function is_finalized($submission) {
         if (!empty($submission)
-            and $submission->data2 == ASSIGNMENT_STATUS_SUBMITTED) {
+            and $submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED) {
             return true;
         } else {
             return false;
@@ -1026,7 +1024,7 @@ class assignment_uploadpdf extends assignment_base {
         if (has_capability('mod/assignment:submit', $this->context)           // can submit
             and $this->isopen()                                                 // assignment not closed yet
             and !empty($submission)                                             // submission must exist
-            and $submission->data2 != ASSIGNMENT_STATUS_SUBMITTED               // not graded
+            and $submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED               // not graded
             and $submission->userid == $USER->id                                // his/her own submission
             and $submission->grade == -1                                        // no reason to finalize already graded submission
             and ($this->count_user_files($USER->id)
@@ -1577,27 +1575,26 @@ class assignment_uploadpdf extends assignment_base {
     }
 }
 
-if (!class_exists('mod_assignment_upload_notes_form')) {
-    class mod_assignment_upload_notes_form extends moodleform {
-        function definition() {
-            $mform =& $this->_form;
+class mod_assignment_uploadpdf_notes_form extends moodleform {
+    function definition() {
+        $mform =& $this->_form;
 
-            // visible elements
-            $mform->addElement('htmleditor', 'text', get_string('notes', 'assignment'), array('cols'=>85, 'rows'=>30));
-            $mform->setType('text', PARAM_RAW); // to be cleaned before display
-            $mform->setHelpButton('text', array('reading', 'writing'), false, 'editorhelpbutton');
+        // visible elements
+        $mform->addElement('htmleditor', 'text', get_string('notes', 'assignment'), array('cols'=>85, 'rows'=>30));
+        $mform->setType('text', PARAM_RAW); // to be cleaned before display
+        $mform->setHelpButton('text', array('reading', 'writing'), false, 'editorhelpbutton');
 
-            // hidden params
-            $mform->addElement('hidden', 'id', 0);
-            $mform->setType('id', PARAM_INT);
-            $mform->addElement('hidden', 'action', 'savenotes');
-            $mform->setType('id', PARAM_ALPHA);
+        // hidden params
+        $mform->addElement('hidden', 'id', 0);
+        $mform->setType('id', PARAM_INT);
+        $mform->addElement('hidden', 'action', 'savenotes');
+        $mform->setType('id', PARAM_ALPHA);
 
-            // buttons
-            $this->add_action_buttons();
-        }
+        // buttons
+        $this->add_action_buttons();
     }
 }
+
 
 function check_coversheet_pdf($value) {
     if ($value['value'] == '') {
