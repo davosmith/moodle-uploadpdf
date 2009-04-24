@@ -148,9 +148,6 @@ limitiation, again).
 The comment/annotation data is not included in a backup/restore/copy
 course process (not sure how to do this for a submodule plugin).
 
-Deleted templates are not immediately removed from the list on the 
-'settings' page - JavaScript defeated me at this point
-
 Images generated of the PDFs are never currently deleted, I intend to
 add a 'cron' job to do this at some point
 
