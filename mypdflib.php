@@ -138,9 +138,13 @@ class MyPDFLib extends FPDI {
         $width *= $this->scale;
         $text = str_replace('&lt;','<', $text);
         $text = str_replace('&gt;','>', $text);
-        $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
+        $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 0, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
         if ($colour != 'clear') {
             $newy = $this->GetY();
+            if ($newy == $y) {  /* Single line comment */
+                $width = $this->GetStringWidth($text) + 4.0; /* Resize box to the length of the text + 2 line widths */
+            }
+            $newy += $this->scale * 16.0; // Line height
             $this->Rect($x, $y, $width, $newy-$y, 'DF');
             $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
         }
