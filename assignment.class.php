@@ -1333,7 +1333,7 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
 		echo '</select></div>';
         
-        echo '<div style="clear: all; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
+        echo '<div style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
