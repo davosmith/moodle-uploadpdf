@@ -1472,6 +1472,7 @@ class assignment_uploadpdf extends assignment_base {
         $mform->addElement('choosecoursefile', 'coversheet', get_string('coversheet','assignment_uploadpdf'));
         $mform->addRule('coversheet', get_string('coversheetnotpdf','assignment_uploadpdf'), 'callback', 'check_coversheet_pdf');
         $mform->setDefault('coversheet', $assignment_extra->coversheet);
+        $mform->setHelpButton('coversheet', array('coversheet', get_string('coversheet','assignment_uploadpdf'), 'assignment_uploadpdf'));
 
         $templates = array();
         $templates[0] = get_string('notemplate','assignment_uploadpdf');
@@ -1484,7 +1485,8 @@ class assignment_uploadpdf extends assignment_base {
 
         $mform->addElement('select', 'template', get_string('coversheettemplate','assignment_uploadpdf'), $templates);
         $mform->setDefault('template', $assignment_extra->template);
-
+        $mform->setHelpButton('template', array('coversheettemplate', get_string('coversheettemplate','assignment_uploadpdf'), 'assignment_uploadpdf'));
+        
         $edittemplate = $mform->addElement('button', 'edittemplate', get_string('edittemplate', 'assignment_uploadpdf').'...');
         $buttonattributes = array('title'=>get_string('edittemplatetip', 'assignment_uploadpdf'), 'onclick'=>"return window.open('$CFG->wwwroot/mod/assignment/type/uploadpdf/edittemplates.php?courseid=$courseid', 'edittemplates', 'menubar=0,location=0,directories=0,toolbar=0,scrollbars,resizable,width=800,height=600');");
         $edittemplate->updateAttributes($buttonattributes);
@@ -1497,6 +1499,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $mform->addElement('select', 'onlypdf', get_string('onlypdf', 'assignment_uploadpdf'), $ynoptions);
         $mform->setDefault('onlypdf', $assignment_extra->onlypdf);
+        $mform->setHelpButton('onlypdf', array('onlypdf', get_string('onlypdf','assignment_uploadpdf'), 'assignment_uploadpdf'));
 
         $mform->addElement('select', 'resubmit', get_string("allowdeleting", "assignment"), $ynoptions);
         $mform->setHelpButton('resubmit', array('allowdeleting', get_string('allowdeleting', 'assignment'), 'assignment'));
