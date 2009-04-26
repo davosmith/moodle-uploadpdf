@@ -56,6 +56,7 @@ if ($savetemplate) {
             $extrajs .= 'el.appendChild(newtemp); ';
             $extrajs .= '}';
             $extrajs .= '</script>';
+            $itemid = -1;
         } else {
             update_record('assignment_uploadpdf_template', $template);
         }
@@ -187,11 +188,11 @@ print_footer($course);
 function show_select_template($courseid, $hidden, $templateid = 0) {
     global $CFG;
     
-    echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
+    echo '<form name="selecttemplate" enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';
     echo $hidden;
     echo '<label for="templateid">'.get_string('choosetemplate','assignment_uploadpdf').': </label>';
-    echo '<select name="templateid">';
+    echo '<select name="templateid" onchange="document.selecttemplate.submit();">';
     if ($templateid == -1) {
         echo '<option value="-1" selected="selected">'.get_string('newtemplate','assignment_uploadpdf').'</option>';
     } else {
@@ -216,7 +217,7 @@ function show_select_template($courseid, $hidden, $templateid = 0) {
 function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
     global $CFG;
 
-    echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
+    echo '<form name="edittemplate" enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';
     $uses = count_records('assignment_uploadpdf','template', $templateid);
     if ($uses) {
@@ -270,7 +271,7 @@ function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
     if ($templateid > 0) {
         echo '<br />';
         echo '<label for="itemid">'.get_string('chooseitem','assignment_uploadpdf').': </label>';
-        echo '<select name="itemid">';
+        echo '<select name="itemid" onchange="document.edittemplate.submit();">';
         if ($itemid == -1) {
             echo '<option value="-1" selected="selected">'.get_string('newitem','assignment_uploadpdf').'</option>';
         } else {
@@ -326,7 +327,7 @@ function show_item_form($itemid, $hidden, $canedit) {
         $item->width = 0;
         $item->setting = '';
     }
-    
+
     echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo $hidden;
     echo '<fieldset>';
