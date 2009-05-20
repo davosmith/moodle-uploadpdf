@@ -765,7 +765,8 @@ class assignment_uploadpdf extends assignment_base {
             $updated->id = $submission->id;
             $updated->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
             $updated->timemodified = time();
-            $updated->numfiles = $pagecount;
+            //$updated->numfiles = $pagecount;   // Hijack this variable (which is never used) to use as a flag for cleaning old images
+            $updated->numfiles = 0;
             if (update_record('assignment_submissions', $updated)) {
                 add_to_log($this->course->id, 'assignment', 'upload', //TODO: add finilize action to log
                            'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
@@ -1278,6 +1279,10 @@ class assignment_uploadpdf extends assignment_base {
         if (!$imgname = $pdf->get_image($pageno)) {
             error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
         }
+        if ($submission->numfiles == 0) {
+            $submission->numfiles = 1; /* Use this as a flag that there are images to delete at some point */
+            update_record('assignment_submission', $submission);
+        }
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
         list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
@@ -1575,6 +1580,64 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         return $retval;
+    }
+
+    function cron() {
+        global $CFG;
+
+        if ($lastcron = get_config('uploadpdf','lastcron')) {
+            if ($lastcron + 86400 > time()) { /* Only check once a day for images */
+                return false; // FIXME: Make this 'return;'
+            }
+        }
+
+        echo "Clear up images generated for uploadpdf assignments\n";
+
+        // Find all the old images and delete them
+        $to_clear = get_records_sql("SELECT sub.*, ass.course FROM {$CFG->prefix}assignment_submissions AS sub, {$CFG->prefix}assignment AS ass ".
+                                    'WHERE ass.assignmenttype = "uploadpdf" '.
+                                    'AND sub.assignment = ass.id AND sub.numfiles > 0;');
+        if ($to_clear) {
+            foreach ($to_clear as $submission) {
+                echo 'Checking images for assignment: '.$submission->id."\n";
+
+                $filescleared = true;
+                // This should be the same as the return value of 'file_area_name'
+                $file_area_name = $submission->course.'/'.$CFG->moddata.'/assignment/'.$submission->assignment.'/'.$submission->userid;
+                $imagefolder = $CFG->dataroot.'/'.$file_area_name.'/images';
+
+                if (is_dir($imagefolder)) {
+                    if ($files = get_directory_list($imagefolder)) {
+                        if ($files) {
+                            foreach ($files as $key=>$fl) {
+                                if ((substr($fl,0,10) == 'image_page') && (substr($fl,-4) == '.png')) {
+                                    $age = time() - filemtime($imagefolder.'/'.$fl);
+                                    if ($age > 86400) { /* 24 hours in seconds - only clear images more than 24 hours old */
+                                        unlink($imagefolder.'/'.$fl);
+                                    } else {
+                                        $filescleared = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Mark submissions as having files cleared (if all of them are gone)
+                if ($filescleared) {
+                    $submission->numfiles = 0;
+                    update_record('assignment_submissions', $submission);
+                }
+            }
+        }
+
+        // Delete any templates
+        // FIXME: Do this
+
+        $lastcron = time(); // Remember when the last cron job ran
+        set_config('lastcron', $lastcron, 'uploadpdf');
+        
+        return false; //FIXME: remove this line
     }
 }
 

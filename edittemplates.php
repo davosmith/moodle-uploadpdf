@@ -146,6 +146,7 @@ if ($savetemplate) {
         $pdf->load_pdf($fp);
         $pdf->set_image_folder($fulldest);
         $imagename = $pdf->get_image(1);
+        unlink($fp);
     } else {
         echo 'Bad thing happen';
         die;
