@@ -16,7 +16,12 @@ the future).
 * Unzip the plugin files to <siteroot>/mod/assignment/type/uploadpdf
 
 * Download and install GhostScript ( http://pages.cs.wisc.edu/~ghost )
-  - or install from standard respositories, if using Linux.  
+  - or install from standard respositories, if using Linux.
+  Under Windows, do not install to a path with a space in it - that
+  means you should install to something like 'c:\gs'
+  NOT 'c:\Program Files\gs' (note you only need the files
+  'gswin32c.exe' and the dll file from the 'bin' folder, all other
+  files are unnecessary for this to work).
 
 * Edit the file
   <siteroot>/mod/assignment/type/uploadpdf/uploadpdf_config.php to
