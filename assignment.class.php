@@ -1306,9 +1306,9 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<div style="float: left; margin-top: 5px; margin-right: 10px;" id="pageselector">';
 
         if ($pageno > 1) {
-            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'">&lt;--Prev</a> ';
+            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
         } else {
-            echo '&lt;--Prev ';
+            echo '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
         }
 
         for ($i=1; $i<=$pdf->page_count(); $i++) {
@@ -1323,9 +1323,9 @@ class assignment_uploadpdf extends assignment_base {
         }
        
         if ($pageno < $pdf->page_count()) {
-            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'">Next--&gt;</a>';
+            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
         } else {
-            echo 'Next--&gt;';
+            echo get_string('next','assignment_uploadpdf').'--&gt;';
         }
 		echo '</div><div id="colourselector">';
         echo ' '.get_string('commentcolour','assignment_uploadpdf').': ';
