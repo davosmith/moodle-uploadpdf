@@ -375,6 +375,7 @@ function changecolour(e) {
 	    setcolourclass(getcurrentcolour(), currentcomment);
 	}
     }
+    Cookie.write('uploadpdf_colour', getcurrentcolour());
 }
 
 function startjs() {
@@ -382,6 +383,10 @@ function startjs() {
     server = new ServerComm(server_config);
     server.getcomments();
     $('pdfimg').addEvent('click', addcomment);
+    var colour = Cookie.read('uploadpdf_colour');
+    if ($defined(colour)) {
+	setcurrentcolour(colour);
+    }
     $('choosecolour').addEvent('change', changecolour);
 }    
 
