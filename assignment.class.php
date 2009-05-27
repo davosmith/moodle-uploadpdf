@@ -1,4 +1,4 @@
-<?php // $Id: assignment.class.php,v 1.5 2009/05/26 18:08:44 davosmith Exp $
+<?php
 
 // Based on assignment_upload class from main Moodle repository
 

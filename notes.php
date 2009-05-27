@@ -1,4 +1,4 @@
-<?php  // $Id: notes.php,v 1.2 2009/04/25 22:25:34 davosmith Exp $
+<?php
 
     require('../../../../config.php');
     require('../../lib.php');
