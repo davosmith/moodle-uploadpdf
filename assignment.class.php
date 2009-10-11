@@ -1169,10 +1169,14 @@ class assignment_uploadpdf extends assignment_base {
                     $coversheet = null;
                     $extra = get_record('assignment_uploadpdf', 'assignment', $this->assignment->id);
                     if ($extra) {
-                        $coversheet = $CFG->dataroot.'/'.$this->course->id.'/'.$extra->coversheet;
-                        if (!file_exists($coversheet)) {
-                            // FIXME - Add a meaningful error message onto the screen at this point!
+                        if (!$extra->coversheet) {
                             $coversheet = null;
+                        } else {
+                            $coversheet = $CFG->dataroot.'/'.$this->course->id.'/'.$extra->coversheet;
+                            if (!file_exists($coversheet)) {
+                                // FIXME - Add a meaningful error message onto the screen at this point!
+                                $coversheet = null;
+                            }
                         }
                     }
                     
