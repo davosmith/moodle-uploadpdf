@@ -6,7 +6,7 @@ require_once($CFG->libdir.'/formslib.php');
 require_once('mypdflib.php');
 
 if (!class_exists('assignment_base')) {
-    require_once('../../lib.php');
+    require_once(dirname(dirname(dirname(__FILE__))) . '/lib.php');
 }
 
 define('ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED', 'submitted');
@@ -1642,6 +1642,132 @@ class assignment_uploadpdf extends assignment_base {
 
         $lastcron = time(); // Remember when the last cron job ran
         set_config('lastcron', $lastcron, 'uploadpdf');
+    }
+
+    /**
+     * Backup extra data about the assignment.
+     * This includes extra settings, and the template and tempate items used by it.
+    */
+    function backup_one_mod($bf, $preferences, $assignment) {
+        if (!$extras = get_record('assignment_uploadpdf', 'assignment', $assignment->id)) {
+            debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find extra data");
+            return false;
+        }
+        if ($extras->template != 0 && !$template = get_record('assignment_uploadpdf_template', 'id', $extras->template)) {
+            debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find template data");
+            return false;
+        }
+        fwrite ($bf,full_tag("COVERSHEET",4,false,$extras->coversheet));
+        fwrite ($bf,full_tag("TEMPLATEID",4,false,$extras->template));
+        fwrite ($bf,full_tag("ONLYPDF",4,false,$extras->onlypdf));
+        if ($template) {
+            if (!$items = get_records('assignment_uploadpdf_template_item', 'template', $template->id)) {
+                $items = array();
+            }
+            fwrite ($bf,start_tag("TEMPLATE",4,true));
+            fwrite ($bf,full_tag("ID",5,false,$template->id));
+            fwrite ($bf,full_tag("NAME",5,false,$template->name));
+            fwrite ($bf,start_tag("TEMPLATEITEMS",5,true));
+            foreach ($items as $item) {
+                fwrite ($bf,start_tag("TEMPLATEITEM",6,true));
+                fwrite ($bf,full_tag("TYPE",6,false,$item->type));
+                fwrite ($bf,full_tag("XPOS",6,false,$item->xpos));
+                fwrite ($bf,full_tag("YPOS",6,false,$item->ypos));
+                fwrite ($bf,full_tag("WIDTH",6,false,$item->width));
+                fwrite ($bf,full_tag("SETTING",6,false,$item->setting));
+                fwrite ($bf,end_tag("TEMPLATEITEM",6,true));
+            }
+            fwrite ($bf,end_tag("TEMPLATEITEMS",5,true));
+            fwrite ($bf,end_tag("TEMPLATE",4,true));
+        }
+    }
+
+    /**
+     *Backup extra data about the assignment submission. This is just comments at the moment.
+     */
+    function backup_one_submission($bf, $preferences, $assignment, $submission) {
+        if (!$comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id)) {
+            return true;
+        }
+        fwrite ($bf,start_tag("COMMENTS",4,true));
+        foreach ($comments as $comment) {
+            fwrite ($bf,start_tag("COMMENT",5,true));
+            fwrite ($bf,full_tag("POSX",6,false,$comment->posx));
+            fwrite ($bf,full_tag("POSY",6,false,$comment->posy));
+            fwrite ($bf,full_tag("WIDTH",6,false,$comment->width));
+            fwrite ($bf,full_tag("RAWTEXT",6,false,$comment->rawtext));
+            fwrite ($bf,full_tag("PAGENO",6,false,$comment->pageno));
+            fwrite ($bf,full_tag("COLOUR",6,false,$comment->colour));
+            fwrite ($bf,end_tag("COMMENT",5,true));
+        }
+        fwrite ($bf,end_tag("COMMENTS",4,true));
+    }
+
+    function restore_one_mod($info, $restore, $assignment) {
+        // template first, since other things reference it.
+        $templateid = 0;
+        if (@isset($info['MOD']['#']['TEMPLATE']['0']['#'])) {
+            $oldid = backup_todb($info['MOD']['#']['TEMPLATE']['0']['#']['ID']['0']['#']);
+            // first check to see if we haven't already restored this template for another module...
+            if (!$templateid = backup_getid($restore->backup_unique_code, 'assignment_uploadpdf_template', $oldid)) {
+                $template = new stdclass;
+                $template->name = backup_todb($info['MOD']['#']['TEMPLATE']['0']['#']['NAME']['0']['#']);
+                $template->course = $restore->course_id;
+
+                $templateid = insert_record('assignment_uploadpdf_template', $template);
+
+
+                // now templateitems
+                if (@isset($info['MOD']['#']['TEMPLATE']['0']['#']['TEMPLATEITEMS']['0']['#']['TEMPLATEITEM'])) {
+                    $items = $info['MOD']['#']['TEMPLATE']['0']['#']['TEMPLATEITEMS']['0']['#']['TEMPLATEITEM'];
+                } else {
+                    $items = array();
+                }
+                foreach ($items as $item) {
+                    $ti = new stdclass;
+                    $ti->template = $templateid;
+                    $ti->type = backup_todb($item['#']['TYPE']['0']['#']);
+                    $ti->posx = backup_todb($item['#']['XPOS']['0']['#']);
+                    $ti->posy = backup_todb($item['#']['YPOS']['0']['#']);
+                    $ti->width = backup_todb($item['#']['WIDTH']['0']['#']);
+                    $ti->setting = backup_todb($item['#']['SETTING']['0']['#']);
+
+                    insert_record('assignment_uploadpdf_template_item', $ti);
+                }
+                backup_putid($restore->backup_unique_code, 'assignment_uploadpdf_template', $oldid, $templateid);
+            } else {
+                $templateid = $templateid->new_id;
+            }
+        }
+        // finally, the extra settings
+        $newassid = backup_getid($restore->backup_unique_code, 'assignment', backup_todb($info['MOD']['#']['ID']['0']['#']));
+        $uploadpdf = new stdclass;
+        $uploadpdf->assignment = $newassid->new_id;
+        $uploadpdf->coversheet = backup_todb($info['MOD']['#']['COVERSHEET']['0']['#']);
+        $uploadpdf->onlypdf = backup_todb($info['MOD']['#']['ONLYPDF']['0']['#']);
+        $uploadpdf->template = $templateid;
+
+        insert_record('assignment_uploadpdf', $uploadpdf);
+    }
+
+    function restore_one_submission($info, $restore, $assignment, $submission) {
+        //Get the submissions array - it might not be present
+        if (@isset($info['#']['COMMENTS']['0']['#']['COMMENT'])) {
+            $comments = $info['#']['COMMENTS']['0']['#']['COMMENT'];
+        } else {
+            $comments = array();
+        }
+        foreach ($comments as $comment) {
+            $dbc = new stdclass;
+            $dbc->posx = backup_todb($comment['#']['POSX']['0']['#']);
+            $dbc->posy = backup_todb($comment['#']['POSY']['0']['#']);
+            $dbc->width = backup_todb($comment['#']['WIDTH']['0']['#']);
+            $dbc->rawtext = backup_todb($comment['#']['RAWTEXT']['0']['#']);
+            $dbc->pageno = backup_todb($comment['#']['PAGENO']['0']['#']);
+            $dbc->colour = backup_todb($commentitei['#']['COLOUR']['0']['#']);
+            $dbc->assignment_submission = $submission->id;
+            insert_record('assignment_uploadpdf_comment', $dbc);
+        }
     }
 }
 
