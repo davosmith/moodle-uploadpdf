@@ -398,7 +398,7 @@ class assignment_uploadpdf extends assignment_base {
                         require_once($CFG->libdir.'/filelib.php');
                         foreach ($files as $key => $file) {
                             $icon = mimeinfo('icon', $file);
-                            if (has_capability('mod/assignment:grade', $this->context)) {
+                            if ((mimeinfo('type',$file) == 'application/pdf') && (has_capability('mod/assignment:grade', $this->context))) {
                                 $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                                 $output .= link_to_popup_window($ffurl, 'editcomment'.$userid,
                                                                 '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
