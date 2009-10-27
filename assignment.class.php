@@ -19,6 +19,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function assignment_uploadpdf($cmid=0) {
         parent::assignment_base($cmid);
+        $this->type = 'uploadpdf';
     }
 
     function view() {
@@ -1552,6 +1553,29 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         return $newid;
+    }
+
+    function delete_instance($assignment) {
+        global $CFG;
+        $result = true;
+
+        if (! delete_records_select('assignment_uploadpdf_comment',
+                  'assignment_submission IN (
+                     SELECT s.id
+                     FROM ' . $CFG->prefix . 'assignment_submissions AS s
+                     WHERE s.assignment = ' . $assignment->id . '
+                   )'
+                                    )) {
+            $result = false;
+        }
+        
+        if (! delete_records('assignment_uploadpdf', 'assignment', $assignment->id)) {
+            $result = false;
+        }
+        
+        $retval = parent::delete_instance($assignment);
+        
+        return $retval && $result;
     }
 
     function update_instance($assignment) {
