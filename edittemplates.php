@@ -8,6 +8,7 @@ $templateid = optional_param('templateid', 0, PARAM_INT);
 $itemid = optional_param('itemid', 0, PARAM_INT);
 $savetemplate = optional_param('savetemplate', false, PARAM_TEXT);
 $deletetemplate = optional_param('deletetemplate', false, PARAM_TEXT);
+$duplicatetemplate = optional_param('duplicatetemplate', false, PARAM_TEXT);
 $saveitem = optional_param('saveitem', false, PARAM_TEXT);
 $deleteitem = optional_param('deleteitem', false, PARAM_TEXT);
 $imagename = optional_param('imagename', false, PARAM_FILE);
@@ -28,6 +29,7 @@ $extrajs = '';
 if ($savetemplate) {
     if ($templateid != 0) {
 
+        $oldname = null;
         if ($templateid == -1) {
             $template = new Object;
         } else {
@@ -38,6 +40,7 @@ if ($savetemplate) {
             if (($template->course == 0) && (!$caneditsite)) {
                 error("No permission to edit site templates");
             }
+            $oldname = $template->name;
         }
         $template->name = required_param('templatename', PARAM_TEXT);
 
@@ -59,6 +62,17 @@ if ($savetemplate) {
             $itemid = -1;
         } else {
             update_record('assignment_uploadpdf_template', $template);
+            if ($oldname != $template->name) {
+                $extrajs = '<script type="text/javascript">';
+                $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
+                $extrajs .= 'if (el) {';
+                $extrajs .= 'var opts = el.getElementsByTagName("option"); var i=0;';
+                $extrajs .= 'for (i=0; i<opts.length; i++) {';
+                $extrajs .= 'if (opts[i].value == "'.$templateid.'") {';
+                $extrajs .= 'opts[i].innerHTML = "'. s($template->name) .'";';
+                $extrajs .= '}}}';
+                $extrajs .= '</script>';
+            }
         }
     }
 } elseif ($deletetemplate) {
@@ -150,6 +164,39 @@ if ($savetemplate) {
     } else {
         echo 'Bad thing happen';
         die;
+    }
+} elseif ($duplicatetemplate) {
+    // Should not have access to the 'duplicate' button unless a template is selected
+    // but, just in case, we check here (but just do nothing if that is not the case)
+    if ($templateid != -1) {
+        $template = get_record('assignment_uploadpdf_template', 'id', $templateid);
+        if (!$template) {
+            error("Old template not found");
+        }
+        $template->course = $courseid;
+        $template->name = $template->name . get_string('templatecopy','assignment_uploadpdf');
+        unset($template->id);
+        $oldtemplateid = $templateid;
+        $templateid = insert_record('assignment_uploadpdf_template', $template);
+
+        // Update the list on the main page
+        $extrajs = '<script type="text/javascript">';
+        $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
+        $extrajs .= 'if (el) {';
+        $extrajs .= 'var newtemp = window.opener.document.createElement("option"); newtemp.value = "'.$templateid.'"; newtemp.innerHTML = "'.s($template->name).'";';
+        $extrajs .= 'el.appendChild(newtemp); ';
+        $extrajs .= '}';
+        $extrajs .= '</script>';
+        $itemid = -1;
+
+        $items_data = get_records('assignment_uploadpdf_template_item', 'template', $oldtemplateid);
+        if ($items_data) {
+            foreach ($items_data as $item) {
+                unset($item->id);
+                $item->template = $templateid;
+                insert_record('assignment_uploadpdf_template_item', $item);
+            }
+        }
     }
 }
 
@@ -269,6 +316,7 @@ function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
     }
     echo '<input type="submit" name="deletetemplate" value="'.get_string('deletetemplate','assignment_uploadpdf').'"'.$deletedisabled.'/>';
     echo '<br />';
+    echo '<input type="submit" name="duplicatetemplate" value="'.get_string('duplicatetemplate','assignment_uploadpdf').'"/>';
     if ($templateid > 0) {
         echo '<br />';
         echo '<label for="itemid">'.get_string('chooseitem','assignment_uploadpdf').': </label>';
