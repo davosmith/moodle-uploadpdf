@@ -1308,31 +1308,34 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a>';
         echo '</form>';
 		echo '</div>';
-		echo '<div style="float: left; margin-top: 5px; margin-right: 10px;" id="pageselector">';
+
+        $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px;" class="pageselector">';
 
         if ($pageno > 1) {
-            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
+            $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
         } else {
-            echo '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
+            $pageselector .= '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
         }
 
         for ($i=1; $i<=$pdf->page_count(); $i++) {
             if ($i == $pageno) {
-                echo "$i ";
+                $pageselector .= "$i ";
             } else {
-                echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$i.'">'.$i.'</a> ';
+                $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$i.'">'.$i.'</a> ';
             }
             if (($i % 20) == 0) {
-                echo '<br />';
+                $pageselector .= '<br />';
             }
         }
        
         if ($pageno < $pdf->page_count()) {
-            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
+            $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
         } else {
-            echo get_string('next','assignment_uploadpdf').'--&gt;';
+            $pageselector .= get_string('next','assignment_uploadpdf').'--&gt;';
         }
-		echo '</div><div id="colourselector">';
+		$pageselector .= '</div>';
+        echo $pageselector;
+        echo '<div id="colourselector">';
         echo ' '.get_string('commentcolour','assignment_uploadpdf').': ';
 		echo '<select id="choosecolour" name="choosecolour">';
 		echo '<option value="red">'.get_string('colourred','assignment_uploadpdf').'</option>';
@@ -1347,6 +1350,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
+        echo $pageselector;
 
         $server = array(
                         'id' => $this->cm->id,
