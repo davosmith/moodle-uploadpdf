@@ -33,10 +33,6 @@ the future).
 All being well, you should now be able to add assignments of type
 'uploadpdf' to your courses.
 
-This has been tested with Moodle 1.8 (on Ubuntu 8.10 / Apache server)
-and Moodle 1.9 (MS Windows / Apache server). It has not (yet) been
-tested with IIS (but that should happen in a few weeks time).
-
 ==How to use==
 
 * Add a new activity of the type 'Upload PDF' to a course. (This may
@@ -71,7 +67,7 @@ http://sourceforge.net/projects/pdfcreator
 Hint2: A copy of PDFTK
 Builder - http://angusj.com/pdftk - will help students to combine
 their PDF files together in the order they want; my 'uploadpdf' plugin
-will just join them in alphabetical order).  
+will just join them in the order they are uploaded).  
 
 * The teacher can then log in, go to the usual marking screen (I
   particualarly recommend 'Allow quick grading') and click on
@@ -151,10 +147,7 @@ There is no way of deleting this from the Administration menu (Moodle
 limitiation, again).
 
 The comment/annotation data is not included in a backup/restore/copy
-course process (not sure how to do this for a submodule plugin).
-
-Images generated of the PDFs are never currently deleted, I intend to
-add a 'cron' job to do this at some point
+course process for Moodle < 1.9.
 
 There is no way to annotate the PDFs without JavaScript (I may add
 this in the future, but it would be *very* fiddly to operate)

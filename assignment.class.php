@@ -19,6 +19,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function assignment_uploadpdf($cmid=0) {
         parent::assignment_base($cmid);
+        $this->type = 'uploadpdf';
     }
 
     function view() {
@@ -1239,6 +1240,24 @@ class assignment_uploadpdf extends assignment_base {
             error('User has no submission to comment on!');
         }
 
+        $showprevious = optional_param('showprevious', -1, PARAM_INT);
+        
+        if (optional_param('topframe', false, PARAM_INT)) {
+            if ($showprevious != -1) {
+                echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">';
+                echo '<html><head><title>'.get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name).'</title></head>';
+                echo '<frameset cols="70%, 30%">';
+                echo '<frame src="editcomment.php?';
+                echo 'id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$pageno.'&amp;showprevious='.$showprevious;
+                echo '">';
+                echo '<frame src="editcomment.php?';
+                echo 'a='.$showprevious.'&amp;userid='.$userid.'&amp;action=showprevious';
+                echo '">';
+                echo '</frameset></html>';
+                die;
+            }
+        }
+
         $savedraft = optional_param('savedraft', null, PARAM_TEXT);
         $generateresponse = optional_param('generateresponse', null, PARAM_TEXT);
 
@@ -1307,31 +1326,61 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a>';
         echo '</form>';
 		echo '</div>';
-		echo '<div style="float: left; margin-top: 5px; margin-right: 10px;" id="pageselector">';
+
+        $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px;" class="pageselector">';
 
         if ($pageno > 1) {
-            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
+            $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'&amp;showprevious='.$showprevious.'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
         } else {
-            echo '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
+            $pageselector .= '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
         }
 
         for ($i=1; $i<=$pdf->page_count(); $i++) {
             if ($i == $pageno) {
-                echo "$i ";
+                $pageselector .= "$i ";
             } else {
-                echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$i.'">'.$i.'</a> ';
+                $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$i.'&amp;showprevious='.$showprevious.'">'.$i.'</a> ';
             }
             if (($i % 20) == 0) {
-                echo '<br />';
+                $pageselector .= '<br />';
             }
         }
        
         if ($pageno < $pdf->page_count()) {
-            echo '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
+            $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'&amp;showprevious='.$showprevious.'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
         } else {
-            echo get_string('next','assignment_uploadpdf').'--&gt;';
+            $pageselector .= get_string('next','assignment_uploadpdf').'--&gt;';
         }
-		echo '</div><div id="colourselector">';
+		$pageselector .= '</div>';
+        echo $pageselector;
+        echo '<div id="colourselector">';
+        // Show previous assignment
+        $ps_sql = 'SELECT asn.id, asn.name FROM `mdl_assignment` AS asn ';
+        $ps_sql .= 'INNER JOIN `mdl_assignment_submissions` AS sub ON sub.assignment = asn.id ';
+        $ps_sql .= 'WHERE course = '.$this->course->id;
+        $ps_sql .= ' AND userid = '.$userid;
+        $ps_sql .= ' AND asn.id != '.$this->assignment->id;
+        $ps_sql .= ' ORDER BY sub.timemodified DESC;';
+        $previoussubs = get_records_sql($ps_sql);
+        if ($previoussubs) {
+            echo '<form target="_top" action="editcomment.php" method="get">';
+            echo ' '.get_string('showpreviousassignment','assignment_uploadpdf').': ';
+            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+            echo '<input type="hidden" name="userid" value="'.$userid.'" />';
+            echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
+            echo '<input type="hidden" name="topframe" value="1" />';
+            echo '<select id="showprevious" name="showprevious" onChange="this.form.submit();">';
+            echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
+            foreach ($previoussubs as $prevsub) {
+                echo '<option value="'.$prevsub->id.'"';
+                if ($showprevious == $prevsub->id) echo ' selected="selected" ';
+                echo '>'.s($prevsub->name).'</option>';
+            }
+            echo '</select>';
+            echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
+            echo '</form>';
+        }
+        // Choose comment colour
         echo ' '.get_string('commentcolour','assignment_uploadpdf').': ';
 		echo '<select id="choosecolour" name="choosecolour">';
 		echo '<option value="red">'.get_string('colourred','assignment_uploadpdf').'</option>';
@@ -1346,6 +1395,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
+        echo $pageselector;
 
         $server = array(
                         'id' => $this->cm->id,
@@ -1451,6 +1501,39 @@ class assignment_uploadpdf extends assignment_base {
         echo json_encode($resp);
     }
 
+    function show_previous_comments($userid) {
+        global $CFG;
+
+        require_capability('mod/assignment:grade', $this->context);
+
+        if (!$user = get_record('user', 'id', $userid)) {
+            error('No such user!');
+        }
+
+        if (!$submission = $this->get_submission($user->id)) {
+            error('User has no previous submission to display!');
+        }
+        
+        print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
+
+        echo '<h2>'.format_string($this->assignment->name).'</h2>';
+
+        $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id, 'pageno, posy');
+        if (!$comments) {
+            echo '<p>'.get_string('nocomments','assignment_uploadpdf').'</p>';
+        } else {
+            $style1 = ' style="border: black 1px solid;"';
+            $style2 = ' style="border: black 1px solid; text-align: center;" ';
+            echo '<table'.$style1.'><tr><th'.$style1.'>'.get_string('pagenumber','assignment_uploadpdf').'</th>';
+            echo '<th'.$style1.'>'.get_string('comment','assignment_uploadpdf').'</th></tr>';
+            foreach ($comments as $comment) {
+                echo '<tr><td'.$style2.'>'.$comment->pageno.'</td><td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
+            }
+            echo '</table>';
+        }
+        print_footer('none');
+    }
+
 
     function setup_elements(&$mform) {
         global $CFG, $COURSE;
@@ -1552,6 +1635,29 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         return $newid;
+    }
+
+    function delete_instance($assignment) {
+        global $CFG;
+        $result = true;
+
+        if (! delete_records_select('assignment_uploadpdf_comment',
+                  'assignment_submission IN (
+                     SELECT s.id
+                     FROM ' . $CFG->prefix . 'assignment_submissions AS s
+                     WHERE s.assignment = ' . $assignment->id . '
+                   )'
+                                    )) {
+            $result = false;
+        }
+        
+        if (! delete_records('assignment_uploadpdf', 'assignment', $assignment->id)) {
+            $result = false;
+        }
+        
+        $retval = parent::delete_instance($assignment);
+        
+        return $retval && $result;
     }
 
     function update_instance($assignment) {

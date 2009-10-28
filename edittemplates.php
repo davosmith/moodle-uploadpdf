@@ -8,6 +8,7 @@ $templateid = optional_param('templateid', 0, PARAM_INT);
 $itemid = optional_param('itemid', 0, PARAM_INT);
 $savetemplate = optional_param('savetemplate', false, PARAM_TEXT);
 $deletetemplate = optional_param('deletetemplate', false, PARAM_TEXT);
+$duplicatetemplate = optional_param('duplicatetemplate', false, PARAM_TEXT);
 $saveitem = optional_param('saveitem', false, PARAM_TEXT);
 $deleteitem = optional_param('deleteitem', false, PARAM_TEXT);
 $imagename = optional_param('imagename', false, PARAM_FILE);
@@ -28,6 +29,7 @@ $extrajs = '';
 if ($savetemplate) {
     if ($templateid != 0) {
 
+        $oldname = null;
         if ($templateid == -1) {
             $template = new Object;
         } else {
@@ -38,6 +40,7 @@ if ($savetemplate) {
             if (($template->course == 0) && (!$caneditsite)) {
                 error("No permission to edit site templates");
             }
+            $oldname = $template->name;
         }
         $template->name = required_param('templatename', PARAM_TEXT);
 
@@ -59,6 +62,17 @@ if ($savetemplate) {
             $itemid = -1;
         } else {
             update_record('assignment_uploadpdf_template', $template);
+            if ($oldname != $template->name) {
+                $extrajs = '<script type="text/javascript">';
+                $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
+                $extrajs .= 'if (el) {';
+                $extrajs .= 'var opts = el.getElementsByTagName("option"); var i=0;';
+                $extrajs .= 'for (i=0; i<opts.length; i++) {';
+                $extrajs .= 'if (opts[i].value == "'.$templateid.'") {';
+                $extrajs .= 'opts[i].innerHTML = "'. s($template->name) .'";';
+                $extrajs .= '}}}';
+                $extrajs .= '</script>';
+            }
         }
     }
 } elseif ($deletetemplate) {
@@ -150,6 +164,39 @@ if ($savetemplate) {
     } else {
         echo 'Bad thing happen';
         die;
+    }
+} elseif ($duplicatetemplate) {
+    // Should not have access to the 'duplicate' button unless a template is selected
+    // but, just in case, we check here (but just do nothing if that is not the case)
+    if ($templateid != -1) {
+        $template = get_record('assignment_uploadpdf_template', 'id', $templateid);
+        if (!$template) {
+            error("Old template not found");
+        }
+        $template->course = $courseid;
+        $template->name = $template->name . get_string('templatecopy','assignment_uploadpdf');
+        unset($template->id);
+        $oldtemplateid = $templateid;
+        $templateid = insert_record('assignment_uploadpdf_template', $template);
+
+        // Update the list on the main page
+        $extrajs = '<script type="text/javascript">';
+        $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
+        $extrajs .= 'if (el) {';
+        $extrajs .= 'var newtemp = window.opener.document.createElement("option"); newtemp.value = "'.$templateid.'"; newtemp.innerHTML = "'.s($template->name).'";';
+        $extrajs .= 'el.appendChild(newtemp); ';
+        $extrajs .= '}';
+        $extrajs .= '</script>';
+        $itemid = -1;
+
+        $items_data = get_records('assignment_uploadpdf_template_item', 'template', $oldtemplateid);
+        if ($items_data) {
+            foreach ($items_data as $item) {
+                unset($item->id);
+                $item->template = $templateid;
+                insert_record('assignment_uploadpdf_template_item', $item);
+            }
+        }
     }
 }
 
@@ -269,6 +316,7 @@ function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
     }
     echo '<input type="submit" name="deletetemplate" value="'.get_string('deletetemplate','assignment_uploadpdf').'"'.$deletedisabled.'/>';
     echo '<br />';
+    echo '<input type="submit" name="duplicatetemplate" value="'.get_string('duplicatetemplate','assignment_uploadpdf').'"/>';
     if ($templateid > 0) {
         echo '<br />';
         echo '<label for="itemid">'.get_string('chooseitem','assignment_uploadpdf').': </label>';
@@ -326,30 +374,70 @@ function show_item_form($itemid, $hidden, $canedit) {
         $item->xpos = 0;
         $item->ypos = 0;
         $item->width = 0;
-        $item->setting = '';
+        $item->setting = get_string('enterformtext','assignment_uploadpdf');
     }
+
+    // Javascript to allow more interactive editing of the items (by clicking on the image)
+    echo '<script type="text/javascript">';
+    echo 'var oldtype = "'.$item->type.'";';
+    // Highlight the titles of items that are unsaved
+    echo 'function Highlight(name) {';
+    echo 'document.getElementById(name+"_label").style.fontWeight = "bold";';
+    echo 'UpdatePreview();';
+    echo '}';
+    // Move the preview item on the page
+    echo 'function UpdatePreview() {';
+    echo 'currel = document.getElementById("current_template_item"); if (!currel) return;';
+    echo 'currel.style.left = document.getElementById("itemx").value + "px";';
+    echo 'currel.style.top = document.getElementById("itemy").value + "px";';
+    echo 'type = document.getElementById("itemtype").value;';
+    echo 'if ((type != "date") || (oldtype != "date"))';
+    echo '{ currel.innerHTML = document.getElementById("itemsetting").value; }';
+    echo 'if (type == "text") { currel.style.width = document.getElementById("itemwidth").value + "px"; }';
+    echo 'else { currel.style.width = ""; }';
+    echo '}';
+    echo 'function Left(obj) { var curleft = 0; if (obj.offsetParent) while (1) { curleft += obj.offsetLeft; if (!obj.offsetParent) break; obj = obj.offsetParent; } else if (obj.x) curleft += obj.x; return curleft; }';
+    echo 'function Top(obj) { var curtop = 0; if (obj.offsetParent) while (1) { curtop += obj.offsetTop; if (!obj.offsetParent) break; obj = obj.offsetParent; } else if (obj.y) curtop += obj.y; return curtop; }';
+    // Update the 'item' position when the image is clicked on
+    echo 'function clicked_on_image(e) {';
+    echo 'var targ; if (!e) var e = e.target; if (e.target) { targ = e.target; } else if (e.srcElement) { targ = e.srcElement; }';
+    echo 'pos_x = e.offsetX?(e.offsetX):e.pageX-Left(targ);';
+	echo 'pos_y = e.offsetY?(e.offsetY):e.pageY-Top(targ);';
+    echo 'document.getElementById("itemx").value = pos_x; document.getElementById("itemy").value = pos_y;';
+    echo 'Highlight("itemx"); Highlight("itemy");';
+    echo '}';
+    // Fill in a default value when different types selected
+    echo 'function type_changed() {';
+    echo 'Highlight("itemtype");';
+    echo 'var newtype = document.getElementById("itemtype").value; var settingel = document.getElementById("itemsetting");';
+    echo 'if (newtype == "date") { settingel.value = "d/m/Y"; Highlight("itemsetting"); }';
+    echo 'else if (oldtype == "date") { settingel.value = "'.get_string('enterformtext','assignment_uploadpdf').'"; Highlight("itemsetting"); } ';
+    echo 'UpdatePreview();';
+    echo 'oldtype = newtype;';
+    echo '}';
+    echo '</script>';
 
     echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo $hidden;
     echo '<fieldset>';
 
     echo '<table>';
-    echo '<tr><td><label for="itemtype">'.get_string('itemtype','assignment_uploadpdf').': </label></td>';
-    echo '<td><select name="itemtype"'.$disabled.'>';
+    echo '<tr><td width="150pt"><label id="itemtype_label" for="itemtype">'.get_string('itemtype','assignment_uploadpdf').': </label></td>';
+    echo '<td><select id="itemtype" onchange = "type_changed();" name="itemtype"'.$disabled.'>';
     echo '<option value="shorttext"'.(($item->type == 'shorttext') ? ' selected="selected" ' : '').'>'.get_string('itemshorttext','assignment_uploadpdf').'</option>';
     echo '<option value="text"'.(($item->type == 'text') ? ' selected="selected" ' : '').'>'.get_string('itemtext','assignment_uploadpdf').'</option>';
     echo '<option value="date"'.(($item->type == 'date') ? ' selected="selected" ' : '').'>'.get_string('itemdate','assignment_uploadpdf').'</option>';
     echo '</select></td></tr>';
 
-    echo '<tr><td><label for="itemx">'.get_string('itemx','assignment_uploadpdf').': </label></td>';
-    echo '<td><input type="text" name="itemx" value="'.$item->xpos.'"'.$disabled.' /></td></tr>';
-    echo '<tr><td><label for="itemy">'.get_string('itemy','assignment_uploadpdf').': </label></td>';
-    echo '<td><input type="text" name="itemy" value="'.$item->ypos.'"'.$disabled.' /></td></tr>';
-    echo '<tr><td><label for="itemwidth">'.get_string('itemwidth','assignment_uploadpdf').': </label></td>';
-    echo '<td><input type="text" name="itemwidth" value="'.$item->width.'"'.$disabled.' /></td></tr>';
-    echo '<tr><td><label for="itemsetting">'.get_string('itemsetting','assignment_uploadpdf').': </label></td>';
-    echo '<td><input type="text" name="itemsetting" value="'.$item->setting.'"'.$disabled.' /> '.get_string('itemsettingmore','assignment_uploadpdf');
+    echo '<tr><td><label for="itemx" id="itemx_label">'.get_string('itemx','assignment_uploadpdf').': </label></td>';
+    echo '<td><input type="text" id="itemx" name="itemx" onChange="Highlight(\'itemx\');" value="'.$item->xpos.'"'.$disabled.' /> '.get_string('clicktosetposition','assignment_uploadpdf').'</td></tr>';
+    echo '<tr><td><label for="itemy" id="itemy_label">'.get_string('itemy','assignment_uploadpdf').': </label></td>';
+    echo '<td><input type="text" id="itemy" name="itemy" onChange="Highlight(\'itemy\');" value="'.$item->ypos.'"'.$disabled.' /></td></tr>';
+    echo '<tr><td><label for="itemsetting" id="itemsetting_label">'.get_string('itemsetting','assignment_uploadpdf').': </label></td>';
+    echo '<td><input type="text" id="itemsetting" name="itemsetting" onChange="Highlight(\'itemsetting\');" value="'.$item->setting.'"'.$disabled.' /> '.get_string('itemsettingmore','assignment_uploadpdf');
     echo ' <a href="http://www.php.net/date" target="_blank">'.get_string('dateformatlink','assignment_uploadpdf').'</td></tr>';
+    echo '<tr><td><label for="itemwidth" id="itemwidth_label" >'.get_string('itemwidth','assignment_uploadpdf').': </label></td>';
+    echo '<td><input type="text" id="itemwidth" name="itemwidth" onChange="Highlight(\'itemwidth\');" value="'.$item->width.'"'.$disabled.' /> '.get_string('textonly','assignment_uploadpdf').'</td></tr>';
     echo '</table>';
     echo '<input type="submit" name="saveitem" value="'.get_string('saveitem','assignment_uploadpdf').'"'.$disabled.'/>';
     echo '<input type="submit" name="deleteitem" value="'.get_string('deleteitem','assignment_uploadpdf').'"'.$deletedisabled.'/>';
@@ -368,7 +456,7 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
             echo "<div style='width: {$width}px; height: {$height}px; border: solid 1px black;'>";
             echo '<div style="position: relative;">';
             $imageurl = $CFG->wwwroot.'/file.php?file='.$partpath;
-            echo '<img src="'.$imageurl.'" alt="Preview Template" style="position: absolute; top: 0px; left: 0px;" />';
+            echo '<img src="'.$imageurl.'" alt="Preview Template" style="position: absolute; top: 0px; left: 0px;" onclick="clicked_on_image(event);" />';
             if ($templateid > 0) {
                 $templateitems = get_records('assignment_uploadpdf_template_item','template',$templateid);
                 if ($templateitems) {
@@ -377,13 +465,15 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
                         if ($ti->type == 'text') {
                             $tiwidth = ' width: '.$ti->width.'px; ';
                         }
+                        $cssid = '';
                         $border = '';
                         if ($itemid == $ti->id) {
                             $border = ' border: dashed 1px red; ';
+                            $cssid = ' id = "current_template_item" ';
                         }
                         echo '<div style="position: absolute;'.$border.' font-family: helvetica, arial, sans; font-size: 12px; ';
                         echo 'top: '.$ti->ypos.'px; left: '.$ti->xpos.'px; '.$tiwidth;
-                        echo '">';
+                        echo '"' . $cssid . '>';
                         if (($ti->type == 'text') || ($ti->type == 'shorttext')) {
                             echo s($ti->setting);
                         } elseif ($ti->type == 'date') {
@@ -391,6 +481,12 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
                         }
                         echo '</div>';
                     }
+                }
+                if ($itemid == -1) {
+                    echo '<div style="position: absolute; border: dashed 1px red; font-family: helvetica, arial, sans; font-size: 12px; ';
+                    echo 'top: 0px; left: 0px;" id = "current_template_item">';
+                    echo get_string('enterformtext', 'assignment_uploadpdf');
+                    echo '</div>';
                 }
             }
             echo '</div>';

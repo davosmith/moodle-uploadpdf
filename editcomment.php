@@ -38,6 +38,11 @@
 
 require('assignment.class.php');
 $assignmentinstance = new assignment_uploadpdf($cm->id, $assignment, $cm, $course);
-$assignmentinstance->edit_comment_page($userid, $pageno);
+
+if (optional_param('action',null,PARAM_TEXT) == 'showprevious') {
+    $assignmentinstance->show_previous_comments($userid);
+} else {
+    $assignmentinstance->edit_comment_page($userid, $pageno);
+}
 
 ?>
