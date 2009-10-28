@@ -1502,8 +1502,6 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function show_previous_comments($userid) {
-        global $CFG;
-
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = get_record('user', 'id', $userid)) {
@@ -1527,13 +1525,81 @@ class assignment_uploadpdf extends assignment_base {
             echo '<table'.$style1.'><tr><th'.$style1.'>'.get_string('pagenumber','assignment_uploadpdf').'</th>';
             echo '<th'.$style1.'>'.get_string('comment','assignment_uploadpdf').'</th></tr>';
             foreach ($comments as $comment) {
-                echo '<tr><td'.$style2.'>'.$comment->pageno.'</td><td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
+                $linkurl = '/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno='.$comment->pageno.'&amp;commentid='.$comment->id.'&amp;action=showpreviouspage';
+                $link = link_to_popup_window($linkurl, 'showpage'.$userid, $comment->pageno,
+                                             700, 700, fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno, null, true);
+                echo '<tr><td'.$style2.'>'.$link.'</td>';
+                echo '<td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
             }
             echo '</table>';
         }
         print_footer('none');
     }
 
+    function show_previous_page($userid, $pageno) {
+        global $CFG;
+        
+        require_capability('mod/assignment:grade', $this->context);
+
+        if (!$user = get_record('user', 'id', $userid)) {
+            error('No such user!');
+        }
+
+        if (!$submission = $this->get_submission($user->id)) {
+            error('User has no previous submission to display!');
+        }
+        
+        $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
+        check_dir_exists($imagefolder, true, true);
+        $pdffile = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission/submission.pdf'; // Check folder exists + file exists
+        if (!file_exists($pdffile)) {
+            error('Attempting to comment on non-existing submission');
+        }
+        
+        $pdf = new MyPDFLib();
+        $pdf->set_image_folder($imagefolder);
+        if ($pdf->load_pdf($pdffile) == 0) {
+            error(get_string('errorloadingpdf', 'assignment_uploadpdf'));
+        }
+        if (!$imgname = $pdf->get_image($pageno)) {
+            error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
+        }
+        if ($submission->numfiles == 0) {
+            $submission->numfiles = 1; /* Use this as a flag that there are images to delete at some point */
+            update_record('assignment_submissions', $submission);
+        }
+
+        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
+        list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
+
+        print_header(fullname($user, true).':'.format_string($this->assignment->name).':'.$pageno);
+
+        // Nasty hack to insert the style-sheet needed for my comment boxes
+        // (without having to rewrite every Moodle theme in existence)
+        echo '<script type="text/javascript">';
+        echo 'var fileref = document.createElement("link"); fileref.setAttribute("rel", "stylesheet"); fileref.setAttribute("type", "text/css");';
+        echo 'fileref.setAttribute("href", "style/annotate.css");';
+        echo 'if (typeof fileref!="undefined") document.getElementsByTagName("head")[0].appendChild(fileref);';
+        echo '</script>';
+
+        echo '<div style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
+        echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
+        echo '<img id="pdfimg" src="'.$imageurl.'" />';
+
+        // Insert comment boxes
+        $comments = get_records_select('assignment_uploadpdf_comment', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
+        if ($comments) {
+            foreach ($comments as $comment) {
+                echo '<div class="comment comment'.$comment->colour.'" style="position: absolute; ';
+                echo 'left: '.$comment->posx.'px; top: '.$comment->posy.'px; width: '.$comment->width.'px;">';
+                echo $comment->rawtext.'</div>';
+            }
+        }
+
+        echo '</div></div></div>';
+
+        print_footer('none');
+    }
 
     function setup_elements(&$mform) {
         global $CFG, $COURSE;
