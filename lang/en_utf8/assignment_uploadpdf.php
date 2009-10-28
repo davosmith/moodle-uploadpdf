@@ -61,6 +61,9 @@ $string['isresubmission'] = 'This is a resubmission - ';
 $string['downloadfirstsubmission'] = 'download the first submission';
 $string['next'] = 'Next';
 $string['previous'] = 'Prev';
+$string['showpreviousassignment'] = 'Display a previous assignment';
+$string['previousnone'] = 'None';
+$string['showprevious'] = 'Show';
 $string['commentcolour'] = 'Background colour for comment';
 $string['colourred'] = 'Red';
 $string['colouryellow'] = 'Yellow';
@@ -69,6 +72,9 @@ $string['colourblue'] = 'Blue';
 $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
 
+$string['nocomments'] = 'There are currently no comments on this student\'s submission.';
+$string['pagenumber'] = 'Page';
+$string['comment'] = 'Comment';
 
 $string['servercommfailed'] = 'Server communication failed - Click OK to try again';
 $string['errormessage'] = 'Error message: ';
