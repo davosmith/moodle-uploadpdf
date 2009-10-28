@@ -1527,7 +1527,9 @@ class assignment_uploadpdf extends assignment_base {
             echo '<table'.$style1.'><tr><th'.$style1.'>'.get_string('pagenumber','assignment_uploadpdf').'</th>';
             echo '<th'.$style1.'>'.get_string('comment','assignment_uploadpdf').'</th></tr>';
             foreach ($comments as $comment) {
-                echo '<tr><td'.$style2.'>'.$comment->pageno.'</td><td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
+                $link = 'editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno='.$comment->pageno.'&amp;commentid='.$comment->id.'&amp;action=showpreviouspage';
+                echo '<tr><td'.$style2.'><a href="'.$link.'" target="_blank">'.$comment->pageno.'</a></td>';
+                echo '<td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
             }
             echo '</table>';
         }
