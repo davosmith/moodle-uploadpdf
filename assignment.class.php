@@ -1312,6 +1312,7 @@ class assignment_uploadpdf extends assignment_base {
 
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
         
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
@@ -1397,6 +1398,8 @@ class assignment_uploadpdf extends assignment_base {
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
         echo $pageselector.'<br style="clear:both;" />';
+
+        echo '<ul style="display: none;" id="contextmenu"><li>Comment Quicklist</a></li><li class="separator">No items in quicklist...</li>';
 
         $server = array(
                         'id' => $this->cm->id,

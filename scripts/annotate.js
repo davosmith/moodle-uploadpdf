@@ -388,9 +388,24 @@ function startjs() {
 	setcurrentcolour(colour);
     }
     $('choosecolour').addEvent('change', changecolour);
-}    
+}
+
+function initcontextmenu() {
+    //create a context menu
+    var context = new ContextMenu({
+	    targets: 'img',
+	    menu: 'contextmenu',
+	    actions: {
+		copy: function(element,ref) { 
+		    element.setStyle('color','#090');
+		}
+	    },
+	    offsets: { x:2, y:2 }
+	});    
+}
 
 
 window.addEvent('domready', function() {
 	startjs();
+	initcontextmenu();
     });
