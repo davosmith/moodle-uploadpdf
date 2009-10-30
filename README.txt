@@ -137,7 +137,9 @@ will just join them in the order they are uploaded).
 
 The plugin name is currently displayed as '[[typeuploadpdf]]', not
 'Upload PDF'. This is a known Moodle bug (
-http://tracker.moodle.org/browse/MDL-16796 ), that is being fixed.
+http://tracker.moodle.org/browse/MDL-16796 ), that is now fixed in
+Moodle version 1.9 and above - please update your version of Moodle
+to avoid this problem.
 
 There is no way of configuring the GhostScript path via the
 Administration menu (again this is a Moodle limitation that I have not
