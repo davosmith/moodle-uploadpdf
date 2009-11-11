@@ -1503,6 +1503,8 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function show_previous_comments($userid) {
+        global $CFG;
+        
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = get_record('user', 'id', $userid)) {
@@ -1517,6 +1519,15 @@ class assignment_uploadpdf extends assignment_base {
 
         echo '<h2>'.format_string($this->assignment->name).'</h2>';
 
+        // Add download link for submission
+        $pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
+        if (file_exists($CFG->dataroot.'/'.$this->file_area_name($userid).'/responses/response.pdf')) {
+            $pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/responses/response.pdf';
+        }
+        echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a><br />';
+
+
+        // Put all the comments in a table
         $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id, 'pageno, posy');
         if (!$comments) {
             echo '<p>'.get_string('nocomments','assignment_uploadpdf').'</p>';
@@ -1591,9 +1602,11 @@ class assignment_uploadpdf extends assignment_base {
         $comments = get_records_select('assignment_uploadpdf_comment', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
         if ($comments) {
             foreach ($comments as $comment) {
+                $displaytext = s($comment->rawtext);
+                $displaytext = str_replace("\n",'<br />',$displaytext);
                 echo '<div class="comment comment'.$comment->colour.'" style="position: absolute; ';
                 echo 'left: '.$comment->posx.'px; top: '.$comment->posy.'px; width: '.$comment->width.'px;">';
-                echo $comment->rawtext.'</div>';
+                echo $displaytext.'</div>';
             }
         }
 
