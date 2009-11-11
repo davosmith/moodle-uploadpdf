@@ -1399,7 +1399,9 @@ class assignment_uploadpdf extends assignment_base {
         echo '</div></div></div>';
         echo $pageselector.'<br style="clear:both;" />';
 
-        echo '<ul style="display: none;" id="contextmenu"><li>Comment Quicklist</a></li><li class="separator">No items in quicklist...</li>';
+        // Definitions for the right-click menus
+        echo '<ul style="display: none;" id="context-quicklist"><li>Comment Quicklist</li><li class="separator" id="context-quicklist-default">No items in Quicklist...</li></ul>';
+        echo '<ul style="display: none;" id="context-comment"><li><a href="#addtoquicklist">Add to Comment Quicklist</a></li></ul>';        
 
         $server = array(
                         'id' => $this->cm->id,
