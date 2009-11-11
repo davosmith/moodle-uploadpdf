@@ -1316,7 +1316,7 @@ class assignment_uploadpdf extends assignment_base {
         
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
 
-        echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post">';
+        echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" >';
         echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
         echo '<input type="hidden" name="userid" value="'.$userid.'" />';
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
