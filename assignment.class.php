@@ -1395,7 +1395,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
-        echo $pageselector;
+        echo $pageselector.'<br style="clear:both;" />';
 
         $server = array(
                         'id' => $this->cm->id,
