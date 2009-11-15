@@ -2,6 +2,9 @@ var currentcomment = null;	// The comment that is currently being edited
 var editbox = null;		// The edit box that is currently displayed
 var resizing = false;		// A box is being resized (so disable dragging)
 var server = null;		// The object use to send data back to the server
+var context_quicklist = null;
+var context_comment = null;
+var quicklist = null;
 
 var ServerComm = new Class({
 	Implements: [Events],
@@ -242,6 +245,10 @@ function makecommentbox(position, content, colour) {
     }
     newcomment.store('id', -1);
     
+    if (context_comment) {
+	context_comment.addmenu(newcomment);
+    }
+
     var drag = newcomment.makeDraggable({
 	    container: 'pdfholder',
 	    onCancel: editcomment, // Click without drag = edit
@@ -390,18 +397,74 @@ function startjs() {
     $('choosecolour').addEvent('change', changecolour);
 }
 
+function context_quicklistnoitems() {
+    if (context_quicklist.quickcount == 0) {
+	if (!context_quicklist.menu.getElement('a[href$=noitems]')) {
+	    context_quicklist.addItem('noitems', 'No items in Quicklist &#0133;', function() { alert("Right-click on a comment to copy it to the quicklist"); });
+	}
+    } else {
+	context_quicklist.removeItem('noitems');
+    }
+}
+
 function initcontextmenu() {
     //create a context menu
-    var context = new ContextMenu({
-	    targets: 'img',
-	    menu: 'contextmenu',
+    context_quicklist = new ContextMenu({
+	    targets: '',
+	    menu: 'context-quicklist',
 	    actions: {
-		copy: function(element,ref) { 
-		    element.setStyle('color','#090');
-		}
 	    },
-	    offsets: { x:2, y:2 }
-	});    
+	    offsets: { x: 2, y:-20 }
+	});
+    context_quicklist.addmenu($('pdfimg'));
+    context_quicklist.quickcount = 0;
+    context_quicklistnoitems();
+    quicklist = new Array();
+
+    context_comment = new ContextMenu({
+	    targets: '',
+	    menu: 'context-comment',
+	    actions: {
+		addtoquicklist: function(element,ref) {
+		    // TODO Send message to server to save comment
+
+		    // TODO Get itemid from server response
+		    itemid = ++context_quicklist.quickcount;
+		    var itemtext = element.retrieve('rawtext').trim().replace('\n','');
+		    if (itemtext.length > 30) {
+			itemtext = itemtext.substring(0, 30) + '&#0133;';
+		    }
+		    itemtext = itemtext.replace('<','&lt;').replace('>','&gt;');
+
+		    quicklist[itemid] = new Object();
+		    quicklist[itemid].colour = element.retrieve('colour');
+		    quicklist[itemid].rawtext = element.retrieve('rawtext');
+		    quicklist[itemid].width = element.getStyle('width').toInt();
+
+		    // TODO Add 'x' to remove item again
+		    context_quicklist.addItem(itemid, itemtext, function(id, menu) {
+			    //			    alert(quicklist[id].rawtext);
+			    var imgpos = $('pdfimg').getPosition();
+			    var pos = new Object();
+			    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
+			    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
+			    var cb = makecommentbox(pos, quicklist[id].rawtext, quicklist[id].colour);
+			    if (Browser.Engine.trident) {
+				// Does not work with FF & Moodle
+				cb.setStyle('width',quicklist[id].width);
+			    } else {
+				// Does not work with IE
+				var style = cb.get('style')+' width:'+quicklist[id].width+'px;';
+				cb.set('style',style);
+			    }
+			    server.updatecomment(cb);
+			} );
+
+		    context_quicklistnoitems();
+		},
+	    },
+	    offsets: { x:2, y:-20 }
+	});
 }
 
 
