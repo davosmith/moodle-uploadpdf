@@ -1427,6 +1427,8 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function update_comment_page($userid, $pageno) {
+        global $USER;
+        
         $resp = array('error'=> ASSIGNMENT_UPLOADPDF_ERR_NONE);
         require_capability('mod/assignment:grade', $this->context);
 
@@ -1503,24 +1505,24 @@ class assignment_uploadpdf extends assignment_base {
             
         } elseif ($action == 'getquicklist') {
 
-            // Dummy response
-            // FIXME - grab from database
-            $quicklist = array();
-            $quicklist[0] = new Object();
-            $quicklist[0]->id = 1;
-            $quicklist[0]->text = "This is a test comment, to see if it can be added to the list";
-            $quicklist[0]->width = 120;
-            $quicklist[0]->colour = "red";
-            $quicklist[1] = new Object();
-            $quicklist[1]->id = 2;
-            $quicklist[1]->text = "Twas brillig and the slyvy toves did gyre and gimbol in the wabe";
-            $quicklist[1]->width = 80;
-            $quicklist[1]->colour = "blue";
-            $resp['quicklist'] = $quicklist;
-            
+            $quicklist = get_records('assignment_uploadpdf_quicklist', 'userid', $USER->id, 'id');
+            $respquicklist = array();
+            if ($quicklist) {
+                foreach ($quicklist as $item) {
+                    $respitem = array();
+                    $respitem['id'] = ''.$item->id;
+                    $respitem['text'] = $item->text;
+                    $respitem['width'] = $item->width;
+                    $respitem['colour'] = $item->colour;
+                    $respquicklist[] = $respitem;
+                }
+            }
+            $resp['quicklist'] = $respquicklist;
+
         } elseif ($action == 'addtoquicklist') {
 
             $item = new Object();
+            $item->userid = $USER->id;
             $item->width = optional_param('width', -1, PARAM_INT);
             $item->text = optional_param('text', null, PARAM_TEXT);
 			$item->colour = optional_param('colour', 'yellow', PARAM_TEXT);
@@ -1528,30 +1530,27 @@ class assignment_uploadpdf extends assignment_base {
             if (($item->width < 0) || ($item->text === null)) {
                 send_error('Missing quicklist data');
             }
-            
-            $item->id = 3;
-            // FIXME - really do database insert here
-            //$item->id = insert_record('assignment_uploadpdf_quicklist', $item);
+
+            $item->id = insert_record('assignment_uploadpdf_quicklist', $item);
 
             $resp['item'] = $item;
-            
+
         } elseif ($action == 'removefromquicklist') {
 
             $itemid = optional_param('itemid', -1, PARAM_INT);
             if ($itemid < 0) {
                 send_error('No quicklist id provided');
             }
-            // FIXME - really do database delete here
-            /*
-            $olditem = get_record('assignment_uploadpdf_quicklist', 'id', $itemid, 'assignment_submission', $submission->id, 'pageno', $pageno);
+
+            $olditem = get_record('assignment_uploadpdf_quicklist', 'id', $itemid, 'userid', $USER->id);
             if (!($olditem)) {
                 send_error('Could not find a quicklist item with that id on this page');
             } else {
                 delete_records('assignment_uploadpdf_quicklist', 'id', $itemid);
             }
-            */
+
             $resp['itemid'] = $itemid;
-            
+
         } else {
             send_error('Invalid action "'.$action.'"', ASSIGNMENT_UPLOADPDF_ERR_INVALID_ACTION);
         }

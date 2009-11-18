@@ -40,3 +40,13 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_template_item` (
   PRIMARY KEY (`id`),
   KEY `template` (`template`)
 ) ;
+
+CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_quicklist` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `userid` int(10) unsigned NOT NULL default '0',
+  `text` varchar(255) default '',
+  `width` int(10) NOT NULL default '0',
+  `colour` varchar(10) NULL default 'yellow',
+  PRIMARY KEY (`id`),
+  KEY `userid` (`userid`)
+) ;

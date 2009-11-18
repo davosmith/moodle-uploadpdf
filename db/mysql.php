@@ -43,6 +43,18 @@ function assignment_uploadpdf_upgrade($oldversion) {
         $result = $result && add_field($table, $field);
     }
 
+    if ($result && $oldversion < 2009111800) {
+        $table =  new XMLDBTable('assignment_uploadpdf_quicklist');
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
+        $table->addFieldInfo('userid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('text', XMLDB_TYPE_CHAR, '255', null, null, null, null, null, '');
+        $table->addFieldInfo('width', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('colour', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, null, null, 'yellow');
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->addIndexInfo('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+        $result = $result && create_table($table);
+    }
+
     return $result;
 }
 ?>

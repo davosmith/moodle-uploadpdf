@@ -94,9 +94,9 @@
 }
 
 /* context menu specific */
-.contextmenu	{ border:1px solid #999; padding:0; background:#eee; width:220px; list-style-type:none; display:none; }
+.contextmenu	{ border:1px solid #999; padding:0; background:#eee; width:221px; list-style-type:none; display:none; }
 .contextmenu .separator	{ border-bottom:1px solid #999; }
-.contextmenu li	{ margin:0; padding:0; clear: both; }
+.contextmenu li	{ margin:0; padding:0; clear: both; font-size:14px; }
 .contextmenu li a { display:block; padding:5px 5px 5px 5px; width:190px; font-size:12px; text-decoration:none; font-family:tahoma,arial,sans-serif; color:#000; float: left; }
 .contextmenu li a:hover	{ background-color:#ddd; }
 .contextmenu li a.disabled { color:#ccc; font-style:italic; }

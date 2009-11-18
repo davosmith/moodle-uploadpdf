@@ -52,7 +52,7 @@
 	<INDEX NAME="course" UNIQUE="false" FIELDS="course" />
       </INDEXES>
     </TABLE>
-    <TABLE NAME="assignment_uploadpdf_template_item" COMMENT="Stores the data describing a coversheet template" PREVIOUS="assignment_uploadpdf_template">
+    <TABLE NAME="assignment_uploadpdf_template_item" COMMENT="Stores the data describing a coversheet template" PREVIOUS="assignment_uploadpdf_template" NEXT="assignment_uploadpdf_quicklist">
       <FIELDS>
 	<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="template"/>
 	<FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="type"/>
@@ -67,6 +67,21 @@
       </KEYS>
       <INDEXES>
 	<INDEX NAME="template" UNIQUE="false" FIELDS="template" />
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="assignment_uploadpdf_quicklist" COMMENT="Stores teacher specified quicklist comments" PREVIOUS="assignment_uploadpdf_template_item">
+      <FIELDS>
+	<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
+	<FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="text"/>
+	<FIELD NAME="text" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="width"/>
+	<FIELD NAME="width" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="text" NEXT="colour"/>
+	<FIELD NAME="colour" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" ENUM="false" DEFAULT="yellow" PREVIOUS="width" />
+      </FIELDS>
+      <KEYS>
+	<KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for assignment_uploadpdf_quicklist"/>
+      </KEYS>
+      <INDEXES>
+	<INDEX NAME="userid" UNIQUE="false" FIELDS="userid" />
       </INDEXES>
     </TABLE>
   </TABLES>
