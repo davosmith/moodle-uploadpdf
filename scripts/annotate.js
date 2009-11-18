@@ -493,8 +493,7 @@ function startjs() {
 function context_quicklistnoitems() {
     if (context_quicklist.quickcount == 0) {
 	if (!context_quicklist.menu.getElement('a[href$=noitems]')) {
-	    // TODO make translatable
-	    context_quicklist.addItem('noitems', 'No items in Quicklist &#0133;', null, function() { alert("Right-click on a comment to copy it to the quicklist"); });
+	    context_quicklist.addItem('noitems', server_config.lang_emptyquicklist+' &#0133;', null, function() { alert(server_config.lang_emptyquicklist_instructions); });
 	}
     } else {
 	context_quicklist.removeItem('noitems');

@@ -80,6 +80,11 @@ $string['servercommfailed'] = 'Server communication failed - Click OK to try aga
 $string['errormessage'] = 'Error message: ';
 $string['okagain'] = 'Click OK to try again';
 
+$string['quicklist'] = 'Comment Quicklist';
+$string['addquicklist'] = 'Add to Comment Quicklist';
+$string['emptyquicklist'] = 'No items in Quicklist';
+$string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
+
 //Student upload
 $string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';
 $string['nonpdfheading'] = 'Non-PDF file found';

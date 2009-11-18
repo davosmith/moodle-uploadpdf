@@ -1400,8 +1400,8 @@ class assignment_uploadpdf extends assignment_base {
         echo $pageselector.'<br style="clear:both;" />';
 
         // Definitions for the right-click menus
-        echo '<ul class="contextmenu" style="display: none;" id="context-quicklist"><li class="separator">Comment Quicklist</li></ul>';
-        echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">Add to Comment Quicklist</a></li></ul>';        
+        echo '<ul class="contextmenu" style="display: none;" id="context-quicklist"><li class="separator">'.get_string('quicklist','assignment_uploadpdf').'</li></ul>';
+        echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">'.get_string('addquicklist','assignment_uploadpdf').'</a></li></ul>';        
 
         $server = array(
                         'id' => $this->cm->id,
@@ -1412,6 +1412,8 @@ class assignment_uploadpdf extends assignment_base {
                         'lang_servercommfailed' => get_string('servercommfailed', 'assignment_uploadpdf'),
                         'lang_errormessage' => get_string('errormessage', 'assignment_uploadpdf'),
                         'lang_okagain' => get_string('okagain', 'assignment_uploadpdf'),
+                        'lang_emptyquicklist' => get_string('emptyquicklist', 'assignment_uploadpdf'),
+                        'lang_emptyquicklist_instructions' => get_string('emptyquicklist_instructions', 'assignment_uploadpdf'),
                         'deleteicon' => $CFG->pixpath . '/t/delete.gif'
                         );
         
