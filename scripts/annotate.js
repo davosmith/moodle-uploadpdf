@@ -155,6 +155,99 @@ var ServerComm = new Class({
 			    sesskey: this.sesskey
 			    } });
 	    
+	},
+
+	getquicklist: function() {
+	    var request = new Request.JSON({
+		    url: this.url,
+
+		    onSuccess: function(resp) {
+			if (resp.error == 0) {
+			    resp.quicklist.each(addtoquicklist);  // Assume contains: id, rawtext, colour, width
+			} else {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+				server.getquicklist();
+			    }
+			}
+		    },
+
+		    onFailure: function(resp) {
+			if (confirm(server_config.lang_servercommfailed)) {
+			    server.getquicklist();
+			}
+		    }
+		});
+
+	    request.send({ data: {
+		            action: 'getquicklist',
+			    id: this.id,
+			    userid: this.userid, // This and pageno are not strictly needed, but are checked for on the server
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
+			    } });
+	},
+
+	addtoquicklist: function(element) {
+	    var request = new Request.JSON({
+		    url: this.url,
+
+		    onSuccess: function(resp) {
+			if (resp.error == 0) {
+			    addtoquicklist(resp.item);  // Assume contains: id, rawtext, colour, width
+			} else {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+				server.addtoquicklist(element);
+			    }
+			}
+		    },
+		    
+		    onFailure: function(resp) {
+			if (confirm(server_config.lang_servercommfailed)) {
+			    server.addtoquicklist(element);
+			}
+		    }
+		});
+
+	    request.send({ data: {
+			    action: 'addtoquicklist',
+			    colour: element.retrieve('colour'),
+			    text: element.retrieve('rawtext'),
+			    width: element.getStyle('width').toInt(),
+			    id: this.id,
+			    userid: this.userid, // This and pageno are not strictly needed, but are checked for on the server
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
+			    } });
+	},
+
+	removefromquicklist: function(itemid) {
+	    var request = new Request.JSON({
+		    url: this.url,
+		    onSuccess: function(resp) {
+			if (resp.error == 0) {
+			    removefromquicklist(resp.itemid);
+			} else {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+				server.removefromquicklist(itemid);
+			    }
+			}
+		    },
+
+		    onFailure: function(resp) {
+			if (confirm(server_config.lang_servercommfailed)) {
+			    server.removefromquicklist(itemid);
+			}
+		    }
+		});
+
+	    request.send({ data: {
+			action: 'removefromquicklist',
+			    itemid: itemid,
+			    id: this.id,
+			    userid: this.userid, // This and pageno are not strictly needed, but are checked for on the server
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
+			    } });
 	}
     });
 
@@ -400,11 +493,49 @@ function startjs() {
 function context_quicklistnoitems() {
     if (context_quicklist.quickcount == 0) {
 	if (!context_quicklist.menu.getElement('a[href$=noitems]')) {
-	    context_quicklist.addItem('noitems', 'No items in Quicklist &#0133;', function() { alert("Right-click on a comment to copy it to the quicklist"); });
+	    // TODO make translatable
+	    context_quicklist.addItem('noitems', 'No items in Quicklist &#0133;', null, function() { alert("Right-click on a comment to copy it to the quicklist"); });
 	}
     } else {
 	context_quicklist.removeItem('noitems');
     }
+}
+
+function addtoquicklist(item) {
+    var itemid = item.id;
+    var itemtext = item.text.trim().replace('\n','');
+    if (itemtext.length > 30) {
+	itemtext = itemtext.substring(0, 30) + '&#0133;';
+    }
+    itemtext = itemtext.replace('<','&lt;').replace('>','&gt;');
+
+    quicklist[itemid] = item;
+
+    context_quicklist.addItem(itemid, itemtext, server_config.deleteicon, function(id, menu) {
+	    var imgpos = $('pdfimg').getPosition();
+	    var pos = new Object();
+	    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
+	    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
+	    var cb = makecommentbox(pos, quicklist[id].text, quicklist[id].colour);
+	    if (Browser.Engine.trident) {
+		// Does not work with FF & Moodle
+		cb.setStyle('width',quicklist[id].width);
+	    } else {
+		// Does not work with IE
+		var style = cb.get('style')+' width:'+quicklist[id].width+'px;';
+		cb.set('style',style);
+	    }
+	    server.updatecomment(cb);
+	} );
+
+    context_quicklist.quickcount++;
+    context_quicklistnoitems();
+}
+
+function removefromquicklist(itemid) {
+    context_quicklist.removeItem(itemid);
+    context_quicklist.quickcount--;
+    context_quicklistnoitems();
 }
 
 function initcontextmenu() {
@@ -413,6 +544,9 @@ function initcontextmenu() {
 	    targets: '',
 	    menu: 'context-quicklist',
 	    actions: {
+		removeitem: function(itemid, menu) {
+		    server.removefromquicklist(itemid);
+		}
 	    },
 	    offsets: { x: 2, y:-20 }
 	});
@@ -426,45 +560,13 @@ function initcontextmenu() {
 	    menu: 'context-comment',
 	    actions: {
 		addtoquicklist: function(element,ref) {
-		    // TODO Send message to server to save comment
-
-		    // TODO Get itemid from server response
-		    itemid = ++context_quicklist.quickcount;
-		    var itemtext = element.retrieve('rawtext').trim().replace('\n','');
-		    if (itemtext.length > 30) {
-			itemtext = itemtext.substring(0, 30) + '&#0133;';
-		    }
-		    itemtext = itemtext.replace('<','&lt;').replace('>','&gt;');
-
-		    quicklist[itemid] = new Object();
-		    quicklist[itemid].colour = element.retrieve('colour');
-		    quicklist[itemid].rawtext = element.retrieve('rawtext');
-		    quicklist[itemid].width = element.getStyle('width').toInt();
-
-		    // TODO Add 'x' to remove item again
-		    context_quicklist.addItem(itemid, itemtext, function(id, menu) {
-			    //			    alert(quicklist[id].rawtext);
-			    var imgpos = $('pdfimg').getPosition();
-			    var pos = new Object();
-			    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
-			    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
-			    var cb = makecommentbox(pos, quicklist[id].rawtext, quicklist[id].colour);
-			    if (Browser.Engine.trident) {
-				// Does not work with FF & Moodle
-				cb.setStyle('width',quicklist[id].width);
-			    } else {
-				// Does not work with IE
-				var style = cb.get('style')+' width:'+quicklist[id].width+'px;';
-				cb.set('style',style);
-			    }
-			    server.updatecomment(cb);
-			} );
-
-		    context_quicklistnoitems();
-		},
+		    server.addtoquicklist(element);
+		}
 	    },
 	    offsets: { x:2, y:-20 }
 	});
+
+    server.getquicklist();
 }
 
 

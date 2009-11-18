@@ -113,12 +113,25 @@ var ContextMenu = new Class({
 		return this;
 	},
 
-	addItem: function(item, text, func) {
+	addItem: function(item, text, deleteicon, func) {
 	    var newel = new Element('li');
 	    var link = new Element('a');
 	    link.set('html',text);
 	    link.setProperty('href','#'+item);
 	    newel.adopt(link);
+	    if (deleteicon) {
+		var dellink = new Element('a');
+		var delico = new Element('img');
+		delico.setProperty('src', deleteicon);
+		dellink.setProperty('href','#del'+item);
+		dellink.setProperty('class', 'delete');
+		dellink.adopt(delico);
+		dellink.addEvent('click', function(e) {
+			this.execute('removeitem',item)
+		    }.bind(this) );
+		newel.adopt(dellink);
+	    }
+
 	    newel.set('id',this.options.menu + item);
 	    this.menu.adopt(newel);
 	    //	    this.options.actions[item] = func;
@@ -134,7 +147,8 @@ var ContextMenu = new Class({
 	},
 
 	removeItem: function(item) {
-	    document.getElementById(this.options.menu + item).destroy();
+	    var remove = document.getElementById(this.options.menu + item);
+	    if (remove) { remove.destroy(); }
 	    return this;
 	},
 	
