@@ -703,6 +703,7 @@ function gotopage(pageno) {
 		break;
 	    }
 	}
+	document.showprevious.pageno.value = pageno;
 	server.pageno = ""+pageno;
 	server.getimageurl(pageno, true);
 	server.getcomments();

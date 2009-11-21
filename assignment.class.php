@@ -1393,7 +1393,7 @@ class assignment_uploadpdf extends assignment_base {
         $ps_sql .= ' ORDER BY sub.timemodified DESC;';
         $previoussubs = get_records_sql($ps_sql);
         if ($previoussubs) {
-            echo '<form target="_top" action="editcomment.php" method="get">';
+            echo '<form name="showprevious" target="_top" action="editcomment.php" method="get">';
             echo ' '.get_string('showpreviousassignment','assignment_uploadpdf').': ';
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
             echo '<input type="hidden" name="userid" value="'.$userid.'" />';
