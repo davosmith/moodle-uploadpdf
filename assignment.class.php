@@ -1226,6 +1226,40 @@ class assignment_uploadpdf extends assignment_base {
         return true;
     }
 
+    function get_page_image($userid, $pageno, $submission) {
+        global $CFG;
+
+        $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
+        check_dir_exists($imagefolder, true, true);
+        $pdffile = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission/submission.pdf'; // Check folder exists + file exists
+        if (!file_exists($pdffile)) {
+            error('Attempting to display image for non-existing submission');
+        }
+
+        $pdf = new MyPDFLib();
+        $pdf->set_image_folder($imagefolder);
+        $pagecount = $submission->numfiles >> 1; // Extract the pagecount from 'numfiles' (may be 0)
+        $pagecount = $pdf->set_pdf($pdffile, $pagecount); // Only loads the PDF if the pagecount is unknown (0)
+
+        if ($pageno > $pagecount) {
+            return array(null, 0, 0, $pagecount);
+        }
+
+        if (!$imgname = $pdf->get_image($pageno)) {
+            error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
+        }
+
+        if (($submission->numfiles & 1) == 0) {
+            $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
+            update_record('assignment_submissions', $submission);
+        }
+
+        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
+        list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
+
+        return array($imageurl, $imgwidth, $imgheight, $pagecount);
+    }
+
     function edit_comment_page($userid, $pageno) {
         global $CFG;
 
@@ -1286,32 +1320,7 @@ class assignment_uploadpdf extends assignment_base {
             }
         }
 
-        $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
-        check_dir_exists($imagefolder, true, true);
-        $pdffile = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission/submission.pdf'; // Check folder exists + file exists
-        if (!file_exists($pdffile)) {
-            error('Attempting to comment on non-existing submission');
-        }
-
-        $pdf = new MyPDFLib();
-        $pdf->set_image_folder($imagefolder);
-        /*        if ($pdf->load_pdf($pdffile) == 0) {
-            error(get_string('errorloadingpdf', 'assignment_uploadpdf'));
-            }*/
-        $pagecount = $submission->numfiles >> 1; // Extract the pagecount from 'numfiles' (may be 0)
-        $pagecount = $pdf->set_pdf($pdffile, $pagecount); // Only loads the PDF if the pagecount is unknown (0)
-
-        if (!$imgname = $pdf->get_image($pageno)) {
-            error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
-        }
-
-        if (($submission->numfiles & 1) == 0) {
-            $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
-            update_record('assignment_submissions', $submission);
-        }
-
-        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
-        list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
+        list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
@@ -1331,7 +1340,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '</form>';
 		echo '</div>';
 
-        $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px;" class="pageselector">';
+        /*        $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px;" class="pageselector">';
 
         if ($pageno > 1) {
             $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'&amp;showprevious='.$showprevious.'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
@@ -1339,7 +1348,7 @@ class assignment_uploadpdf extends assignment_base {
             $pageselector .= '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
         }
 
-        for ($i=1; $i<=$pdf->page_count(); $i++) {
+        for ($i=1; $i<=$pagecount; $i++) {
             if ($i == $pageno) {
                 $pageselector .= "$i ";
             } else {
@@ -1350,12 +1359,28 @@ class assignment_uploadpdf extends assignment_base {
             }
         }
        
-        if ($pageno < $pdf->page_count()) {
+        if ($pageno < $pagecount) {
             $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'&amp;showprevious='.$showprevious.'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
         } else {
             $pageselector .= get_string('next','assignment_uploadpdf').'--&gt;';
+            }*/
+
+        $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px; padding: 10px 0px;" class="pageselector">';
+        $pageselector .= '<button onClick="gotoprevpage();">&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
+
+        $pageselector .= '<select name="selectpage" id="selectpage" onChange="selectpage();">';
+        for ($i=1; $i<=$pagecount; $i++) {
+            if ($i == $pageno) {
+                $pageselector .= "<option value='$i' selected='selected'>$i</option>";
+            } else {
+                $pageselector .= "<option value='$i'>$i</option>";
+            }
         }
+        $pageselector .= '</select>';
+        
+        $pageselector .= '<button onClick="gotonextpage();">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
 		$pageselector .= '</div>';
+        
         echo $pageselector;
         echo '<div id="colourselector">';
         // Show previous assignment
@@ -1396,10 +1421,12 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
 		echo '</select></div>';
         
-        echo '<div style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
+        // Output the page image
+        echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
+        $pageselector = str_replace('selectpage','selectpage2',$pageselector);
         echo $pageselector.'<br style="clear:both;" />';
 
         // Definitions for the right-click menus
@@ -1417,7 +1444,8 @@ class assignment_uploadpdf extends assignment_base {
                         'lang_okagain' => get_string('okagain', 'assignment_uploadpdf'),
                         'lang_emptyquicklist' => get_string('emptyquicklist', 'assignment_uploadpdf'),
                         'lang_emptyquicklist_instructions' => get_string('emptyquicklist_instructions', 'assignment_uploadpdf'),
-                        'deleteicon' => $CFG->pixpath . '/t/delete.gif'
+                        'deleteicon' => $CFG->pixpath . '/t/delete.gif',
+                        'pagecount' => $pagecount
                         );
         
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
@@ -1431,6 +1459,7 @@ class assignment_uploadpdf extends assignment_base {
         print_footer('none');
     }
 
+    // Respond to AJAX requests whilst teacher is editing comments
     function update_comment_page($userid, $pageno) {
         global $USER;
         
@@ -1556,6 +1585,23 @@ class assignment_uploadpdf extends assignment_base {
 
             $resp['itemid'] = $itemid;
 
+        } elseif ($action == 'getimageurl') {
+
+            if ($pageno < 1) {
+                send_error('Requested page number is too small (< 1)');
+            }
+
+            list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
+
+            if ($pageno > $pagecount) {
+                send_error('Requested page number is bigger than the page count ('.$pageno.' > '.$pagecount.')');
+            }   
+
+            $resp['image'] = new Object();
+            $resp['image']->url = $imageurl;
+            $resp['image']->width = $imgwidth;
+            $resp['image']->height = $imgheight;
+
         } else {
             send_error('Invalid action "'.$action.'"', ASSIGNMENT_UPLOADPDF_ERR_INVALID_ACTION);
         }
@@ -1622,31 +1668,7 @@ class assignment_uploadpdf extends assignment_base {
             error('User has no previous submission to display!');
         }
         
-        $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
-        check_dir_exists($imagefolder, true, true);
-        $pdffile = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission/submission.pdf'; // Check folder exists + file exists
-        if (!file_exists($pdffile)) {
-            error('Attempting to comment on non-existing submission');
-        }
-        
-        $pdf = new MyPDFLib();
-        $pdf->set_image_folder($imagefolder);
-        /*
-        if ($pdf->load_pdf($pdffile) == 0) {
-            error(get_string('errorloadingpdf', 'assignment_uploadpdf'));
-            }*/
-        $pagecount = $submission->numfiles >> 1;
-        $pagecount = $pdf->set_pdf($pdffile, $pagecount);
-        if (!$imgname = $pdf->get_image($pageno)) {
-            error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
-        }
-        if (($submission->numfiles & 1) == 0) {
-            $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
-            update_record('assignment_submissions', $submission);
-        }
-
-        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
-        list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
+        list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
         print_header(fullname($user, true).':'.format_string($this->assignment->name).':'.$pageno);
 

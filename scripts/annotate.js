@@ -248,7 +248,49 @@ var ServerComm = new Class({
 			    pageno: this.pageno,
 			    sesskey: this.sesskey
 			    } });
+	},
+
+	getimageurl: function(pageno) {
+	    var request = new Request.JSON({
+		    url: this.url,
+
+		    onSuccess: function(resp) {
+			if (resp.error == 0) {
+			    var pdfsize = $('pdfsize');
+			    if (Browser.Engine.trident) {
+				// Does not work with FF & Moodle
+				pdfsize.setStyle('width',resp.image.width);
+				pdfsize.setStyle('height',resp.image.height);
+			    } else {
+				// Does not work with IE
+				var style = 'height:'+resp.image.height+'px; width:'+resp.image.width+'px;'+' clear: both;';
+				pdfsize.set('style',style);
+			    }
+			    $('pdfimg').setProperty('src',resp.image.url);
+			    
+			} else {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+				server.getimageurl(pageno);
+			    }
+			}
+		    },
+
+		    onFailure: function(resp) {
+			if (confirm(server_config.lang_servercommfailed)) {
+			    server.getimageurl(pageno);
+			}
+		    }
+		});
+
+	    request.send({ data: {
+			action: 'getimageurl',
+			    id: this.id,
+			    userid: this.userid,
+			    pageno: pageno,
+			    sesskey: this.sesskey
+			    } });
 	}
+	
     });
 
 function setcommentcontent(el, content) {
@@ -568,6 +610,54 @@ function initcontextmenu() {
     server.getquicklist();
 }
 
+function gotopage(pageno) {
+    var pagecount = server_config.pagecount.toInt();
+    if ((pageno < pagecount) && (pageno > 0)) {
+	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
+	var el = $('selectpage');
+	var i;
+	for (i=0; i<el.length; i++) {
+	    if (el[i].value == pageno) {
+		el.selectedIndex = i;
+		break;
+	    }
+	}
+	el = $('selectpage2');
+	for (i=0; i<el.length; i++) {
+	    if (el[i].value == pageno) {
+		el.selectedIndex = i;
+		break;
+	    }
+	}
+	server.pageno = ""+pageno;
+	server.getimageurl(pageno);
+	server.getcomments();
+    }
+}
+
+function gotonextpage() {
+    var pageno = server.pageno.toInt();
+    pageno += 1;
+    gotopage(pageno);
+}
+
+function gotoprevpage() {
+    var pageno = server.pageno.toInt();
+    pageno -= 1;
+    gotopage(pageno);
+}
+
+function selectpage() {
+    var el = $('selectpage');
+    var idx = el.selectedIndex;
+    gotopage(el[idx].value);
+}
+
+function selectpage2() {
+    var el = $('selectpage2');
+    var idx = el.selectedIndex;
+    gotopage(el[idx].value);
+}
 
 window.addEvent('domready', function() {
 	startjs();
