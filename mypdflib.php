@@ -91,6 +91,16 @@ class MyPDFLib extends FPDI {
         $this->filename = $filename;
         return $this->pagecount;
     }
+
+    public function set_pdf($filename, $pagecount=0) {
+        if ($pagecount == 0) {
+            return $this->load_pdf($filename);
+        } else {
+            $this->filename = $filename;
+            $this->pagecount = $pagecount;
+            return $pagecount;
+        }
+    }
     
     public function copy_page() {		/* Copy next page from source file and set as current page */
         if (!$this->filename) {

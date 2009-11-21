@@ -1296,9 +1296,12 @@ class assignment_uploadpdf extends assignment_base {
         
         $pdf = new MyPDFLib();
         $pdf->set_image_folder($imagefolder);
-        if ($pdf->load_pdf($pdffile) == 0) {
+        /*        if ($pdf->load_pdf($pdffile) == 0) {
             error(get_string('errorloadingpdf', 'assignment_uploadpdf'));
-        }
+            }*/
+        // TODO Find somewhere to store this value - now stored at the end of data2
+        $pagecount = 0;
+        $pdf->set_pdf($pdffile, $pagecount);
         if (!$imgname = $pdf->get_image($pageno)) {
             error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
         }
