@@ -4,7 +4,11 @@ var resizing = false;		// A box is being resized (so disable dragging)
 var server = null;		// The object use to send data back to the server
 var context_quicklist = null;
 var context_comment = null;
-var quicklist = null;
+var quicklist = null; // Stores all the comments in the quicklist
+var pagelist = null; // Stores all the data for the preloaded pages
+var waitingforpage = -1;  // Waiting for this page from the server - display as soon as it is received
+const pagestopreload = 4; // How many pages ahead to load when you hit a non-preloaded page
+var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 
 var ServerComm = new Class({
 	Implements: [Events],
@@ -109,26 +113,30 @@ var ServerComm = new Class({
 	    var waitel = new Element('div');
 	    waitel.set('class', 'pagewait');
 	    $('pdfholder').adopt(waitel);
-	    	    
+
+	    var pageno = this.pageno;
 	    var request = new Request.JSON({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
 			if (resp.error == 0) {
 			    waitel.destroy();
-			    resp.comments.each(function(comment) {
-				    cb = makecommentbox(comment.position, comment.text, comment.colour);
-				    if (Browser.Engine.trident) {
-					// Does not work with FF & Moodle
-					cb.setStyle('width',comment.width);
-				    } else {
-					// Does not work with IE
-					var style = cb.get('style')+' width:'+comment.width+'px;';
-					cb.set('style',style);
-				    }
+			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
+				$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!)
+				resp.comments.each(function(comment) {
+					cb = makecommentbox(comment.position, comment.text, comment.colour);
+					if (Browser.Engine.trident) {
+					    // Does not work with FF & Moodle
+					    cb.setStyle('width',comment.width);
+					} else {
+					    // Does not work with IE
+					    var style = cb.get('style')+' width:'+comment.width+'px;';
+					    cb.set('style',style);
+					}
 
-				    cb.store('id', comment.id);
-				});
+					cb.store('id', comment.id);
+				    });
+			    }
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.getcomments();
@@ -250,34 +258,73 @@ var ServerComm = new Class({
 			    } });
 	},
 
-	getimageurl: function(pageno) {
+	getimageurl: function(pageno, changenow) {
+	    if (changenow) {
+		if ($defined(pagelist[pageno])) {
+		    showpage(pageno);
+		    pagesremaining++;
+		    if (pagesremaining > 1) {
+			return; // Already requests pending, so no need to send any more
+		    }
+		} else {
+		    waitingforpage = pageno;
+		    pagesremaining = pagestopreload; // Wanted a page that wasn't preloaded, so load a few more
+		}
+	    }
+	    
+	    var pagecount = server_config.pagecount.toInt();
+	    var startpage = pageno;
+
+	    // Find the next page that has not already been loaded
+	    while ((pageno <= pagecount) && $defined(pagelist[pageno])) {
+		pageno++;
+	    }
+	    // Wrap around to the beginning again
+	    if (pageno > pagecount) {
+		pageno = 1;
+		while ($defined(pagelist[pageno])) {
+		    if (pageno == startpage) {
+			return; // All pages preloaded, so stop
+		    }
+		    pageno++;
+		}
+	    }
+	    
 	    var request = new Request.JSON({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
 			if (resp.error == 0) {
-			    var pdfsize = $('pdfsize');
-			    if (Browser.Engine.trident) {
-				// Does not work with FF & Moodle
-				pdfsize.setStyle('width',resp.image.width);
-				pdfsize.setStyle('height',resp.image.height);
-			    } else {
-				// Does not work with IE
-				var style = 'height:'+resp.image.height+'px; width:'+resp.image.width+'px;'+' clear: both;';
-				pdfsize.set('style',style);
+			    pagesremaining--;
+			    pagelist[pageno] = new Object();
+			    pagelist[pageno].url = resp.image.url;
+			    pagelist[pageno].width = resp.image.width;
+			    pagelist[pageno].height = resp.image.height;
+			    pagelist[pageno].image = new Image();
+			    pagelist[pageno].image.src = resp.image.url;
+			    if (waitingforpage == pageno) {
+				showpage(pageno);
+				waitingforpage = -1;
 			    }
-			    $('pdfimg').setProperty('src',resp.image.url);
+
+			    // If a page has been received and waitingforpage > 0 then another,
+			    // urgent request has been sent after this one, so do not send any more
+			    //			    if (waitingforpage < 0 && pagesremaining > 0) {
+			    if (pagesremaining > 0) {
+				var nextpage = pageno.toInt()+1;
+				server.getimageurl(nextpage, false);
+			    }
 			    
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
-				server.getimageurl(pageno);
+				server.getimageurl(pageno, false);
 			    }
 			}
 		    },
 
 		    onFailure: function(resp) {
 			if (confirm(server_config.lang_servercommfailed)) {
-			    server.getimageurl(pageno);
+			    server.getimageurl(pageno, false);
 			}
 		    }
 		});
@@ -530,6 +577,18 @@ function startjs() {
 	setcurrentcolour(colour);
     }
     $('choosecolour').addEvent('change', changecolour);
+    pagelist = new Array();
+    
+    var pageno = server.pageno.toInt();
+    // Little fix as Firefox remembers the selected option after a page refresh
+    var sel = $('selectpage');
+    var selidx = sel.selectedIndex;
+    var selpage = sel[selidx].value;
+    if (selpage != pageno) {
+	gotopage(selpage);
+    } else {
+	server.getimageurl(pageno+1, false);
+    }
 }
 
 function context_quicklistnoitems() {
@@ -610,6 +669,21 @@ function initcontextmenu() {
     server.getquicklist();
 }
 
+function showpage(pageno) {
+    var pdfsize = $('pdfsize');
+    if (Browser.Engine.trident) {
+	// Does not work with FF & Moodle
+	pdfsize.setStyle('width',pagelist[pageno].width);
+	pdfsize.setStyle('height',pagelist[pageno].height);
+    } else {
+	// Does not work with IE
+	var style = 'height:'+pagelist[pageno].height+'px; width:'+pagelist[pageno].width+'px;'+' clear: both;';
+	pdfsize.set('style',style);
+    }
+    $('pdfimg').setProperty('src',pagelist[pageno].url);
+    pagestopreload++;
+}
+
 function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno < pagecount) && (pageno > 0)) {
@@ -630,7 +704,7 @@ function gotopage(pageno) {
 	    }
 	}
 	server.pageno = ""+pageno;
-	server.getimageurl(pageno);
+	server.getimageurl(pageno, true);
 	server.getcomments();
     }
 }
