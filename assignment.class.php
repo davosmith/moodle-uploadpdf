@@ -766,8 +766,7 @@ class assignment_uploadpdf extends assignment_base {
             $updated->id = $submission->id;
             $updated->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
             $updated->timemodified = time();
-            //$updated->numfiles = $pagecount;   // Hijack this variable (which is never used) to use as a flag for cleaning old images
-            $updated->numfiles = 0;
+            $updated->numfiles = $pagecount << 1;   // Last bit is already used to indicate which folders the cron job should check for images to delete
             if (update_record('assignment_submissions', $updated)) {
                 add_to_log($this->course->id, 'assignment', 'upload', //TODO: add finilize action to log
                            'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
@@ -1293,20 +1292,21 @@ class assignment_uploadpdf extends assignment_base {
         if (!file_exists($pdffile)) {
             error('Attempting to comment on non-existing submission');
         }
-        
+
         $pdf = new MyPDFLib();
         $pdf->set_image_folder($imagefolder);
         /*        if ($pdf->load_pdf($pdffile) == 0) {
             error(get_string('errorloadingpdf', 'assignment_uploadpdf'));
             }*/
-        // TODO Find somewhere to store this value - now stored at the end of data2
-        $pagecount = 0;
-        $pdf->set_pdf($pdffile, $pagecount);
+        $pagecount = $submission->numfiles >> 1; // Extract the pagecount from 'numfiles' (may be 0)
+        $pagecount = $pdf->set_pdf($pdffile, $pagecount); // Only loads the PDF if the pagecount is unknown (0)
+
         if (!$imgname = $pdf->get_image($pageno)) {
             error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
         }
-        if ($submission->numfiles == 0) {
-            $submission->numfiles = 1; /* Use this as a flag that there are images to delete at some point */
+
+        if (($submission->numfiles & 1) == 0) {
+            $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
             update_record('assignment_submissions', $submission);
         }
 
@@ -1631,14 +1631,17 @@ class assignment_uploadpdf extends assignment_base {
         
         $pdf = new MyPDFLib();
         $pdf->set_image_folder($imagefolder);
+        /*
         if ($pdf->load_pdf($pdffile) == 0) {
             error(get_string('errorloadingpdf', 'assignment_uploadpdf'));
-        }
+            }*/
+        $pagecount = $submission->numfiles >> 1;
+        $pagecount = $pdf->set_pdf($pdffile, $pagecount);
         if (!$imgname = $pdf->get_image($pageno)) {
             error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
         }
-        if ($submission->numfiles == 0) {
-            $submission->numfiles = 1; /* Use this as a flag that there are images to delete at some point */
+        if (($submission->numfiles & 1) == 0) {
+            $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
             update_record('assignment_submissions', $submission);
         }
 
@@ -1847,7 +1850,7 @@ class assignment_uploadpdf extends assignment_base {
         // Find all the old images and delete them
         $to_clear = get_records_sql("SELECT sub.*, ass.course FROM {$CFG->prefix}assignment_submissions AS sub, {$CFG->prefix}assignment AS ass ".
                                     'WHERE ass.assignmenttype = "uploadpdf" '.
-                                    'AND sub.assignment = ass.id AND sub.numfiles > 0;');
+                                    'AND sub.assignment = ass.id AND ((sub.numfiles & 1) = 1);');
         if ($to_clear) {
             foreach ($to_clear as $submission) {
                 echo 'Checking images for uploadpdf submission: '.$submission->id;
@@ -1877,7 +1880,7 @@ class assignment_uploadpdf extends assignment_base {
                 // Mark submissions as having files cleared (if all of them are gone)
                 if ($filescleared) {
                     echo ' cleared.';
-                    $submission->numfiles = 0;
+                    $submission->numfiles &= ~1; // Clear flag in final bit
                     update_record('assignment_submissions', $submission);
                 } else {
                     echo ' too recent - not cleared.';
