@@ -76,7 +76,9 @@ $string['nocomments'] = 'There are currently no comments on this student\'s subm
 $string['pagenumber'] = 'Page';
 $string['comment'] = 'Comment';
 
-$string['servercommfailed'] = 'Server communication failed - Click OK to try again';
+$string['servercommfailed'] = 'Server communication failed - do you want to resend the message?';
+$string['resend'] = 'Resend';
+$string['cancel'] = 'Cancel';
 $string['errormessage'] = 'Error message: ';
 $string['okagain'] = 'Click OK to try again';
 
@@ -84,6 +86,7 @@ $string['quicklist'] = 'Comment Quicklist';
 $string['addquicklist'] = 'Add to Comment Quicklist';
 $string['emptyquicklist'] = 'No items in Quicklist';
 $string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
+$string['opennewwindow'] = 'Open this page in a new window';
 
 //Student upload
 $string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';

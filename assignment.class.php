@@ -1340,45 +1340,48 @@ class assignment_uploadpdf extends assignment_base {
         echo '</form>';
 		echo '</div>';
 
-        /*        $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px;" class="pageselector">';
+        if (!$CFG->uploadpdf_js_navigation) {
+            $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px;" class="pageselector">';
 
-        if ($pageno > 1) {
-            $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'&amp;showprevious='.$showprevious.'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
-        } else {
-            $pageselector .= '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
-        }
-
-        for ($i=1; $i<=$pagecount; $i++) {
-            if ($i == $pageno) {
-                $pageselector .= "$i ";
+            if ($pageno > 1) {
+                $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno-1) .'&amp;showprevious='.$showprevious.'" accesskey="p">&lt;--'.get_string('previous','assignment_uploadpdf').'</a> ';
             } else {
-                $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$i.'&amp;showprevious='.$showprevious.'">'.$i.'</a> ';
+                $pageselector .= '&lt;--'.get_string('previous','assignment_uploadpdf').' ';
             }
-            if (($i % 20) == 0) {
-                $pageselector .= '<br />';
+
+            for ($i=1; $i<=$pagecount; $i++) {
+                if ($i == $pageno) {
+                    $pageselector .= "$i ";
+                } else {
+                    $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$i.'&amp;showprevious='.$showprevious.'">'.$i.'</a> ';
+                }
+                if (($i % 20) == 0) {
+                    $pageselector .= '<br />';
+                }
             }
-        }
        
-        if ($pageno < $pagecount) {
-            $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'&amp;showprevious='.$showprevious.'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
-        } else {
-            $pageselector .= get_string('next','assignment_uploadpdf').'--&gt;';
-            }*/
-
-        $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px; padding: 10px 0px;" class="pageselector">';
-        $pageselector .= '<button onClick="gotoprevpage();">&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
-
-        $pageselector .= '<select name="selectpage" id="selectpage" onChange="selectpage();">';
-        for ($i=1; $i<=$pagecount; $i++) {
-            if ($i == $pageno) {
-                $pageselector .= "<option value='$i' selected='selected'>$i</option>";
+            if ($pageno < $pagecount) {
+                $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'&amp;showprevious='.$showprevious.'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
             } else {
-                $pageselector .= "<option value='$i'>$i</option>";
+                $pageselector .= get_string('next','assignment_uploadpdf').'--&gt;';
             }
-        }
-        $pageselector .= '</select>';
+        } else {
+
+            $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px; padding: 10px 0px;" class="pageselector">';
+            $pageselector .= '<button onClick="gotoprevpage();">&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
+
+            $pageselector .= '<select name="selectpage" id="selectpage" onChange="selectpage();">';
+            for ($i=1; $i<=$pagecount; $i++) {
+                if ($i == $pageno) {
+                    $pageselector .= "<option value='$i' selected='selected'>$i</option>";
+                } else {
+                    $pageselector .= "<option value='$i'>$i</option>";
+                }
+            }
+            $pageselector .= '</select>';
         
-        $pageselector .= '<button onClick="gotonextpage();">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
+            $pageselector .= '<button onClick="gotonextpage();">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
+        }
 		$pageselector .= '</div>';
         
         echo $pageselector;
@@ -1426,12 +1429,20 @@ class assignment_uploadpdf extends assignment_base {
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
-        $pageselector = str_replace('selectpage','selectpage2',$pageselector);
-        echo $pageselector.'<br style="clear:both;" />';
+        if ($CFG->uploadpdf_js_navigation) {
+            $pageselector = str_replace('selectpage','selectpage2',$pageselector);
+        }
+        echo $pageselector;
+        if ($CFG->uploadpdf_js_navigation) {
+            echo '<p><a id="opennewwindow" target="_blank" href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. $pageno .'&amp;showprevious='.$showprevious.'">'.get_string('opennewwindow','assignment_uploadpdf').'</a></p>';
+        }
+        echo '<br style="clear:both;" />';
 
         // Definitions for the right-click menus
         echo '<ul class="contextmenu" style="display: none;" id="context-quicklist"><li class="separator">'.get_string('quicklist','assignment_uploadpdf').'</li></ul>';
-        echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">'.get_string('addquicklist','assignment_uploadpdf').'</a></li></ul>';        
+        echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">'.get_string('addquicklist','assignment_uploadpdf').'</a></li></ul>';
+        // Definition for 'resend' box
+        echo '<div id="sendfailed" style="display: none;"><p>'.get_string('servercommfailed','assignment_uploadpdf').'</p><button id="sendagain">'.get_string('resend','assignment_uploadpdf').'</button><button onClick="hidesendfailed();">'.get_string('cancel','assignment_uploadpdf').'</button>';
 
         $server = array(
                         'id' => $this->cm->id,
@@ -1445,7 +1456,8 @@ class assignment_uploadpdf extends assignment_base {
                         'lang_emptyquicklist' => get_string('emptyquicklist', 'assignment_uploadpdf'),
                         'lang_emptyquicklist_instructions' => get_string('emptyquicklist_instructions', 'assignment_uploadpdf'),
                         'deleteicon' => $CFG->pixpath . '/t/delete.gif',
-                        'pagecount' => $pagecount
+                        'pagecount' => $pagecount,
+                        'js_navigation' => $CFG->uploadpdf_js_navigation
                         );
         
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8

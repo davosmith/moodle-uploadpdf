@@ -17,6 +17,7 @@ var ServerComm = new Class({
 	pageno: null,
 	sesskey: null,
 	url: null,
+	js_navigation: true,
 	
 	initialize: function(settings) {
 	    this.id = settings.id;
@@ -24,6 +25,7 @@ var ServerComm = new Class({
 	    this.pageno = settings.pageno;
 	    this.sesskey = settings.sesskey;
 	    this.url = settings.updatepage;
+	    this.js_navigation = settings.js_navigation;
 	},
 	
 	updatecomment: function(comment) {
@@ -54,11 +56,9 @@ var ServerComm = new Class({
 		    
 		    onFailure: function(req) {
 			waitel.destroy();
-			if (confirm(server_config.lang_servercommfailed)) {
-			    server.updatecomment(comment);
-			} else {
-			    comment.retrieve('drag').attach();
-			}
+			showsendfailed(function() {server.updatecomment(comment);});
+			// TODO The following should really be on the 'cancel' (but probably unimportant)
+			comment.retrieve('drag').attach();
 		    }
 
 		});
@@ -91,9 +91,7 @@ var ServerComm = new Class({
 			}
 		    },
 		    onFailure: function(resp) {
-			if (confirm(server_config.lang_servercommfailed)) {
-			    server.removecomment(cid);
-			}
+			showsendfailed(function() {server.removecomment(cid);} );
 		    }
 		});
 
@@ -147,11 +145,9 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			if (confirm(server_config.lang_servercommfailed)) {
-			    server.getcomments();
-			} else {
-			    waitel.destroy();
-			}
+			showsendfailed(function() {server.getcomments();});
+			// TODO The following should be on the 'cancel' button (but only a minor visual bug, rarely seen)
+			waitel.destroy();
 		    }
 		});
 
@@ -162,7 +158,6 @@ var ServerComm = new Class({
 			    pageno: this.pageno,
 			    sesskey: this.sesskey
 			    } });
-	    
 	},
 
 	getquicklist: function() {
@@ -180,9 +175,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			if (confirm(server_config.lang_servercommfailed)) {
-			    server.getquicklist();
-			}
+			showsendfailed(function() { server.getquicklist(); });
 		    }
 		});
 
@@ -210,9 +203,7 @@ var ServerComm = new Class({
 		    },
 		    
 		    onFailure: function(resp) {
-			if (confirm(server_config.lang_servercommfailed)) {
-			    server.addtoquicklist(element);
-			}
+			showsendfailed(function() { server.addtoquicklist(element); });
 		    }
 		});
 
@@ -242,9 +233,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			if (confirm(server_config.lang_servercommfailed)) {
-			    server.removefromquicklist(itemid);
-			}
+			showsendfailed(function() {server.removefromquicklist(itemid);});
 		    }
 		});
 
@@ -259,6 +248,9 @@ var ServerComm = new Class({
 	},
 
 	getimageurl: function(pageno, changenow) {
+	    if (!this.js_navigation) {
+		return; // Only preload pages if using js navigation method
+	    }
 	    if (changenow) {
 		if ($defined(pagelist[pageno])) {
 		    showpage(pageno);
@@ -323,9 +315,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			if (confirm(server_config.lang_servercommfailed)) {
-			    server.getimageurl(pageno, false);
-			}
+			showsendfailed(function() {server.getimageurl(pageno, false);});
 		    }
 		});
 
@@ -339,6 +329,18 @@ var ServerComm = new Class({
 	}
 	
     });
+
+function showsendfailed(resend) {
+    var el = $('sendagain');
+    el.addEvent('click', resend);
+    el.addEvent('click', hidesendfailed);
+    $('sendfailed').setStyles({display: 'block', position: 'absolute', top: 200, left: 200, 'z-index': 9999, 'background-color': '#d0d0d0', 'border': 'black 1px solid', padding: 10});
+}
+
+function hidesendfailed() {
+    $('sendagain').removeEvents();
+    $('sendfailed').setStyle('display', 'none');
+}
 
 function setcommentcontent(el, content) {
     el.store('rawtext', content);
@@ -578,16 +580,19 @@ function startjs() {
     }
     $('choosecolour').addEvent('change', changecolour);
     pagelist = new Array();
-    
-    var pageno = server.pageno.toInt();
-    // Little fix as Firefox remembers the selected option after a page refresh
-    var sel = $('selectpage');
-    var selidx = sel.selectedIndex;
-    var selpage = sel[selidx].value;
-    if (selpage != pageno) {
-	gotopage(selpage);
-    } else {
-	server.getimageurl(pageno+1, false);
+
+    // Start preloading pages if using js navigation method
+    if (server_config.js_navigation) {
+	var pageno = server.pageno.toInt();
+	// Little fix as Firefox remembers the selected option after a page refresh
+	var sel = $('selectpage');
+	var selidx = sel.selectedIndex;
+	var selpage = sel[selidx].value;
+	if (selpage != pageno) {
+	    gotopage(selpage);
+	} else {
+	    server.getimageurl(pageno+1, false);
+	}
     }
 }
 
@@ -688,6 +693,10 @@ function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
 	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
+	currentcomment = null; // Throw away any comments in progress
+	editbox = null;
+
+	// Set the dropdown selects to have the correct page number in them
 	var el = $('selectpage');
 	var i;
 	for (i=0; i<el.length; i++) {
@@ -703,10 +712,16 @@ function gotopage(pageno) {
 		break;
 	    }
 	}
+
+	// Update the 'showprevious' form
 	document.showprevious.pageno.value = pageno;
+	// Update the 'open in new window' link
+	var opennew = $('opennewwindow');
+	var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
+	opennew.set('href', on_link);
+	
 	server.pageno = ""+pageno;
 	server.getimageurl(pageno, true);
-	//server.getcomments(); // Try doing this after the page has loaded
     }
 }
 

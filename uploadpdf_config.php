@@ -7,4 +7,8 @@ $CFG->gs_path = 'gs';
 /* If you are using IIS, you may need to carefully configure the permissions for 'gswin32c.exe' and 'gsdll32.dll' and their containing folder */
 /* For Apache, it should just work */
 
+$CFG->uploadpdf_js_navigation = true;
+/* This uses javascript to change pages when annotating a PDF, rather than the old method of including links to all the different pages */
+/* If you have problems with the new method or just don't like it, then change this value to 'false', with no quotes (default is 'true') */
+
 ?>
