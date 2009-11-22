@@ -300,7 +300,7 @@ var ServerComm = new Class({
 			    pagelist[pageno].url = resp.image.url;
 			    pagelist[pageno].width = resp.image.width;
 			    pagelist[pageno].height = resp.image.height;
-			    pagelist[pageno].image = new Image();
+			    pagelist[pageno].image = new Image(resp.image.width, resp.image.height);
 			    pagelist[pageno].image.src = resp.image.url;
 			    if (waitingforpage == pageno) {
 				showpage(pageno);
@@ -681,12 +681,12 @@ function showpage(pageno) {
 	pdfsize.set('style',style);
     }
     $('pdfimg').setProperty('src',pagelist[pageno].url);
-    pagestopreload++;
+    server.getcomments();
 }
 
 function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
-    if ((pageno < pagecount) && (pageno > 0)) {
+    if ((pageno <= pagecount) && (pageno > 0)) {
 	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
 	var el = $('selectpage');
 	var i;
@@ -706,7 +706,7 @@ function gotopage(pageno) {
 	document.showprevious.pageno.value = pageno;
 	server.pageno = ""+pageno;
 	server.getimageurl(pageno, true);
-	server.getcomments();
+	//server.getcomments(); // Try doing this after the page has loaded
     }
 }
 
