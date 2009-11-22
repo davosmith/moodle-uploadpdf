@@ -7,7 +7,7 @@ var context_comment = null;
 var quicklist = null; // Stores all the comments in the quicklist
 var pagelist = null; // Stores all the data for the preloaded pages
 var waitingforpage = -1;  // Waiting for this page from the server - display as soon as it is received
-const pagestopreload = 4; // How many pages ahead to load when you hit a non-preloaded page
+var pagestopreload = 4; // How many pages ahead to load when you hit a non-preloaded page
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 
 var ServerComm = new Class({
