@@ -90,8 +90,19 @@ will just join them in the order they are uploaded).
 
 * Click on 'Generate Response' to create a new PDF with all your
   annotations present (that the student will be able to access).
+  
+* You can view the comments you have made on a student's previous
+  submission by chosing that assignment from the drop-down list on the
+  page.
 
 * Add any feedback / grades to the usual form and save them.
+
+* Note: If you have a problem with the new javascript based page navigation
+  (added on 22 Nov 2009) or prefer having the list of pages to view,
+  then change the setting in 'uploadpdf_config.php'. Note: the
+  javascript method preloads pages to reduce the delay when changing
+  from one page to the next (and probably reduces server load if you
+  do a lot of switching back and forth between pages).
 
 ==Edit Templates==
 
@@ -155,9 +166,6 @@ yet found a solution to).
 
 There is no way of deleting this from the Administration menu (Moodle
 limitiation, again).
-
-The comment/annotation data is not included in a backup/restore/copy
-course process for Moodle < 1.9.
 
 There is no way to annotate the PDFs without JavaScript (I may add
 this in the future, but it would be *very* fiddly to operate)

@@ -1,3 +1,7 @@
+/* Modified version of the code by David Walsh found at:
+   http://davidwalsh.name/mootools-context-menu
+*/
+
 var ContextMenu = new Class({
 
 	//implements
