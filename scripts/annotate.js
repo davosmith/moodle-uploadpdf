@@ -299,9 +299,6 @@ var ServerComm = new Class({
 				waitingforpage = -1;
 			    }
 
-			    // If a page has been received and waitingforpage > 0 then another,
-			    // urgent request has been sent after this one, so do not send any more
-			    //			    if (waitingforpage < 0 && pagesremaining > 0) {
 			    if (pagesremaining > 0) {
 				var nextpage = pageno.toInt()+1;
 				server.getimageurl(nextpage, false);
@@ -579,10 +576,10 @@ function startjs() {
 	setcurrentcolour(colour);
     }
     $('choosecolour').addEvent('change', changecolour);
-    pagelist = new Array();
 
     // Start preloading pages if using js navigation method
     if (server_config.js_navigation) {
+	pagelist = new Array();
 	var pageno = server.pageno.toInt();
 	// Little fix as Firefox remembers the selected option after a page refresh
 	var sel = $('selectpage');
