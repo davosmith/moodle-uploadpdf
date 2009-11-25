@@ -9,6 +9,7 @@ var pagelist = null; // Stores all the data for the preloaded pages
 var waitingforpage = -1;  // Waiting for this page from the server - display as soon as it is received
 var pagestopreload = 4; // How many pages ahead to load when you hit a non-preloaded page
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
+var pageunloading = false;
 
 var ServerComm = new Class({
 	Implements: [Events],
@@ -332,6 +333,10 @@ var ServerComm = new Class({
     });
 
 function showsendfailed(resend) {
+    if (pageunloading) {
+	return;
+    }
+    
     var el = $('sendagain');
     el.addEvent('click', resend);
     el.addEvent('click', hidesendfailed);
@@ -595,6 +600,10 @@ function startjs() {
 	    server.getimageurl(pageno+1, false);
 	}
     }
+
+    window.addEvent('beforeunload', function() {
+	    pageunloading = true;
+	});
 }
 
 function context_quicklistnoitems() {

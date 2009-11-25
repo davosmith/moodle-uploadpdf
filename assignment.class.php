@@ -1606,6 +1606,7 @@ class assignment_uploadpdf extends assignment_base {
                 send_error('Requested page number is too small (< 1)');
             }
 
+            sleep(10);
             list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
             if ($pageno > $pagecount) {
