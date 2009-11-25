@@ -261,6 +261,7 @@ var ServerComm = new Class({
 		} else {
 		    waitingforpage = pageno;
 		    pagesremaining = pagestopreload; // Wanted a page that wasn't preloaded, so load a few more
+		    $('pdfimg').setProperty('src',server_config.blank_image);
 		}
 	    }
 	    
@@ -685,7 +686,10 @@ function showpage(pageno) {
 	var style = 'height:'+pagelist[pageno].height+'px; width:'+pagelist[pageno].width+'px;'+' clear: both;';
 	pdfsize.set('style',style);
     }
-    $('pdfimg').setProperty('src',pagelist[pageno].url);
+    var pdfimg = $('pdfimg');
+    pdfimg.setProperty('src',pagelist[pageno].url);
+    pdfimg.setProperty('width',pagelist[pageno].width);
+    pdfimg.setProperty('height',pagelist[pageno].height);
     server.getcomments();
 }
 

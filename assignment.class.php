@@ -1429,7 +1429,7 @@ class assignment_uploadpdf extends assignment_base {
         // Output the page image
         echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
-        echo '<img id="pdfimg" src="'.$imageurl.'" />';
+        echo '<img id="pdfimg" src="'.$imageurl.'" width="'.$imgwidth.'" height="'.$imgheight.'" />';
         echo '</div></div></div>';
         if ($CFG->uploadpdf_js_navigation) {
             $pageselector = str_replace(array('selectpage','"nextpage"','"prevpage"'),array('selectpage2','"nextpage2"','"prevpage2"'),$pageselector);
@@ -1459,7 +1459,8 @@ class assignment_uploadpdf extends assignment_base {
                         'lang_emptyquicklist_instructions' => get_string('emptyquicklist_instructions', 'assignment_uploadpdf'),
                         'deleteicon' => $CFG->pixpath . '/t/delete.gif',
                         'pagecount' => $pagecount,
-                        'js_navigation' => $CFG->uploadpdf_js_navigation
+                        'js_navigation' => $CFG->uploadpdf_js_navigation,
+                        'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif'
                         );
         
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
