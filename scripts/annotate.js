@@ -265,6 +265,9 @@ var ServerComm = new Class({
 	    }
 	    
 	    var pagecount = server_config.pagecount.toInt();
+	    if (pageno > pagecount) {
+		pageno = 1;
+	    }
 	    var startpage = pageno;
 
 	    // Find the next page that has not already been loaded
@@ -711,11 +714,29 @@ function gotopage(pageno) {
 	}
 
 	// Update the 'showprevious' form
-	document.showprevious.pageno.value = pageno;
+	if ($defined($('showprevious'))) {
+	    document.showprevious.pageno.value = pageno;
+	}
 	// Update the 'open in new window' link
 	var opennew = $('opennewwindow');
 	var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
 	opennew.set('href', on_link);
+    
+	//Update the next/previous buttons
+	if (pageno == pagecount) {
+	    $('nextpage').set('disabled', 'disabled');
+	    $('nextpage2').set('disabled', 'disabled');
+	} else {
+	    $('nextpage').erase('disabled');
+	    $('nextpage2').erase('disabled');
+	}
+	if (pageno == 1) {
+	    $('prevpage').set('disabled', 'disabled');
+	    $('prevpage2').set('disabled', 'disabled');
+	} else {
+	    $('prevpage').erase('disabled');
+	    $('prevpage2').erase('disabled');
+	}
 	
 	server.pageno = ""+pageno;
 	server.getimageurl(pageno, true);

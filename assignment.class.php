@@ -1368,7 +1368,8 @@ class assignment_uploadpdf extends assignment_base {
         } else {
 
             $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px; padding: 10px 0px;" class="pageselector">';
-            $pageselector .= '<button onClick="gotoprevpage();">&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
+            $disabled = ($pageno == 1) ? ' disabled = "disabled" ' : '';
+            $pageselector .= '<button id="prevpage" '.$disabled.'onClick="gotoprevpage();">&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
 
             $pageselector .= '<select name="selectpage" id="selectpage" onChange="selectpage();">';
             for ($i=1; $i<=$pagecount; $i++) {
@@ -1380,7 +1381,8 @@ class assignment_uploadpdf extends assignment_base {
             }
             $pageselector .= '</select>';
         
-            $pageselector .= '<button onClick="gotonextpage();">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
+            $disabled = ($pageno == $pagecount) ? ' disabled = "disabled" ' : '';
+            $pageselector .= '<button id="nextpage" '.$disabled.'onClick="gotonextpage();">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
         }
 		$pageselector .= '</div>';
         
@@ -1430,7 +1432,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
         echo '</div></div></div>';
         if ($CFG->uploadpdf_js_navigation) {
-            $pageselector = str_replace('selectpage','selectpage2',$pageselector);
+            $pageselector = str_replace(array('selectpage','"nextpage"','"prevpage"'),array('selectpage2','"nextpage2"','"prevpage2"'),$pageselector);
         }
         echo $pageselector;
         if ($CFG->uploadpdf_js_navigation) {
