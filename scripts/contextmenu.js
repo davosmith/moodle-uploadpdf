@@ -84,7 +84,7 @@ var ContextMenu = new Class({
 	
 	//show menu
 	show: function(trigger) {
-		//this.menu.fade('in');
+	        //this.menu.fade('in');
 		//this.fx.start(1);
 		this.fireEvent('show');
 		this.shown = true;

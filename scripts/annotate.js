@@ -544,6 +544,16 @@ function setcurrentcolour(colour) {
     }
 }
 
+function updatecommentcolour(colour, comment) {
+    if (colour != comment.retrieve('colour')) {
+	setcolourclass(colour, comment);
+	setcurrentcolour(colour);
+	if (comment != currentcomment) {
+	    server.updatecomment(comment);
+	}
+    }
+}
+
 function setcolourclass(colour, comment) {
     if (comment) {
 	if (colour == 'red') {
@@ -675,6 +685,31 @@ function initcontextmenu() {
 	    actions: {
 		addtoquicklist: function(element,ref) {
 		    server.addtoquicklist(element);
+		},
+		red: function(element,ref) {
+		    updatecommentcolour('red',element);
+		},
+		yellow: function(element,ref) {
+		    updatecommentcolour('yellow',element);
+		},
+		green: function(element,ref) {
+		    updatecommentcolour('green',element);
+		},
+		blue: function(element,ref) {
+		    updatecommentcolour('blue',element);
+		},
+		white: function(element,ref) {
+		    updatecommentcolour('white',element);
+		},
+		clear: function(element,ref) {
+		    updatecommentcolour('clear',element);
+		},
+		deletecomment: function(element, ref) {
+		    var id = element.retrieve('id');
+		    if (id != -1) {
+			server.removecomment(id);
+		    }
+		    element.destroy();
 		}
 	    }
 	});

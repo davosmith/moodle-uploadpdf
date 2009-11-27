@@ -1444,7 +1444,15 @@ class assignment_uploadpdf extends assignment_base {
 
         // Definitions for the right-click menus
         echo '<ul class="contextmenu" style="display: none;" id="context-quicklist"><li class="separator">'.get_string('quicklist','assignment_uploadpdf').'</li></ul>';
-        echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">'.get_string('addquicklist','assignment_uploadpdf').'</a></li></ul>';
+        echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">'.get_string('addquicklist','assignment_uploadpdf').'</a></li>';
+        echo '<li class="separator"><a href="#red">'.get_string('colourred','assignment_uploadpdf').'</a></li>';
+        echo '<li><a href="#yellow">'.get_string('colouryellow','assignment_uploadpdf').'</a></li>';
+        echo '<li><a href="#green">'.get_string('colourgreen','assignment_uploadpdf').'</a></li>';
+        echo '<li><a href="#blue">'.get_string('colourblue','assignment_uploadpdf').'</a></li>';
+        echo '<li><a href="#white">'.get_string('colourwhite','assignment_uploadpdf').'</a></li>';
+        echo '<li><a href="#clear">'.get_string('colourclear','assignment_uploadpdf').'</a></li>';
+        echo '<li class="separator"><a href="#deletecomment">'.get_string('deletecomment','assignment_uploadpdf').'</a></li>';
+        echo '</ul>';
         // Definition for 'resend' box
         echo '<div id="sendfailed" style="display: none;"><p>'.get_string('servercommfailed','assignment_uploadpdf').'</p><button id="sendagain">'.get_string('resend','assignment_uploadpdf').'</button><button onClick="hidesendfailed();">'.get_string('cancel','assignment_uploadpdf').'</button></div>';
 

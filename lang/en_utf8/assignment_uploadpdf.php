@@ -84,6 +84,7 @@ $string['okagain'] = 'Click OK to try again';
 
 $string['quicklist'] = 'Comment Quicklist';
 $string['addquicklist'] = 'Add to Comment Quicklist';
+$string['deletecomment'] = 'Delete Comment';
 $string['emptyquicklist'] = 'No items in Quicklist';
 $string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
 $string['opennewwindow'] = 'Open this page in a new window';
