@@ -72,11 +72,10 @@ var ContextMenu = new Class({
 			this.options.element = $(target);
 			//position the menu
 			this.menu.setStyles({
-				top: (e.page.y + this.options.offsets.y),
-				    left: (e.page.x + this.options.offsets.x),
 				    position: 'absolute',
 				    'z-index': '2000'
 				    });
+			this.menu.setPosition({x: (e.page.x + this.options.offsets.x), y: (e.page.y + this.options.offsets.y) });
 			//show the menu
 			this.show();
 		    }

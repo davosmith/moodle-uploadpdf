@@ -656,14 +656,13 @@ function removefromquicklist(itemid) {
 function initcontextmenu() {
     //create a context menu
     context_quicklist = new ContextMenu({
-	    targets: '',
+	    targets: null,
 	    menu: 'context-quicklist',
 	    actions: {
 		removeitem: function(itemid, menu) {
 		    server.removefromquicklist(itemid);
 		}
-	    },
-	    offsets: { x: 2, y:-20 }
+	    }
 	});
     context_quicklist.addmenu($('pdfimg'));
     context_quicklist.quickcount = 0;
@@ -671,14 +670,13 @@ function initcontextmenu() {
     quicklist = new Array();
 
     context_comment = new ContextMenu({
-	    targets: '',
+	    targets: null,
 	    menu: 'context-comment',
 	    actions: {
 		addtoquicklist: function(element,ref) {
 		    server.addtoquicklist(element);
 		}
-	    },
-	    offsets: { x:2, y:-20 }
+	    }
 	});
 
     server.getquicklist();
