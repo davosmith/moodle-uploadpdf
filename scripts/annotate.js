@@ -11,6 +11,12 @@ var pagestopreload = 4; // How many pages ahead to load when you hit a non-prelo
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 var pageunloading = false;
 
+// All to do with line drawing
+var currentpaper = null;
+var currentline = null;
+var linestartpos = null;
+var lineselect = null;
+
 var ServerComm = new Class({
 	Implements: [Events],
 	id: null,
@@ -362,7 +368,7 @@ function setcommentcontent(el, content) {
 
 function updatelastcomment() {
     // Stop trapping 'escape'
-    window.removeEvent('keydown', typingcomment);
+    document.removeEvent('keydown', typingcomment);
 
     var updated = false;
     var content = null;
@@ -410,7 +416,7 @@ function makeeditbox(comment, content) {
     comment.adopt(editbox);
     editbox.focus();
 
-    window.addEvent('keydown', typingcomment);
+    document.addEvent('keydown', typingcomment);
     comment.retrieve('drag').detach(); // No dragging whilst editing (it messes up the text selection)
 }
 
@@ -495,17 +501,25 @@ function addcomment(e) {
     if (updatelastcomment()) {
 	return;
     }
-   
-    // Calculate the relative position of the comment
-    imgpos = $('pdfimg').getPosition();
-    var offs = new Object();
-    offs.x = e.page.x - imgpos.x;
-    offs.y = e.page.y - imgpos.y;
 
-    currentcomment = makecommentbox(offs);
+    if (currentpaper) { // In the middle of drawing a line
+	return;
+    }
+
+    if (!e.control) {  // If control pressed, then drawing line
+	// Calculate the relative position of the comment
+	imgpos = $('pdfimg').getPosition();
+	var offs = new Object();
+	offs.x = e.page.x - imgpos.x;
+	offs.y = e.page.y - imgpos.y;
+
+	currentcomment = makecommentbox(offs);
+    }
 }
 
 function editcomment(el) {
+    unselectline();
+    
     if (currentcomment == el) {
 	return;
     }
@@ -585,11 +599,135 @@ function changecolour(e) {
     Cookie.write('uploadpdf_colour', getcurrentcolour());
 }
 
+function startline(e) {
+    unselectline();
+
+    if (currentpaper) {
+	return true; // If user clicks very quickly this can happen
+    }
+
+    if (!e.control) {
+	return true;
+    }
+
+    e.preventDefault(); // Stop FF from dragging the image
+
+    var dims = $('pdfimg').getCoordinates();
+    var sx = e.page.x - dims.left;
+    var sy = e.page.y - dims.top;
+    
+    currentpaper = Raphael(dims.left,dims.top,dims.width,dims.height);
+    $(document).addEvent('mousemove', updateline);
+    linestartpos = {x: sx, y: sy};
+
+    return false;
+}
+
+function updateline(e) {
+    var dims = $('pdfimg').getCoordinates();
+    var ex = e.page.x - dims.left;
+    var ey = e.page.y - dims.top;
+
+    if ($defined(currentline)) {
+	currentline.remove();
+    } else {
+	// Doing this earlier catches the starting mouse click by mistake
+	$(document).addEvent('mouseup',finishline);
+    }
+    currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+" L"+ex+" "+ey);
+    currentline.attr("stroke", "#f00");
+    currentline.attr("stroke-width", 3);
+}
+
+function finishline(e) {
+    $(document).removeEvent('mousemove', updateline);
+    $(document).removeEvent('mouseup', finishline);
+    
+    if (!$defined(currentpaper)) {
+	return;
+    }
+
+    var dims = $('pdfimg').getCoordinates();
+    var coords = {sx:linestartpos.x, sy:linestartpos.y, ex: (e.page.x-dims.left), ey: (e.page.y-dims.top)};
+
+    currentpaper.remove();
+    currentpaper = null;
+    currentline = null;
+
+    makeline(coords);
+    // TODO Tell the server about this new line
+    //server.addline(coords); // Need to note the object to add an id to it
+}
+
+function makeline(coords) {
+    var linewidth = 3.0;
+    var halflinewidth = linewidth * 0.5;
+    var dims = $('pdfimg').getCoordinates();
+    coords.sx += dims.left;   coords.ex += dims.left;
+    coords.sy += dims.top;    coords.ey += dims.top;
+
+    if (coords.sx > coords.ex) { // Always go left->right
+	var temp = coords.sx;	coords.sx = coords.ex;	coords.ex = temp;
+	temp = coords.sy;	coords.sy = coords.ey;	coords.ey = temp;
+    }
+    if (coords.sy < coords.ey) {
+	var boundary = {x: (coords.sx-halflinewidth), y: (coords.sy-halflinewidth), w: (coords.ex+linewidth-coords.sx), h: (coords.ey+linewidth-coords.sy)};
+	coords.sy = halflinewidth; coords.ey = boundary.h - halflinewidth;
+    } else {
+	var boundary = {x: (coords.sx-halflinewidth), y: (coords.ey-halflinewidth), w: (coords.ex+linewidth-coords.sx), h: (coords.sy+linewidth-coords.ey)};
+	coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
+    }
+    coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
+    var paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
+    var line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
+    line.attr({stroke: "#f00", "stroke-width": linewidth});
+    
+    var domcanvas = $(paper.canvas);
+
+    domcanvas.store('paper',paper);
+    domcanvas.store('width',boundary.w);
+    domcanvas.store('height',boundary.h);
+    domcanvas.addEvent('mousedown',startline);
+    domcanvas.addEvent('click', selectline);
+}
+
+function selectline(e) {
+    var paper = this.retrieve('paper');
+    var width = this.retrieve('width');
+    var height = this.retrieve('height');
+    lineselect = paper.rect(1,1,width-2,height-2).attr({stroke: "#555", "stroke-dasharray": "- ", "stroke-width": 1, fill: null});
+    updatelastcomment(); // In case we were editing a comment at the time
+    document.addEvent('keydown', checkdeleteline);
+}
+
+function unselectline() {
+    if ($defined(lineselect)) {
+	lineselect.remove();
+	lineselect = null;
+	document.removeEvent('keydown', checkdeleteline);
+    }
+}
+
+function checkdeleteline(e) {
+    if (e.key == 'delete') {
+	if ($defined(lineselect)) {
+	    var paper = lineselect.paper;
+	    paper.remove();
+	    lineselect = null;
+	    document.removeEvent('keydown', checkdeleteline);
+	    //TODO Tell the server that the line has gone
+	}
+    }
+}
+
 function startjs() {
     new Asset.css('style/annotate.css');
     server = new ServerComm(server_config);
     server.getcomments();
+
     $('pdfimg').addEvent('click', addcomment);
+    $('pdfimg').addEvent('mousedown', startline);
+    $('pdfimg').ondragstart = function() { return false; }; // To stop ie trying to drag the image
     var colour = Cookie.read('uploadpdf_colour');
     if ($defined(colour)) {
 	setcurrentcolour(colour);
@@ -686,24 +824,12 @@ function initcontextmenu() {
 		addtoquicklist: function(element,ref) {
 		    server.addtoquicklist(element);
 		},
-		red: function(element,ref) {
-		    updatecommentcolour('red',element);
-		},
-		yellow: function(element,ref) {
-		    updatecommentcolour('yellow',element);
-		},
-		green: function(element,ref) {
-		    updatecommentcolour('green',element);
-		},
-		blue: function(element,ref) {
-		    updatecommentcolour('blue',element);
-		},
-		white: function(element,ref) {
-		    updatecommentcolour('white',element);
-		},
-		clear: function(element,ref) {
-		    updatecommentcolour('clear',element);
-		},
+		red: function(element,ref) { updatecommentcolour('red',element); },
+		yellow: function(element,ref) { updatecommentcolour('yellow',element); },
+		green: function(element,ref) { updatecommentcolour('green',element); },
+		blue: function(element,ref) { updatecommentcolour('blue',element); },
+		white: function(element,ref) { updatecommentcolour('white',element); },
+		clear: function(element,ref) { updatecommentcolour('clear',element); },
 		deletecomment: function(element, ref) {
 		    var id = element.retrieve('id');
 		    if (id != -1) {
@@ -739,6 +865,9 @@ function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
 	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
+	$$('svg').destroy(); // For Firefox, Chrome, etc.
+	$$('vml').destroy(); // For IE
+	currentpaper = currentline = lineselect = null;
 	currentcomment = null; // Throw away any comments in progress
 	editbox = null;
 

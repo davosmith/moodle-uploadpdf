@@ -1326,6 +1326,7 @@ class assignment_uploadpdf extends assignment_base {
         //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4-core-yc.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4.2-more-yc.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
         
@@ -1427,7 +1428,7 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
 		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
 		echo '</select></div>';
-        
+
         // Output the page image
         echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
