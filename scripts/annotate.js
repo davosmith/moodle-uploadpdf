@@ -17,6 +17,7 @@ var currentline = null;
 var linestartpos = null;
 var lineselect = null;
 var lineselectid = null;
+var allannotations = new Array();
 
 var ServerComm = new Class({
 	Implements: [Events],
@@ -348,8 +349,8 @@ var ServerComm = new Class({
 			    waitel.destroy();
 			    if (resp.error == 0) {
 				if (pageno == server.pageno) {
-				    // This line seems to break things (not sure why)
-				    //$$('svg').destroy(); $$('vml').destory(); // Just in case
+				    allannotations.each(function(p) {p.remove()});
+				    allannotations.empty();
 				    resp.annotations.each(function(annotation) {
 					    if (annotation.type == 'line') {
 						var coords = {
@@ -813,6 +814,8 @@ function makeline(coords, id) {
     } else {
 	server.addannotation(details, domcanvas);
     }
+
+    allannotations.push(paper);
 }
 
 function selectline(e) {
@@ -839,6 +842,7 @@ function checkdeleteline(e) {
     if (e.key == 'delete') {
 	if ($defined(lineselect)) {
 	    var paper = lineselect.paper;
+	    allannotations.erase(paper);
 	    paper.remove();
 	    lineselect = null;
 	    document.removeEvent('keydown', checkdeleteline);
@@ -996,8 +1000,8 @@ function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
 	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
-	$$('svg').destroy(); // For Firefox, Chrome, etc.
-	$$('vml').destroy(); // For IE
+	allannotations.each(function(p) { p.remove(); });
+	allannotations.empty();
 	currentpaper = currentline = lineselect = null;
 	currentcomment = null; // Throw away any comments in progress
 	editbox = null;
