@@ -16,6 +16,7 @@ var currentpaper = null;
 var currentline = null;
 var linestartpos = null;
 var lineselect = null;
+var lineselectid = null;
 
 var ServerComm = new Class({
 	Implements: [Events],
@@ -124,8 +125,8 @@ var ServerComm = new Class({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
+			waitel.destroy();
 			if (resp.error == 0) {
-			    waitel.destroy();
 			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
 				$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!)
 				resp.comments.each(function(comment) {
@@ -145,8 +146,6 @@ var ServerComm = new Class({
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.getcomments();
-			    } else {
-				waitel.destroy();
 			    }
 			}
 		    },
@@ -334,6 +333,125 @@ var ServerComm = new Class({
 			    pageno: pageno,
 			    sesskey: this.sesskey
 			    } });
+	},
+
+	getannotations: function() {
+	    var waitel = new Element('div');
+	    waitel.set('class', 'pagewait');
+	    $('pdfholder').adopt(waitel);
+
+	    var pageno = this.pageno;
+	    var request = new Request.JSON({
+		    url: this.url,
+
+		    onSuccess: function(resp) {
+			    waitel.destroy();
+			    if (resp.error == 0) {
+				if (pageno == server.pageno) {
+				    // This line seems to break things (not sure why)
+				    //$$('svg').destroy(); $$('vml').destory(); // Just in case
+				    resp.annotations.each(function(annotation) {
+					    if (annotation.type == 'line') {
+						var coords = {
+						    sx: annotation.coords.startx.toInt(),
+						    sy: annotation.coords.starty.toInt(),
+						    ex: annotation.coords.endx.toInt(),
+						    ey: annotation.coords.endy.toInt()
+						};
+						makeline(coords, annotation.id);
+					    }
+					});
+				}
+			    } else {
+				if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+				    server.annotations();
+				}
+			    }
+		    },
+		    
+		    onFailure: function(resp) {
+			showsendfailed(function() {server.getannotations();});
+			waitel.destroy();
+		    }
+		});
+
+	    request.send({ data: {
+			action: 'getannotations',
+			    id: this.id,
+			    userid: this.userid,
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
+			    } });
+				    
+	},
+
+	addannotation: function(details, annotation) {
+	    var waitel = new Element('div');
+	    waitel.set('class', 'pagewait');
+	    $('pdfholder').adopt(waitel);
+
+	    var request = new Request.JSON({
+		    url: this.url,
+
+		    onSuccess: function(resp) {
+			waitel.destroy();
+
+			if (resp.error == 0) {
+			    annotation.store('id', resp.id);
+			} else {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+				server.updatecomment(comment);
+			    }
+			}
+		    },
+
+		    onFailure: function(resp) {
+			waitel.destroy();
+			showsendfailed(function() {server.addannotation(details, annotation);});
+		    }
+		    
+		});
+
+	    request.send({ data: {
+			action: 'addannotation',
+			    annotation_startx: details.coords.sx,
+			    annotation_starty: details.coords.sy,
+			    annotation_endx: details.coords.ex,
+			    annotation_endy: details.coords.ey,
+			    annotation_colour: details.colour,
+			    annotation_type: details.type,
+			    id: this.id,
+			    userid: this.userid,
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
+			    } });
+	},
+
+	removeannotation: function(aid) {
+	    var request = new Request.JSON({
+		    url: this.url,
+		    onSuccess: function(resp) {
+			if (resp.error != 0) {
+			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+				server.removeannotation(aid);
+			    }
+			}
+		    },
+		    onFailure: function(resp) {
+			showsendfailed(function() {server.removeannotation(aid);} );
+		    }
+		});
+
+	    request.send({
+		    data: {
+  			    action: 'removeannotation',
+			    annotationid: aid,
+			    id: this.id,
+			    userid: this.userid,
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
+			    }
+		});
 	}
 	
     });
@@ -655,20 +773,21 @@ function finishline(e) {
     currentline = null;
 
     makeline(coords);
-    // TODO Tell the server about this new line
-    //server.addline(coords); // Need to note the object to add an id to it
 }
 
-function makeline(coords) {
+function makeline(coords, id) {
     var linewidth = 3.0;
     var halflinewidth = linewidth * 0.5;
     var dims = $('pdfimg').getCoordinates();
+    var startcoords = { sx: coords.sx, sy: coords.sy, ex: coords.ex, ey: coords.ey };
+    var details = {type: "line", coords: startcoords, colour: "red"};
+        
     coords.sx += dims.left;   coords.ex += dims.left;
     coords.sy += dims.top;    coords.ey += dims.top;
 
     if (coords.sx > coords.ex) { // Always go left->right
-	var temp = coords.sx;	coords.sx = coords.ex;	coords.ex = temp;
-	temp = coords.sy;	coords.sy = coords.ey;	coords.ey = temp;
+	var temp = coords.sx; coords.sx = coords.ex; coords.ex = temp;
+	temp = coords.sy;     coords.sy = coords.ey; coords.ey = temp;
     }
     if (coords.sy < coords.ey) {
 	var boundary = {x: (coords.sx-halflinewidth), y: (coords.sy-halflinewidth), w: (coords.ex+linewidth-coords.sx), h: (coords.ey+linewidth-coords.sy)};
@@ -689,13 +808,20 @@ function makeline(coords) {
     domcanvas.store('height',boundary.h);
     domcanvas.addEvent('mousedown',startline);
     domcanvas.addEvent('click', selectline);
+    if ($defined(id)) {
+	domcanvas.store('id',id);
+    } else {
+	server.addannotation(details, domcanvas);
+    }
 }
 
 function selectline(e) {
     var paper = this.retrieve('paper');
     var width = this.retrieve('width');
     var height = this.retrieve('height');
+    lineselectid = this.retrieve('id');
     lineselect = paper.rect(1,1,width-2,height-2).attr({stroke: "#555", "stroke-dasharray": "- ", "stroke-width": 1, fill: null});
+    
     updatelastcomment(); // In case we were editing a comment at the time
     document.addEvent('keydown', checkdeleteline);
 }
@@ -704,6 +830,7 @@ function unselectline() {
     if ($defined(lineselect)) {
 	lineselect.remove();
 	lineselect = null;
+	lineselectid = null;
 	document.removeEvent('keydown', checkdeleteline);
     }
 }
@@ -716,6 +843,8 @@ function checkdeleteline(e) {
 	    lineselect = null;
 	    document.removeEvent('keydown', checkdeleteline);
 	    //TODO Tell the server that the line has gone
+	    server.removeannotation(lineselectid);
+	    lineselectid = null;
 	}
     }
 }
@@ -724,6 +853,7 @@ function startjs() {
     new Asset.css('style/annotate.css');
     server = new ServerComm(server_config);
     server.getcomments();
+    server.getannotations();
 
     $('pdfimg').addEvent('click', addcomment);
     $('pdfimg').addEvent('mousedown', startline);
@@ -859,6 +989,7 @@ function showpage(pageno) {
     pdfimg.setProperty('width',pagelist[pageno].width);
     pdfimg.setProperty('height',pagelist[pageno].height);
     server.getcomments();
+    server.getannotations();
 }
 
 function gotopage(pageno) {

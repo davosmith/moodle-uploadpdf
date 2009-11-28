@@ -1628,6 +1628,54 @@ class assignment_uploadpdf extends assignment_base {
             $resp['image']->width = $imgwidth;
             $resp['image']->height = $imgheight;
 
+        } elseif ($action == 'getannotations') {
+            
+            $annotations = get_records_select('assignment_uploadpdf_annotation', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
+            $respannotations = array();
+            if ($annotations) {
+                foreach ($annotations as $annotation) {
+                    $respannotation = array();
+                    $respannotation['id'] = ''.$annotation->id;
+                    $respannotation['type'] = $annotation->type;
+                    $respannotation['coords'] = array('startx'=> $annotation->startx, 'starty'=> $annotation->starty, 'endx'=> $annotation->endx, 'endy'=> $annotation->endy );
+					$respannotation['colour'] = $annotation->colour;
+                    $respannotations[] = $respannotation;
+                }
+            }
+
+            $resp['annotations'] = $respannotations;
+            
+        } elseif ($action == 'addannotation') {
+
+            $annotation = new Object();
+            $annotation->startx = optional_param('annotation_startx', -1, PARAM_INT);
+            $annotation->starty = optional_param('annotation_starty', -1, PARAM_INT);
+            $annotation->endx = optional_param('annotation_endx', -1, PARAM_INT);
+            $annotation->endy = optional_param('annotation_endy', -1, PARAM_INT);
+            $annotation->colour = optional_param('annotation_colour', 'red', PARAM_TEXT);
+            $annotation->type = optional_param('annotation_type', 'line', PARAM_TEXT);
+            $annotation->pageno = $pageno;
+            $annotation->assignment_submission = $submission->id;
+
+            if (($annotation->startx < 0) || ($annotation->starty < 0) || ($annotation->endx < 0) || ($annotation->endy < 0)) {
+                send_error('Missing annotation data');
+            }
+            $annotation->id = insert_record('assignment_uploadpdf_annotation', $annotation);
+
+            $resp['id'] = $annotation->id;
+
+        } elseif ($action == 'removeannotation') {
+            $annotationid = optional_param('annotationid', -1, PARAM_INT);
+            if ($annotationid < 0) {
+                send_error('No annotation id provided');
+            }
+            $oldannotation = get_record('assignment_uploadpdf_annotation', 'id', $annotationid, 'assignment_submission', $submission->id, 'pageno', $pageno);
+            if (!($oldannotation)) {
+                send_error('Could not find a annotation with that id on this page');
+            } else {
+                delete_records('assignment_uploadpdf_annotation', 'id', $annotationid);
+            }
+            
         } else {
             send_error('Invalid action "'.$action.'"', ASSIGNMENT_UPLOADPDF_ERR_INVALID_ACTION);
         }
