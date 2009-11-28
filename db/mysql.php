@@ -55,6 +55,24 @@ function assignment_uploadpdf_upgrade($oldversion) {
         $result = $result && create_table($table);
     }
 
+    if ($result && $oldversion < 2009112800) {
+        $table =  new XMLDBTable('assignment_uploadpdf_annotation');
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
+        $table->addFieldInfo('assignment_submission', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('startx', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('starty', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('endx', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('endy', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('pageno', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, null, '0');
+        $table->addFieldInfo('colour', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, null, null, 'red');
+        $table->addFieldInfo('type', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, null, null, 'line');
+
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->addIndexInfo('assignment_submission', XMLDB_INDEX_NOTUNIQUE, array('assignment_submission'));
+        $table->addIndexInfo('assignment_submission_pageno', XMLDB_INDEX_NOTUNIQUE, array('assignment_submission','pageno'));
+        $result = $result && create_table($table);
+    }
+
     return $result;
 }
 ?>

@@ -50,3 +50,18 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_quicklist` (
   PRIMARY KEY (`id`),
   KEY `userid` (`userid`)
 ) ;
+
+CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_annotation` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `assignment_submission` int(10) unsigned NOT NULL default '0',
+  `startx` int(10) NOT NULL default '0',
+  `starty` int(10) NOT NULL default '0',
+  `endx` int(10) NOT NULL default '0',
+  `endy` int(10) NOT NULL default '0',
+  `pageno` int(10) NOT NULL default '0',
+  `colour` varchar(10) NULL default 'red',
+  `type` varchar(10) NULL default 'line',
+  PRIMARY KEY  (`id`),
+  KEY `assignment_submission` (`assignment_submission`)
+) ; 
+
