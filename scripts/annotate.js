@@ -143,6 +143,21 @@ var ServerComm = new Class({
 
 					cb.store('id', comment.id);
 				    });
+
+				// Get annotations at the same time
+				allannotations.each(function(p) {p.remove()});
+				allannotations.empty();
+				resp.annotations.each(function(annotation) {
+					if (annotation.type == 'line') {
+					    var coords = {
+						sx: annotation.coords.startx.toInt(),
+						sy: annotation.coords.starty.toInt(),
+						ex: annotation.coords.endx.toInt(),
+						ey: annotation.coords.endy.toInt()
+					    };
+					    makeline(coords, annotation.id);
+					}
+				    });
 			    }
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
@@ -336,56 +351,6 @@ var ServerComm = new Class({
 			    } });
 	},
 
-	getannotations: function() {
-	    var waitel = new Element('div');
-	    waitel.set('class', 'pagewait');
-	    $('pdfholder').adopt(waitel);
-
-	    var pageno = this.pageno;
-	    var request = new Request.JSON({
-		    url: this.url,
-
-		    onSuccess: function(resp) {
-			    waitel.destroy();
-			    if (resp.error == 0) {
-				if (pageno == server.pageno) {
-				    allannotations.each(function(p) {p.remove()});
-				    allannotations.empty();
-				    resp.annotations.each(function(annotation) {
-					    if (annotation.type == 'line') {
-						var coords = {
-						    sx: annotation.coords.startx.toInt(),
-						    sy: annotation.coords.starty.toInt(),
-						    ex: annotation.coords.endx.toInt(),
-						    ey: annotation.coords.endy.toInt()
-						};
-						makeline(coords, annotation.id);
-					    }
-					});
-				}
-			    } else {
-				if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
-				    server.annotations();
-				}
-			    }
-		    },
-		    
-		    onFailure: function(resp) {
-			showsendfailed(function() {server.getannotations();});
-			waitel.destroy();
-		    }
-		});
-
-	    request.send({ data: {
-			action: 'getannotations',
-			    id: this.id,
-			    userid: this.userid,
-			    pageno: this.pageno,
-			    sesskey: this.sesskey
-			    } });
-				    
-	},
-
 	addannotation: function(details, annotation) {
 	    var waitel = new Element('div');
 	    waitel.set('class', 'pagewait');
@@ -399,6 +364,10 @@ var ServerComm = new Class({
 
 			if (resp.error == 0) {
 			    annotation.store('id', resp.id);
+			    if (annotation.retrieve("paper") == lineselect.paper) {
+				unselectline();
+				annotation.fireEvent('click');
+			    }
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.updatecomment(comment);
@@ -823,7 +792,12 @@ function selectline(e) {
     var width = this.retrieve('width');
     var height = this.retrieve('height');
     lineselectid = this.retrieve('id');
-    lineselect = paper.rect(1,1,width-2,height-2).attr({stroke: "#555", "stroke-dasharray": "- ", "stroke-width": 1, fill: null});
+    if (!lineselectid) {
+	colour = "#f44";
+    } else {
+	colour = "#555";
+    }
+    lineselect = paper.rect(1,1,width-2,height-2).attr({stroke: colour, "stroke-dasharray": "- ", "stroke-width": 1, fill: null});
     
     updatelastcomment(); // In case we were editing a comment at the time
     document.addEvent('keydown', checkdeleteline);
@@ -841,14 +815,15 @@ function unselectline() {
 function checkdeleteline(e) {
     if (e.key == 'delete') {
 	if ($defined(lineselect)) {
-	    var paper = lineselect.paper;
-	    allannotations.erase(paper);
-	    paper.remove();
-	    lineselect = null;
-	    document.removeEvent('keydown', checkdeleteline);
-	    //TODO Tell the server that the line has gone
-	    server.removeannotation(lineselectid);
-	    lineselectid = null;
+	    if (lineselectid) {
+		var paper = lineselect.paper;
+		allannotations.erase(paper);
+		paper.remove();
+		lineselect = null;
+		document.removeEvent('keydown', checkdeleteline);
+		server.removeannotation(lineselectid);
+		lineselectid = null;
+	    }
 	}
     }
 }
@@ -857,7 +832,6 @@ function startjs() {
     new Asset.css('style/annotate.css');
     server = new ServerComm(server_config);
     server.getcomments();
-    server.getannotations();
 
     $('pdfimg').addEvent('click', addcomment);
     $('pdfimg').addEvent('mousedown', startline);
@@ -993,7 +967,6 @@ function showpage(pageno) {
     pdfimg.setProperty('width',pagelist[pageno].width);
     pdfimg.setProperty('height',pagelist[pageno].height);
     server.getcomments();
-    server.getannotations();
 }
 
 function gotopage(pageno) {
