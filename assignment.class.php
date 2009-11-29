@@ -1208,16 +1208,43 @@ class assignment_uploadpdf extends assignment_base {
         $mypdf->load_pdf($sourcefile);
 
         $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submissionid, 'pageno');
-        if ($comments) {
-            foreach ($comments as $comment) {
-                while ($comment->pageno > $mypdf->current_page()) {
-                    if (!$mypdf->copy_page()) {
-                        error('Ran out of pages - this should not happen! - comment.pageno = '.$comment->pageno.'; currrentpage = '.$mypdf->CurrentPage());
-                        return false;
+        $annotations = get_records('assignment_uploadpdf_annotation', 'assignment_submission', $submissionid, 'pageno');
+
+        if ($comments) { $comment = current($comments); } else { $comment = false; }
+        if ($annotations) { $annotation = current($annotations); } else { $annotation = false; }
+        while(true) {
+            if ($comment) {
+                $nextpage = $comment->pageno;
+                if ($annotation) {
+                    if ($annotation->pageno < $nextpage) {
+                        $nextpage = $annotation->pageno;
                     }
                 }
-                $mypdf->add_comment($comment->rawtext, $comment->posx, $comment->posy, $comment->width, $comment->colour);
+            } else {
+                if ($annotation) {
+                    $nextpage = $annotation->pageno;
+                } else {
+                    break;
+                }
             }
+
+            while ($nextpage > $mypdf->current_page()) {
+                if (!$mypdf->copy_page()) {
+                    error('Ran out of pages - this should not happen! - comment.pageno = '.$comment->pageno.'; currrentpage = '.$mypdf->CurrentPage());
+                    return false;
+                }
+            }
+
+            while (($comment) && ($comment->pageno == $mypdf->current_page())) {
+                $mypdf->add_comment($comment->rawtext, $comment->posx, $comment->posy, $comment->width, $comment->colour);
+                $comment = next($comments);
+            }
+
+            while (($annotation) && ($annotation->pageno == $mypdf->current_page())) {
+                $mypdf->add_annotation($annotation->startx, $annotation->starty, $annotation->endx, $annotation->endy, $annotation->colour);
+                $annotation = next($annotations);
+            }
+
         }
         
         $mypdf->copy_remaining_pages();
