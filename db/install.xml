@@ -89,7 +89,7 @@
 	<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="assignment_submission"/>
 	<FIELD NAME="assignment_submission" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="startx"/>
 	<FIELD NAME="startx" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="x-position of the start of the annotation (in pixels - image resolution is set to 100 pixels per inch)" PREVIOUS="assignment_submission" NEXT="starty"/>
-	<FIELD NAME="starty" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="y-position of the start of the annotation (in pixels - image resolution is set to 100 pixels per inch)" PREVIOUS="startx" NEXT="width"/>
+	<FIELD NAME="starty" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="y-position of the start of the annotation (in pixels - image resolution is set to 100 pixels per inch)" PREVIOUS="startx" NEXT="endx"/>
 	<FIELD NAME="endx" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="x-position of the end of the annotation" PREVIOUS="starty" NEXT="endy"/>
 	<FIELD NAME="endy" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="y-position of the end of the annotation" PREVIOUS="endx" NEXT="pageno"/>
 	<FIELD NAME="pageno" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The page in the PDF that this annotation appears on" PREVIOUS="endy" NEXT="colour"/>
