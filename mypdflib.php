@@ -160,7 +160,7 @@ class MyPDFLib extends FPDI {
         return true;
     }
   
-    public function add_annotation($sx, $sy, $ex, $ey, $colour='yellow') { /* Add an annotation to the current page */
+    public function add_annotation($sx, $sy, $ex, $ey, $colour='red') { /* Add an annotation to the current page */
         if (!$this->filename) {
             return false;
         }
