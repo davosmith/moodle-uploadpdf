@@ -33,7 +33,7 @@ if ($savetemplate) {
         if ($templateid == -1) {
             $template = new Object;
         } else {
-            $template = get_record('assignment_uploadpdf_template', 'id', $templateid);
+            $template = get_record('assignment_uploadpdf_tmpl', 'id', $templateid);
             if (!$template) {
                 error("Template not found");
             }
@@ -51,7 +51,7 @@ if ($savetemplate) {
         }
 
         if ($templateid == -1) {
-            $templateid = insert_record('assignment_uploadpdf_template', $template);
+            $templateid = insert_record('assignment_uploadpdf_tmpl', $template);
             $extrajs = '<script type="text/javascript">';
             $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
             $extrajs .= 'if (el) {';
@@ -61,7 +61,7 @@ if ($savetemplate) {
             $extrajs .= '</script>';
             $itemid = -1;
         } else {
-            update_record('assignment_uploadpdf_template', $template);
+            update_record('assignment_uploadpdf_tmpl', $template);
             if ($oldname != $template->name) {
                 $extrajs = '<script type="text/javascript">';
                 $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
@@ -79,12 +79,12 @@ if ($savetemplate) {
     if ($templateid) {
         $uses = count_records('assignment_uploadpdf','template', $templateid);
         if ($uses == 0) {
-            $template = get_record('assignment_uploadpdf_template','id',$templateid);
+            $template = get_record('assignment_uploadpdf_tmpl','id',$templateid);
             if ($template && $template->course == 0 && !$caneditsite) {
                 error("No permission to edit site templates");
             }
-            delete_records('assignment_uploadpdf_template_item','template',$templateid);
-            delete_records('assignment_uploadpdf_template','id', $templateid);
+            delete_records('assignment_uploadpdf_tmplitm','template',$templateid);
+            delete_records('assignment_uploadpdf_tmpl','id', $templateid);
 
             $extrajs = '<script type="text/javascript">';
             $extrajs .= 'var el=window.opener.document.getElementById("id_template");';
@@ -104,11 +104,11 @@ if ($savetemplate) {
         if ($itemid == -1) {
             $item = new Object;
         } else {
-            $item = get_record('assignment_uploadpdf_template_item', 'id', $itemid);
+            $item = get_record('assignment_uploadpdf_tmplitm', 'id', $itemid);
             if (!$item) {
                 error("Item not found");
             }
-            $template = get_record('assignment_uploadpdf_template', 'id', $item->template);
+            $template = get_record('assignment_uploadpdf_tmpl', 'id', $item->template);
             if (!$template) {
                 error("Template not found");
             }
@@ -124,21 +124,21 @@ if ($savetemplate) {
         $item->template = $templateid;
 
         if ($itemid == -1) {
-            $itemid = insert_record('assignment_uploadpdf_template_item', $item);
+            $itemid = insert_record('assignment_uploadpdf_tmplitm', $item);
         } else {
-            update_record('assignment_uploadpdf_template_item', $item);
+            update_record('assignment_uploadpdf_tmplitm', $item);
         }
     }
 
 } elseif ($deleteitem) {
     if ($itemid) {
-        $item = get_record('assignment_uploadpdf_template_item', 'id', $itemid);
+        $item = get_record('assignment_uploadpdf_tmplitm', 'id', $itemid);
         if ($item) {
-            $template = get_record('assignment_uploadpdf_template', 'id', $item->template);
+            $template = get_record('assignment_uploadpdf_tmpl', 'id', $item->template);
             if ($template && $template->course == 0 && !$caneditsite) {
                 error("No permission to edit site templates");
             }
-            delete_records('assignment_uploadpdf_template_item', 'id', $itemid);
+            delete_records('assignment_uploadpdf_tmplitm', 'id', $itemid);
             $itemid = 0;
         }
     }
@@ -169,7 +169,7 @@ if ($savetemplate) {
     // Should not have access to the 'duplicate' button unless a template is selected
     // but, just in case, we check here (but just do nothing if that is not the case)
     if ($templateid != -1) {
-        $template = get_record('assignment_uploadpdf_template', 'id', $templateid);
+        $template = get_record('assignment_uploadpdf_tmpl', 'id', $templateid);
         if (!$template) {
             error("Old template not found");
         }
@@ -177,7 +177,7 @@ if ($savetemplate) {
         $template->name = $template->name . get_string('templatecopy','assignment_uploadpdf');
         unset($template->id);
         $oldtemplateid = $templateid;
-        $templateid = insert_record('assignment_uploadpdf_template', $template);
+        $templateid = insert_record('assignment_uploadpdf_tmpl', $template);
 
         // Update the list on the main page
         $extrajs = '<script type="text/javascript">';
@@ -189,12 +189,12 @@ if ($savetemplate) {
         $extrajs .= '</script>';
         $itemid = -1;
 
-        $items_data = get_records('assignment_uploadpdf_template_item', 'template', $oldtemplateid);
+        $items_data = get_records('assignment_uploadpdf_tmplitm', 'template', $oldtemplateid);
         if ($items_data) {
             foreach ($items_data as $item) {
                 unset($item->id);
                 $item->template = $templateid;
-                insert_record('assignment_uploadpdf_template_item', $item);
+                insert_record('assignment_uploadpdf_tmplitm', $item);
             }
         }
     }
@@ -219,7 +219,7 @@ if ($templateid != 0) {
         if ($caneditsite) {
             $canedit = true;
         } else {
-            $template = get_record('assignment_uploadpdf_template', 'id', $templateid);
+            $template = get_record('assignment_uploadpdf_tmpl', 'id', $templateid);
             if ($template && $template->course > 0) {
                 $canedit = true;
             }
@@ -246,7 +246,7 @@ function show_select_template($courseid, $hidden, $templateid = 0) {
     } else {
         echo '<option value="-1">'.get_string('newtemplate','assignment_uploadpdf').'</option>';
     }
-    $templates_data = get_records_sql("SELECT id, name FROM {$CFG->prefix}assignment_uploadpdf_template WHERE course = 0 OR course = {$courseid}");
+    $templates_data = get_records_sql("SELECT id, name FROM {$CFG->prefix}assignment_uploadpdf_tmpl WHERE course = 0 OR course = {$courseid}");
     if ($templates_data) {
         foreach ($templates_data as $td) {
             $selected = '';
@@ -289,7 +289,7 @@ function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
     $templatename = '';
     $sitetemplate = '';
     $editdisabled = '';
-    $template = get_record('assignment_uploadpdf_template','id', $templateid);
+    $template = get_record('assignment_uploadpdf_tmpl','id', $templateid);
     if ($template) {
         $templatename = $template->name;
         if ($template->course == 0) {
@@ -326,7 +326,7 @@ function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
         } else {
             echo '<option value="-1">'.get_string('newitem','assignment_uploadpdf').'</option>';
         }
-        $items_data = get_records('assignment_uploadpdf_template_item', 'template', $templateid);
+        $items_data = get_records('assignment_uploadpdf_tmplitm', 'template', $templateid);
         if ($items_data) {
             $datenum = 1;
             foreach ($items_data as $item) {
@@ -362,7 +362,7 @@ function show_item_form($itemid, $hidden, $canedit) {
     }
     $item = false;
     if ($itemid > 0) {
-        $item = get_record('assignment_uploadpdf_template_item', 'id', $itemid);
+        $item = get_record('assignment_uploadpdf_tmplitm', 'id', $itemid);
     }
     $deletedisabled = '';
     if (!$item || !$canedit) {
@@ -458,7 +458,7 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
             $imageurl = $CFG->wwwroot.'/file.php?file='.$partpath;
             echo '<img src="'.$imageurl.'" alt="Preview Template" style="position: absolute; top: 0px; left: 0px;" onclick="clicked_on_image(event);" />';
             if ($templateid > 0) {
-                $templateitems = get_records('assignment_uploadpdf_template_item','template',$templateid);
+                $templateitems = get_records('assignment_uploadpdf_tmplitm','template',$templateid);
                 if ($templateitems) {
                     foreach ($templateitems as $ti) {
                         $tiwidth = '';

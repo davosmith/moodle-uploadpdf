@@ -215,7 +215,7 @@ class assignment_uploadpdf extends assignment_base {
 
             $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
             if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
-                $t_items = get_records('assignment_uploadpdf_template_item','template', $extra->template);
+                $t_items = get_records('assignment_uploadpdf_tmplitm','template', $extra->template);
                 $ticount = 0;
                 if ($t_items) {
                     echo '<table>';
@@ -695,7 +695,7 @@ class assignment_uploadpdf extends assignment_base {
         $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
         $templateitems = false;
         if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
-            $templateitems = get_records('assignment_uploadpdf_template_item','template', $extra->template);
+            $templateitems = get_records('assignment_uploadpdf_tmplitm','template', $extra->template);
             $ticount = 0;
             if ($templateitems) {
                 foreach ($templateitems as $ti) {
@@ -1208,7 +1208,7 @@ class assignment_uploadpdf extends assignment_base {
         $mypdf->load_pdf($sourcefile);
 
         $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submissionid, 'pageno');
-        $annotations = get_records('assignment_uploadpdf_annotation', 'assignment_submission', $submissionid, 'pageno');
+        $annotations = get_records('assignment_uploadpdf_annot', 'assignment_submission', $submissionid, 'pageno');
 
         if ($comments) { $comment = current($comments); } else { $comment = false; }
         if ($annotations) { $annotation = current($annotations); } else { $annotation = false; }
@@ -1577,7 +1577,7 @@ class assignment_uploadpdf extends assignment_base {
             }
             $resp['comments'] = $respcomments;
 
-            $annotations = get_records_select('assignment_uploadpdf_annotation', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
+            $annotations = get_records_select('assignment_uploadpdf_annot', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
             $respannotations = array();
             if ($annotations) {
                 foreach ($annotations as $annotation) {
@@ -1605,7 +1605,7 @@ class assignment_uploadpdf extends assignment_base {
             
         } elseif ($action == 'getquicklist') {
 
-            $quicklist = get_records('assignment_uploadpdf_quicklist', 'userid', $USER->id, 'id');
+            $quicklist = get_records('assignment_uploadpdf_qcklist', 'userid', $USER->id, 'id');
             $respquicklist = array();
             if ($quicklist) {
                 foreach ($quicklist as $item) {
@@ -1631,7 +1631,7 @@ class assignment_uploadpdf extends assignment_base {
                 send_error('Missing quicklist data');
             }
 
-            $item->id = insert_record('assignment_uploadpdf_quicklist', $item);
+            $item->id = insert_record('assignment_uploadpdf_qcklist', $item);
 
             $resp['item'] = $item;
 
@@ -1642,11 +1642,11 @@ class assignment_uploadpdf extends assignment_base {
                 send_error('No quicklist id provided');
             }
 
-            $olditem = get_record('assignment_uploadpdf_quicklist', 'id', $itemid, 'userid', $USER->id);
+            $olditem = get_record('assignment_uploadpdf_qcklist', 'id', $itemid, 'userid', $USER->id);
             if (!($olditem)) {
                 send_error('Could not find a quicklist item with that id on this page');
             } else {
-                delete_records('assignment_uploadpdf_quicklist', 'id', $itemid);
+                delete_records('assignment_uploadpdf_qcklist', 'id', $itemid);
             }
 
             $resp['itemid'] = $itemid;
@@ -1683,7 +1683,7 @@ class assignment_uploadpdf extends assignment_base {
             if (($annotation->startx < 0) || ($annotation->starty < 0) || ($annotation->endx < 0) || ($annotation->endy < 0)) {
                 send_error('Missing annotation data');
             }
-            $annotation->id = insert_record('assignment_uploadpdf_annotation', $annotation);
+            $annotation->id = insert_record('assignment_uploadpdf_annot', $annotation);
 
             $resp['id'] = $annotation->id;
 
@@ -1692,11 +1692,11 @@ class assignment_uploadpdf extends assignment_base {
             if ($annotationid < 0) {
                 send_error('No annotation id provided');
             }
-            $oldannotation = get_record('assignment_uploadpdf_annotation', 'id', $annotationid, 'assignment_submission', $submission->id, 'pageno', $pageno);
+            $oldannotation = get_record('assignment_uploadpdf_annot', 'id', $annotationid, 'assignment_submission', $submission->id, 'pageno', $pageno);
             if (!($oldannotation)) {
                 send_error('Could not find a annotation with that id on this page');
             } else {
-                delete_records('assignment_uploadpdf_annotation', 'id', $annotationid);
+                delete_records('assignment_uploadpdf_annot', 'id', $annotationid);
             }
             
         } else {
@@ -1831,7 +1831,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $templates = array();
         $templates[0] = get_string('notemplate','assignment_uploadpdf');
-        $templates_data = get_records_sql("SELECT id, name FROM {$CFG->prefix}assignment_uploadpdf_template WHERE course = 0 OR course = {$courseid}");
+        $templates_data = get_records_sql("SELECT id, name FROM {$CFG->prefix}assignment_uploadpdf_tmpl WHERE course = 0 OR course = {$courseid}");
         if ($templates_data) {
             foreach ($templates_data as $td) {
                 $templates[$td->id] = $td->name;
@@ -2026,7 +2026,7 @@ class assignment_uploadpdf extends assignment_base {
             debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find extra data");
             return false;
         }
-        if ($extras->template != 0 && !$template = get_record('assignment_uploadpdf_template', 'id', $extras->template)) {
+        if ($extras->template != 0 && !$template = get_record('assignment_uploadpdf_tmpl', 'id', $extras->template)) {
             debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find template data");
             return false;
         }
@@ -2034,7 +2034,7 @@ class assignment_uploadpdf extends assignment_base {
         fwrite ($bf,full_tag("TEMPLATEID",4,false,$extras->template));
         fwrite ($bf,full_tag("ONLYPDF",4,false,$extras->onlypdf));
         if ($template) {
-            if (!$items = get_records('assignment_uploadpdf_template_item', 'template', $template->id)) {
+            if (!$items = get_records('assignment_uploadpdf_tmplitm', 'template', $template->id)) {
                 $items = array();
             }
             fwrite ($bf,start_tag("TEMPLATE",4,true));
@@ -2082,12 +2082,12 @@ class assignment_uploadpdf extends assignment_base {
         if (@isset($info['MOD']['#']['TEMPLATE']['0']['#'])) {
             $oldid = backup_todb($info['MOD']['#']['TEMPLATE']['0']['#']['ID']['0']['#']);
             // first check to see if we haven't already restored this template for another module...
-            if (!$templateid = backup_getid($restore->backup_unique_code, 'assignment_uploadpdf_template', $oldid)) {
+            if (!$templateid = backup_getid($restore->backup_unique_code, 'assignment_uploadpdf_tmpl', $oldid)) {
                 $template = new stdclass;
                 $template->name = backup_todb($info['MOD']['#']['TEMPLATE']['0']['#']['NAME']['0']['#']);
                 $template->course = $restore->course_id;
 
-                $templateid = insert_record('assignment_uploadpdf_template', $template);
+                $templateid = insert_record('assignment_uploadpdf_tmpl', $template);
 
 
                 // now templateitems
@@ -2105,9 +2105,9 @@ class assignment_uploadpdf extends assignment_base {
                     $ti->width = backup_todb($item['#']['WIDTH']['0']['#']);
                     $ti->setting = backup_todb($item['#']['SETTING']['0']['#']);
 
-                    insert_record('assignment_uploadpdf_template_item', $ti);
+                    insert_record('assignment_uploadpdf_tmplitm', $ti);
                 }
-                backup_putid($restore->backup_unique_code, 'assignment_uploadpdf_template', $oldid, $templateid);
+                backup_putid($restore->backup_unique_code, 'assignment_uploadpdf_tmpl', $oldid, $templateid);
             } else {
                 $templateid = $templateid->new_id;
             }

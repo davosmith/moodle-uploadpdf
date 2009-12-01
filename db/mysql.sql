@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_comment` (
   `posx` int(10) NOT NULL default '0',
   `posy` int(10) NOT NULL default '0',
   `width` int(10) NOT NULL default '0',
-  `rawtext` varchar(255) NOT NULL default '',
+  `rawtext` MEDIUMTEXT NULL default '',
   `pageno` int(10) NOT NULL default '0',
   `colour` varchar(10) NULL default 'yellow',
   PRIMARY KEY  (`id`),
@@ -14,14 +14,14 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_comment` (
 CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `assignment` int(10) unsigned NOT NULL default '0',
-  `coversheet` varchar(255) NULL default '',
+  `coversheet` MEDIUMTEXT NULL default '',
   `template` int(10) unsigned NOT NULL default '0',
   `onlypdf` int(2) unsigned NULL default '1',
   PRIMARY KEY  (`id`),
   KEY `assignment` (`assignment`)
 ) ; 
 
-CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_template` (
+CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_tmpl` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `name` varchar(255) NOT NULL default '',
   `course` int(10) unsigned NOT NULL default '0',
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_template` (
   KEY `course` (`course`)
 ) ;
 
-CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_template_item` (
+CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_tmplitm` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `template` int(10) unsigned NOT NULL default '0',
   `type` varchar(15) NOT NULL default 'shorttext',
@@ -41,17 +41,17 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_template_item` (
   KEY `template` (`template`)
 ) ;
 
-CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_quicklist` (
+CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_qcklist` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `userid` int(10) unsigned NOT NULL default '0',
-  `text` varchar(255) default '',
+  `text` MEDIUMTEXT default '',
   `width` int(10) NOT NULL default '0',
   `colour` varchar(10) NULL default 'yellow',
   PRIMARY KEY (`id`),
   KEY `userid` (`userid`)
 ) ;
 
-CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_annotation` (
+CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf_annot` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `assignment_submission` int(10) unsigned NOT NULL default '0',
   `startx` int(10) NOT NULL default '0',

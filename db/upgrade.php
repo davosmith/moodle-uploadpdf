@@ -73,5 +73,39 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $result = $result && create_table($table);
     }
 
+    if ($result && $oldversion < 2009120100) {
+        // Rename the tables to fit within Oracle's 30 char limits (including 2 char prefix)
+        $table = new XMLDBTable('assignment_uploadpdf_template');
+        $result = $result && rename_table($table, 'assignment_uploadpdf_tmpl');
+
+        $table = new XMLDBTable('assignment_uploadpdf_template_item');
+        $result = $result && rename_table($table, 'assignment_uploadpdf_tmplitm');
+
+        $table = new XMLDBTable('assignment_uploadpdf_quicklist');
+        $result = $result && rename_table($table, 'assignment_uploadpdf_qcklist');
+
+        $table = new XMLDBTable('assignment_uploadpdf_annotation');
+        $result = $result && rename_table($table, 'assignment_uploadpdf_annot');
+
+        
+        // Change the data type of the text field from 'char' to 'text' (removing 255 char limit)
+        $table = new XMLDBTable('assignment_uploadpdf_qcklist');
+        $field = new XMLDBField('text');
+        $field->setAttributes(XMLDB_TYPE_TEXT. 'medium', null, null, null, null, null, '');
+        $result = $result && change_field_type($table, $field);
+
+        // Remove 255 char limit from comments
+        $table = new XMLDBTable('assignment_uploadpdf_comment');
+        $field = new XMLDBField('rawtext');
+        $field->setAttributes(XMLDB_TYPE_TEXT. 'medium', null, null, null, null, null, '');
+        $result = $result && change_field_type($table, $field);
+
+        // Remove 255 char limit from coversheet path
+        $table = new XMLDBTable('assignment_uploadpdf');
+        $field = new XMLDBField('coversheet');
+        $field->setAttributes(XMLDB_TYPE_TEXT. 'medium', null, null, null, null, null, '');
+        $result = $result && change_field_type($table, $field);
+    }
+
     return $result;
 }

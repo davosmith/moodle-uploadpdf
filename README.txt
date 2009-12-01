@@ -153,10 +153,10 @@ will just join them in the order they are uploaded).
 
 * Use mysql/phpmyadmin to delete the following tables:
   'assignment_uploadpdf', 'assignment_uploadpdf_comment',
-  'assignment_uploadpdf_template' and
-  'assignment_uploadpdf_template_item' (if someone can tell me a
-  better way of doing this, which works with Moodle 1.8 and above,
-  then please do so!).
+  'assignment_uploadpdf_tmpl', 'assignment_uploadpdf_tmplitm',
+  'assignment_uploadpdf_qcklist' and 'assignment_uploadpdf_annot'
+  (if someone can tell me a better way of doing this, which works with
+  Moodle 1.8 and above, then please do so!).
 
 ==Known issues==
 
