@@ -31,11 +31,11 @@
         error("You can not view this assignment");
     }
 
-    if ($assignment->assignmenttype != 'upload') {
+    if ($assignment->assignmenttype != 'uploadpdf') {
         error("Incorrect assignment type");
     }
 
-    $assignmentinstance = new assignment_upload($cm->id, $assignment, $cm, $course);
+    $assignmentinstance = new assignment_uploadpdf($cm->id, $assignment, $cm, $course);
 
     $returnurl = "../../submissions.php?id={$assignmentinstance->cm->id}&amp;userid=$userid&amp;offset=$offset&amp;mode=single";
 
