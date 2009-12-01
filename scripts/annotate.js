@@ -364,7 +364,7 @@ var ServerComm = new Class({
 
 			if (resp.error == 0) {
 			    annotation.store('id', resp.id);
-			    if (annotation.retrieve("paper") == lineselect.paper) {
+			    if ($defined(lineselect) && (annotation.retrieve("paper") == lineselect.paper)) {
 				unselectline();
 				annotation.fireEvent('click');
 			    }
