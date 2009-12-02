@@ -828,6 +828,18 @@ function checkdeleteline(e) {
     }
 }
 
+function keyboardnavigation(e) {
+    if ($defined(currentcomment)) {
+	return; // No keyboard navigation when editing comments
+    }
+
+    if (e.key == 'n') {
+	gotonextpage();
+    } else if (e.key == 'p') {
+	gotoprevpage();
+    }
+}
+
 function startjs() {
     new Asset.css('style/annotate.css');
     server = new ServerComm(server_config);
@@ -844,6 +856,7 @@ function startjs() {
 
     // Start preloading pages if using js navigation method
     if (server_config.js_navigation) {
+        document.addEvent('keydown', keyboardnavigation);
 	pagelist = new Array();
 	var pageno = server.pageno.toInt();
 	// Little fix as Firefox remembers the selected option after a page refresh

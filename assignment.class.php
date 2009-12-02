@@ -1399,7 +1399,7 @@ class assignment_uploadpdf extends assignment_base {
 
             $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px; padding: 10px 0px;" class="pageselector">';
             $disabled = ($pageno == 1) ? ' disabled = "disabled" ' : '';
-            $pageselector .= '<button id="prevpage" '.$disabled.'onClick="gotoprevpage();">&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
+            $pageselector .= '<button id="prevpage" '.$disabled.'onClick="gotoprevpage();" title="'.get_string('keyboardprev','assignment_uploadpdf').'" >&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
 
             $pageselector .= '<select name="selectpage" id="selectpage" onChange="selectpage();">';
             for ($i=1; $i<=$pagecount; $i++) {
@@ -1412,7 +1412,7 @@ class assignment_uploadpdf extends assignment_base {
             $pageselector .= '</select>';
         
             $disabled = ($pageno == $pagecount) ? ' disabled = "disabled" ' : '';
-            $pageselector .= '<button id="nextpage" '.$disabled.'onClick="gotonextpage();">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
+            $pageselector .= '<button id="nextpage" '.$disabled.'onClick="gotonextpage();" title="'.get_string('keyboardnext','assignment_uploadpdf').'">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
         }
 		$pageselector .= '</div>';
         
