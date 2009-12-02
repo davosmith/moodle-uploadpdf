@@ -84,12 +84,15 @@ will just join them in the order they are uploaded).
   'Comment Quicklist' (with the same text, width and background as the 
   original). Comments can be delete from the 'Comment Quicklist' by
   clicking on the 'X' to the right of the comment.
-
+  
 * You can add lines to the PDF by holding 'Ctrl' whilst you click and
   drag with the mouse (or alternatively hold 'Ctrl' then click once for 
   the start and once for the end of the line). Delete lines by clicking
   on them and pressing 'Delete' on the keyboard. Currently you can only
   draw lines in red, but other colours are on their way.
+
+* Navigate between the pages by clicking on the 'Next' and 'Prev'
+  buttons or by pressing 'n' and 'p' on the keyboard.
 
 * Click on 'Save Draft and Close' (or just click on the Window's usual
   'close' button) to save the work in progress.
