@@ -10,6 +10,7 @@ if (!class_exists('assignment_base')) {
 }
 
 define('ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED', 'submitted');
+define('ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED', 'responded');
 
 /**
  * Extend the base assignment class for assignments where you upload a single file
@@ -864,6 +865,12 @@ class assignment_uploadpdf extends assignment_base {
         $filepath = $CFG->dataroot.'/'.$dir.'/'.$file;
         if (file_exists($filepath)) {
             if (@unlink($filepath)) {
+                $submission = $this->get_submission($userid); 
+                // If the assignment was marked as 'responded to', then mark it as 'submitted' instead
+                if ($submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
+                    $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
+                    update_record('assignment_submissions', $submission);
+                }
                 redirect($returnurl);
             }
         }
@@ -1000,8 +1007,9 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function is_finalized($submission) {
-        if (!empty($submission)
-            and $submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED) {
+        if ( !empty($submission)
+             and (($submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED)
+                  or ($submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED)) ) {
             return true;
         } else {
             return false;
@@ -1024,8 +1032,7 @@ class assignment_uploadpdf extends assignment_base {
 
         if (has_capability('mod/assignment:submit', $this->context)           // can submit
             and $this->isopen()                                                 // assignment not closed yet
-            and !empty($submission)                                             // submission must exist
-            and $submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED     // not submitted already
+            and !$this->is_finalized($submission)                                      // not submitted already
             and $submission->userid == $USER->id                                // his/her own submission
             and $submission->grade == -1                                        // no reason to finalize already graded submission
             and $this->count_user_files($USER->id)) { // something must be submitted
@@ -1329,6 +1336,8 @@ class assignment_uploadpdf extends assignment_base {
 
         if ($generateresponse) {
             if ($this->create_response_pdf($userid, $submission->id)) {
+                $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
+                update_record('assignment_submissions', $submission);
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
                 print_heading(get_string('responseok', 'assignment_uploadpdf'));
 				require_once($CFG->dirroot.'/version.php');
@@ -1341,7 +1350,7 @@ class assignment_uploadpdf extends assignment_base {
             } else {
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
                 error(get_string('responseproblem', 'assignment_uploadpdf'));
-                close_window();
+                //close_window();
                 die;
             }
         }
