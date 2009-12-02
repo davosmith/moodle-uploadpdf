@@ -1025,11 +1025,10 @@ class assignment_uploadpdf extends assignment_base {
         if (has_capability('mod/assignment:submit', $this->context)           // can submit
             and $this->isopen()                                                 // assignment not closed yet
             and !empty($submission)                                             // submission must exist
-            and $submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED               // not graded
+            and $submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED     // not submitted already
             and $submission->userid == $USER->id                                // his/her own submission
             and $submission->grade == -1                                        // no reason to finalize already graded submission
-            and ($this->count_user_files($USER->id)
-                 or ($this->notes_allowed() and !empty($submission->data1)))) { // something must be submitted
+            and $this->count_user_files($USER->id)) { // something must be submitted
 
             return true;
         } else {
