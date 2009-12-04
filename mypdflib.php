@@ -91,6 +91,16 @@ class MyPDFLib extends FPDI {
         $this->filename = $filename;
         return $this->pagecount;
     }
+
+    public function set_pdf($filename, $pagecount=0) {
+        if ($pagecount == 0) {
+            return $this->load_pdf($filename);
+        } else {
+            $this->filename = $filename;
+            $this->pagecount = $pagecount;
+            return $pagecount;
+        }
+    }
     
     public function copy_page() {		/* Copy next page from source file and set as current page */
         if (!$this->filename) {
@@ -150,6 +160,45 @@ class MyPDFLib extends FPDI {
         return true;
     }
   
+    public function add_annotation($sx, $sy, $ex, $ey, $colour='red') { /* Add an annotation to the current page */
+        if (!$this->filename) {
+            return false;
+        }
+        switch($colour) {
+        case 'yellow':
+            $this->SetDrawColor(255, 255, 0);
+            break;
+        case 'green':
+            $this->SetDrawColor(0, 255, 0);
+            break;
+        case 'blue':
+            $this->SetDrawColor(0, 0, 255);
+            break;
+        case 'white':
+            $this->SetDrawColor(255, 255, 255);
+            break;
+        case 'black':
+            $this->SetDrawColor(0, 0, 0);
+            break;
+        default:                /* Red */
+            $this->SetDrawColor(255, 0, 0);
+            break;
+        }
+        
+        $sx *= $this->scale;
+        $sy *= $this->scale;
+        $ex *= $this->scale;
+        $ey *= $this->scale;
+
+        $this->SetLineWidth(3.0 * $this->scale);
+        $this->Line($sx, $sy, $ex, $ey);
+
+        $this->SetDrawColor(0,0,0);
+        $this->SetLineWidth(1.0 * $this->scale);
+        
+        return true;
+    }
+
     public function save_pdf($filename) {
         $this->Output($filename, 'F');
     }

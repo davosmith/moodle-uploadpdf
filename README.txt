@@ -78,14 +78,40 @@ will just join them in the order they are uploaded).
   resize handle in the bottom-right corner of a comment to resize it,
   click & drag on a comment to move it. Click (without dragging) on a
   comment to edit it, delete all the text in a comment to remove it.
+  
+* Right-click on a comment to add it to a 'Comment Quicklist'. You can 
+  then right-click anywhere on a page to insert comments from this
+  'Comment Quicklist' (with the same text, width and background as the 
+  original). Comments can be delete from the 'Comment Quicklist' by
+  clicking on the 'X' to the right of the comment.
+  
+* You can add lines to the PDF by holding 'Ctrl' whilst you click and
+  drag with the mouse (or alternatively hold 'Ctrl' then click once for 
+  the start and once for the end of the line). Delete lines by clicking
+  on them and pressing 'Delete' on the keyboard. Currently you can only
+  draw lines in red, but other colours are on their way.
+
+* Navigate between the pages by clicking on the 'Next' and 'Prev'
+  buttons or by pressing 'n' and 'p' on the keyboard.
 
 * Click on 'Save Draft and Close' (or just click on the Window's usual
   'close' button) to save the work in progress.
 
 * Click on 'Generate Response' to create a new PDF with all your
   annotations present (that the student will be able to access).
+  
+* You can view the comments you have made on a student's previous
+  submission by chosing that assignment from the drop-down list on the
+  page.
 
 * Add any feedback / grades to the usual form and save them.
+
+* Note: If you have a problem with the new javascript based page navigation
+  (added on 22 Nov 2009) or prefer having the list of pages to view,
+  then change the setting in 'uploadpdf_config.php'. Note: the
+  javascript method preloads pages to reduce the delay when changing
+  from one page to the next (and probably reduces server load if you
+  do a lot of switching back and forth between pages).
 
 ==Edit Templates==
 
@@ -114,7 +140,9 @@ will just join them in the order they are uploaded).
 
 * To position the items on the template, upload an example PDF 
   coversheet (using the bottom form) then type in the position
-  you want to place the PDF (x position, y position, in pixels)
+  you want to place the PDF (x position, y position, in pixels).
+  Alternatively, click on the coversheet image to set the position of 
+  that template item.
 
 * When you are finished, save any items you have changed, then
   close the window. The list of templates on the 'settings'
@@ -128,10 +156,10 @@ will just join them in the order they are uploaded).
 
 * Use mysql/phpmyadmin to delete the following tables:
   'assignment_uploadpdf', 'assignment_uploadpdf_comment',
-  'assignment_uploadpdf_template' and
-  'assignment_uploadpdf_template_item' (if someone can tell me a
-  better way of doing this, which works with Moodle 1.8 and above,
-  then please do so!).
+  'assignment_uploadpdf_tmpl', 'assignment_uploadpdf_tmplitm',
+  'assignment_uploadpdf_qcklist' and 'assignment_uploadpdf_annot'
+  (if someone can tell me a better way of doing this, which works with
+  Moodle 1.8 and above, then please do so!).
 
 ==Known issues==
 
@@ -148,14 +176,12 @@ yet found a solution to).
 There is no way of deleting this from the Administration menu (Moodle
 limitiation, again).
 
-The comment/annotation data is not included in a backup/restore/copy
-course process for Moodle < 1.9.
-
 There is no way to annotate the PDFs without JavaScript (I may add
 this in the future, but it would be *very* fiddly to operate)
 
 ==Contact==
 moodle AT davosmith DOT co DOT uk
-or find me in the developer list on the main moodle.org site (David Smith).
+or find me in the developer list on the main moodle.org site 
+(David Smith).
 
 Davo
