@@ -61,6 +61,11 @@ $string['isresubmission'] = 'This is a resubmission - ';
 $string['downloadfirstsubmission'] = 'download the first submission';
 $string['next'] = 'Next';
 $string['previous'] = 'Prev';
+$string['keyboardnext'] = 'Press \'n\' for next page';
+$string['keyboardprev'] = 'Press \'p\' for previous page';
+$string['showpreviousassignment'] = 'Display a previous assignment';
+$string['previousnone'] = 'None';
+$string['showprevious'] = 'Show';
 $string['commentcolour'] = 'Background colour for comment';
 $string['colourred'] = 'Red';
 $string['colouryellow'] = 'Yellow';
@@ -69,10 +74,22 @@ $string['colourblue'] = 'Blue';
 $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
 
+$string['nocomments'] = 'There are currently no comments on this student\'s submission.';
+$string['pagenumber'] = 'Page';
+$string['comment'] = 'Comment';
 
-$string['servercommfailed'] = 'Server communication failed - Click OK to try again';
+$string['servercommfailed'] = 'Server communication failed - do you want to resend the message?';
+$string['resend'] = 'Resend';
+$string['cancel'] = 'Cancel';
 $string['errormessage'] = 'Error message: ';
 $string['okagain'] = 'Click OK to try again';
+
+$string['quicklist'] = 'Comment Quicklist';
+$string['addquicklist'] = 'Add to Comment Quicklist';
+$string['deletecomment'] = 'Delete Comment';
+$string['emptyquicklist'] = 'No items in Quicklist';
+$string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
+$string['opennewwindow'] = 'Open this page in a new window';
 
 //Student upload
 $string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';
