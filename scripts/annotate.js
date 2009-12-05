@@ -27,6 +27,7 @@ var ServerComm = new Class({
 	sesskey: null,
 	url: null,
 	js_navigation: true,
+	retrycount: 0,
 	
 	initialize: function(settings) {
 	    this.id = settings.id;
@@ -46,6 +47,7 @@ var ServerComm = new Class({
 		    url: this.url,
 		    
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			waitel.destroy();
 
 			if (resp.error == 0) {
@@ -93,6 +95,7 @@ var ServerComm = new Class({
 	    var request = new Request.JSON({
 		    url: this.url,
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			if (resp.error != 0) {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.removecomment(cid);
@@ -126,6 +129,7 @@ var ServerComm = new Class({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			waitel.destroy();
 			if (resp.error == 0) {
 			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
@@ -187,6 +191,7 @@ var ServerComm = new Class({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			if (resp.error == 0) {
 			    resp.quicklist.each(addtoquicklist);  // Assume contains: id, rawtext, colour, width
 			} else {
@@ -215,6 +220,7 @@ var ServerComm = new Class({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			if (resp.error == 0) {
 			    addtoquicklist(resp.item);  // Assume contains: id, rawtext, colour, width
 			} else {
@@ -245,6 +251,7 @@ var ServerComm = new Class({
 	    var request = new Request.JSON({
 		    url: this.url,
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			if (resp.error == 0) {
 			    removefromquicklist(resp.itemid);
 			} else {
@@ -312,6 +319,7 @@ var ServerComm = new Class({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			if (resp.error == 0) {
 			    pagesremaining--;
 			    pagelist[pageno] = new Object();
@@ -360,6 +368,7 @@ var ServerComm = new Class({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			waitel.destroy();
 
 			if (resp.error == 0) {
@@ -401,6 +410,7 @@ var ServerComm = new Class({
 	    var request = new Request.JSON({
 		    url: this.url,
 		    onSuccess: function(resp) {
+			server.retrycount = 0;
 			if (resp.error != 0) {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.removeannotation(aid);
@@ -428,6 +438,14 @@ var ServerComm = new Class({
 
 function showsendfailed(resend) {
     if (pageunloading) {
+	return;
+    }
+
+    // If less than 2 failed messages since the last successful
+    // message, then try again immediately
+    if (server.resendfailed < 2) {
+	server.resendfailed++;
+	resend();
 	return;
     }
     
