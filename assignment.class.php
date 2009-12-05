@@ -502,6 +502,53 @@ class assignment_uploadpdf extends assignment_base {
         echo $output;
     }
 
+    function count_real_submissions($groupid=0) {
+        global $CFG;
+
+        $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
+
+        // this is all the users with this capability set, in this context or higher
+        if ($users = get_users_by_capability($context, 'mod/assignment:submit', 'u.id', '', '', '', $groupid, '', false)) {
+            $users = array_keys($users);
+        }
+
+        // if groupmembersonly used, remove users who are not in any group
+        if ($users and !empty($CFG->enablegroupings) and $this->cm->groupmembersonly) {
+            if ($groupingusers = groups_get_grouping_members($this->cm->groupingid, 'u.id', 'u.id')) {
+                $users = array_intersect($users, array_keys($groupingusers));
+            }
+        }
+
+        if (empty($users)) {
+            return 0;
+        }
+
+        $userlists = implode(',', $users);
+
+        $totalcount = count_records_sql("SELECT COUNT('x')
+                                FROM {$CFG->prefix}assignment_submissions
+                                WHERE assignment = {$this->cm->instance} AND
+                                timemodified > 0 AND
+                                userid IN ($userlists)");
+
+        if (!$totalcount)
+            return 0;
+        
+        // Count the number of assignments that have been submitted, but for
+        // which a response file has not been generated (ie data2 = 'submitted',
+        // not 'responded')
+        $unmarkedcount = count_records_sql("SELECT COUNT('x')
+                                FROM {$CFG->prefix}assignment_submissions
+                                WHERE assignment = {$this->cm->instance} AND
+                                data2 = 'submitted' AND
+                                userid IN ($userlists)");
+        if ($unmarkedcount) {
+            return "{$totalcount}({$unmarkedcount})";
+        } else {
+            return $totalcount;
+        }
+    }
+
 
     function upload() {
         $action = required_param('action', PARAM_ALPHA);

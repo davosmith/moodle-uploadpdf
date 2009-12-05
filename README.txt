@@ -177,7 +177,16 @@ There is no way of deleting this from the Administration menu (Moodle
 limitiation, again).
 
 There is no way to annotate the PDFs without JavaScript (I may add
-this in the future, but it would be *very* fiddly to operate)
+this in the future, but it would be *very* fiddly to operate).
+
+The 'View N submitted assignments' message now shows the number of 
+unmarked assignments in brackets, but this will only work for newly
+marked assignments (assignments marked before updating to the latest
+version of UploadPDF will be counted in the 'unmarked' count). The
+simplest fix for this, if it is a problem, is to open each submission
+and click 'Generate Response' on it. The difficulty of fixing this for
+old assignments is out of proportion to the minor improvement it will
+give.
 
 ==Contact==
 moodle AT davosmith DOT co DOT uk
