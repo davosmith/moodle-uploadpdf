@@ -2114,21 +2114,35 @@ class assignment_uploadpdf extends assignment_base {
      *Backup extra data about the assignment submission. This is just comments at the moment.
      */
     function backup_one_submission($bf, $preferences, $assignment, $submission) {
-        if (!$comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id)) {
-            return true;
+        if ($comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id)) {
+            fwrite ($bf,start_tag("COMMENTS",4,true));
+            foreach ($comments as $comment) {
+                fwrite ($bf,start_tag("COMMENT",5,true));
+                fwrite ($bf,full_tag("POSX",6,false,$comment->posx));
+                fwrite ($bf,full_tag("POSY",6,false,$comment->posy));
+                fwrite ($bf,full_tag("WIDTH",6,false,$comment->width));
+                fwrite ($bf,full_tag("RAWTEXT",6,false,$comment->rawtext));
+                fwrite ($bf,full_tag("PAGENO",6,false,$comment->pageno));
+                fwrite ($bf,full_tag("COLOUR",6,false,$comment->colour));
+                fwrite ($bf,end_tag("COMMENT",5,true));
+            }
+            fwrite ($bf,end_tag("COMMENTS",4,true));
         }
-        fwrite ($bf,start_tag("COMMENTS",4,true));
-        foreach ($comments as $comment) {
-            fwrite ($bf,start_tag("COMMENT",5,true));
-            fwrite ($bf,full_tag("POSX",6,false,$comment->posx));
-            fwrite ($bf,full_tag("POSY",6,false,$comment->posy));
-            fwrite ($bf,full_tag("WIDTH",6,false,$comment->width));
-            fwrite ($bf,full_tag("RAWTEXT",6,false,$comment->rawtext));
-            fwrite ($bf,full_tag("PAGENO",6,false,$comment->pageno));
-            fwrite ($bf,full_tag("COLOUR",6,false,$comment->colour));
-            fwrite ($bf,end_tag("COMMENT",5,true));
+        if ($annotations = get_records('assignment_uploadpdf_annot', 'assignment_submission', $submission->id)) {
+            fwrite ($bf,start_tag("ANNOTATIONS",4,true));
+            foreach ($annotations as $annotation) {
+                fwrite ($bf,start_tag("ANNOTATION",5,true));
+                fwrite ($bf,full_tag("STARTX",6,false,$annotation->startx));
+                fwrite ($bf,full_tag("STARTY",6,false,$annotation->starty));
+                fwrite ($bf,full_tag("ENDX",6,false,$annotation->endx));
+                fwrite ($bf,full_tag("ENDY",6,false,$annotation->endy));
+                fwrite ($bf,full_tag("PAGENO",6,false,$annotation->pageno));
+                fwrite ($bf,full_tag("COLOUR",6,false,$annotation->colour));
+                fwrite ($bf,full_tag("TYPE",6,false,$annotation->type));
+                fwrite ($bf,end_tag("ANNOTATION",5,true));
+            }
+            fwrite ($bf,end_tag("ANNOTATIONS",4,true));
         }
-        fwrite ($bf,end_tag("COMMENTS",4,true));
     }
 
     function restore_one_mod($info, $restore, $assignment) {
@@ -2192,10 +2206,28 @@ class assignment_uploadpdf extends assignment_base {
             $dbc->width = backup_todb($comment['#']['WIDTH']['0']['#']);
             $dbc->rawtext = backup_todb($comment['#']['RAWTEXT']['0']['#']);
             $dbc->pageno = backup_todb($comment['#']['PAGENO']['0']['#']);
-            $dbc->colour = backup_todb($commentitei['#']['COLOUR']['0']['#']);
+            $dbc->colour = backup_todb($comment['#']['COLOUR']['0']['#']);
             $dbc->assignment_submission = $submission->id;
             insert_record('assignment_uploadpdf_comment', $dbc);
         }
+        if (@isset($info['#']['ANNOTATIONS']['0']['#']['ANNOTATION'])) {
+            $annotations = $info['#']['ANNOTATIONS']['0']['#']['ANNOTATION'];
+        } else {
+            $annotations = array();
+        }
+        foreach ($annotations as $annotation) {
+            $dba = new stdclass;
+            $dba->startx = backup_todb($annotation['#']['STARTX']['0']['#']);
+            $dba->starty = backup_todb($annotation['#']['STARTY']['0']['#']);
+            $dba->endx = backup_todb($annotation['#']['ENDX']['0']['#']);
+            $dba->endy = backup_todb($annotation['#']['ENDY']['0']['#']);
+            $dba->pageno = backup_todb($annotation['#']['PAGENO']['0']['#']);
+            $dba->colour = backup_todb($annotation['#']['COLOUR']['0']['#']);
+            $dba->type = backup_todb($annotation['#']['TYPE']['0']['#']);
+            $dba->assignment_submission = $submission->id;
+            insert_record('assignment_uploadpdf_annot', $dba);
+        }
+
     }
 }
 
