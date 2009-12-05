@@ -129,7 +129,7 @@ var ServerComm = new Class({
 			waitel.destroy();
 			if (resp.error == 0) {
 			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
-				$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!)
+				//$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
 				resp.comments.each(function(comment) {
 					cb = makecommentbox(comment.position, comment.text, comment.colour);
 					if (Browser.Engine.trident) {
