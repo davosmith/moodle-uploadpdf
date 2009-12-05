@@ -66,13 +66,15 @@ $string['keyboardprev'] = 'Press \'p\' for previous page';
 $string['showpreviousassignment'] = 'Display a previous assignment';
 $string['previousnone'] = 'None';
 $string['showprevious'] = 'Show';
-$string['commentcolour'] = 'Background colour for comment';
+$string['commentcolour'] = 'Background';
+$string['linecolour'] = 'Line';
 $string['colourred'] = 'Red';
 $string['colouryellow'] = 'Yellow';
 $string['colourgreen'] = 'Green';
 $string['colourblue'] = 'Blue';
 $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
+$string['colourblack'] = 'Black';
 
 $string['nocomments'] = 'There are currently no comments on this student\'s submission.';
 $string['pagenumber'] = 'Page';

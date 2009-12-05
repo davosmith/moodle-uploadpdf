@@ -1509,6 +1509,15 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<option value="blue">'.get_string('colourblue','assignment_uploadpdf').'</option>';
 		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
 		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
+        echo '</select>';
+        echo ' '.get_string('linecolour','assignment_uploadpdf').': ';
+		echo '<select id="chooselinecolour" name="chooselinecolour">';
+		echo '<option value="red" selected="selected">'.get_string('colourred','assignment_uploadpdf').'</option>';
+		echo '<option value="yellow">'.get_string('colouryellow','assignment_uploadpdf').'</option>';
+		echo '<option value="green">'.get_string('colourgreen','assignment_uploadpdf').'</option>';
+		echo '<option value="blue">'.get_string('colourblue','assignment_uploadpdf').'</option>';
+		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
+		echo '<option value="black">'.get_string('colourblack','assignment_uploadpdf').'</option>';
 		echo '</select></div>';
 
         // Output the page image
