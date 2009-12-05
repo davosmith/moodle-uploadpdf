@@ -364,6 +364,10 @@ var ServerComm = new Class({
 	    waitel.set('class', 'pagewait');
 	    $('pdfholder').adopt(waitel);
 
+	    if (!$defined(details.id)) {
+		details.id = -1;
+	    }
+
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -372,14 +376,16 @@ var ServerComm = new Class({
 			waitel.destroy();
 
 			if (resp.error == 0) {
-			    annotation.store('id', resp.id);
-			    if ($defined(lineselect) && (annotation.retrieve("paper") == lineselect.paper)) {
-				unselectline();
-				annotation.fireEvent('click');
+			    if (details.id < 0) { // A new line
+				annotation.store('id', resp.id);
+				if ($defined(lineselect) && (annotation.retrieve("paper") == lineselect.paper)) {
+				    unselectline();
+				    annotation.fireEvent('click');
+				}
 			    }
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
-				server.updatecomment(comment);
+				server.addannotation(details, annotation);
 			    }
 			}
 		    },
@@ -399,6 +405,7 @@ var ServerComm = new Class({
 			    annotation_endy: details.coords.ey,
 			    annotation_colour: details.colour,
 			    annotation_type: details.type,
+			    annotation_id: details.id,
 			    id: this.id,
 			    userid: this.userid,
 			    pageno: this.pageno,

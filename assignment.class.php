@@ -1602,14 +1602,14 @@ class assignment_uploadpdf extends assignment_base {
             $comment->rawtext = optional_param('comment_text', null, PARAM_TEXT);
 			$comment->colour = optional_param('comment_colour', 'yellow', PARAM_TEXT);
             $comment->pageno = $pageno;
-
+            $comment->assignment_submission = $submission->id;
+            
             if (($comment->posx < 0) || ($comment->posy < 0) || ($comment->width < 0) || ($comment->rawtext === null)) {
                 send_error('Missing comment data');
             }
             
             if ($comment->id === -1) {
                 unset($comment->id);
-                $comment->assignment_submission = $submission->id;
                 $comment->id = insert_record('assignment_uploadpdf_comment', $comment);
             } else {
                 $oldcomment = get_record('assignment_uploadpdf_comment', 'id', $comment->id);
@@ -1741,13 +1741,28 @@ class assignment_uploadpdf extends assignment_base {
             $annotation->endy = optional_param('annotation_endy', -1, PARAM_INT);
             $annotation->colour = optional_param('annotation_colour', 'red', PARAM_TEXT);
             $annotation->type = optional_param('annotation_type', 'line', PARAM_TEXT);
+            $annotation->id = optional_param('annotation_id', -1, PARAM_INT);
             $annotation->pageno = $pageno;
             $annotation->assignment_submission = $submission->id;
 
             if (($annotation->startx < 0) || ($annotation->starty < 0) || ($annotation->endx < 0) || ($annotation->endy < 0)) {
                 send_error('Missing annotation data');
             }
-            $annotation->id = insert_record('assignment_uploadpdf_annot', $annotation);
+
+            if ($annotation->id === -1) {
+                unset($annotation->id);
+                $annotation->id = insert_record('assignment_uploadpdf_annot', $annotation);
+            } else {
+                $oldannotation = get_record('assignment_uploadpdf_annot', 'id', $annotation->id);
+                if (!$oldannotation) {
+                    unset($annotation->id);
+                    $annotation->id = insert_record('assignment_uploadpdf_annot', $annotation->id);
+                } else if (($oldannotation->assignment_submission != $submission->id) || ($oldannotation->pageno != $pageno)) {
+                    send_error('Annotation id is for a different submission or page');
+                } else {
+                    update_record('assignment_uploadpdf_annot', $annotation);
+                }
+            }
 
             $resp['id'] = $annotation->id;
 
