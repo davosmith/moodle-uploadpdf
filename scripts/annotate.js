@@ -159,7 +159,7 @@ var ServerComm = new Class({
 						ex: annotation.coords.endx.toInt(),
 						ey: annotation.coords.endy.toInt()
 					    };
-					    makeline(coords, annotation.id);
+					    makeline(coords, annotation.id, annotation.colour);
 					}
 				    });
 			    }
@@ -712,6 +712,56 @@ function changecolour(e) {
     Cookie.write('uploadpdf_colour', getcurrentcolour());
 }
 
+function getcurrentlinecolour() {
+    var el = $('chooselinecolour');
+    var idx = el.selectedIndex;
+    return el[idx].value;
+}
+
+function setcurrentlinecolour(colour) {
+    var el = $('chooselinecolour');
+    var i;
+    for (i=0; i<el.length; i++) {
+	if (el[i].value == colour) {
+	    el.selectedIndex = i;
+	    return;
+	}
+    }
+}
+
+function setlinecolour(colour, line) {
+    if (line) {
+	var rgb;
+	if (colour == "yellow") { rgb = "#ff0"; }
+	else if (colour == "green") { rgb = "#0f0"; }
+	else if (colour == "blue") { rgb = "#00f"; }
+	else if (colour == "white") { rgb = "#fff"; }
+	else if (colour == "black") { rgb = "#000"; }
+	else { rgb = "#f00"; } // Red
+	line.attr("stroke", rgb);
+    }
+}
+
+function changelinecolour(e) {
+    if ($defined(lineselect)) {
+	var canvas = $(lineselect.paper.canvas);
+	if (!lineselectid) {
+	    // Cannot change the colour before the server has responded
+	    setcurrentlinecolour(canvas.retrieve("colour"));
+	} else {
+	    var canvas = $(lineselect.paper.canvas);
+	    var line = canvas.retrieve("line");
+	    var colour = getcurrentlinecolour();
+	    if (canvas.retrieve("colour") != colour) {
+		setlinecolour(colour, line);
+		canvas.store("colour", colour);
+		server.addannotation({type: "line", colour: colour, id: canvas.retrieve("id"), coords: {sx:-1,sy:-1,ex:-1,ey:-1} }, canvas);
+	    }
+	}
+    }
+    Cookie.write('uploadpdf_linecolour', getcurrentlinecolour());
+}
+
 function startline(e) {
     unselectline();
 
@@ -748,8 +798,8 @@ function updateline(e) {
 	$(document).addEvent('mouseup',finishline);
     }
     currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+" L"+ex+" "+ey);
-    currentline.attr("stroke", "#f00");
     currentline.attr("stroke-width", 3);
+    setlinecolour(getcurrentlinecolour(), currentline);
 }
 
 function finishline(e) {
@@ -770,13 +820,17 @@ function finishline(e) {
     makeline(coords);
 }
 
-function makeline(coords, id) {
+function makeline(coords, id, colour) {
     var linewidth = 3.0;
     var halflinewidth = linewidth * 0.5;
     var dims = $('pdfimg').getCoordinates();
     var startcoords = { sx: coords.sx, sy: coords.sy, ex: coords.ex, ey: coords.ey };
-    var details = {type: "line", coords: startcoords, colour: "red"};
-        
+
+    if (!$defined(colour)) {
+	colour = getcurrentlinecolour();
+    }
+    var details = {type: "line", coords: startcoords, colour: colour};
+
     coords.sx += dims.left;   coords.ex += dims.left;
     coords.sy += dims.top;    coords.ey += dims.top;
 
@@ -794,13 +848,16 @@ function makeline(coords, id) {
     coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
     var paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
     var line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
-    line.attr({stroke: "#f00", "stroke-width": linewidth});
+    line.attr("stroke-width", linewidth);
+    setlinecolour(colour, line);
     
     var domcanvas = $(paper.canvas);
 
     domcanvas.store('paper',paper);
     domcanvas.store('width',boundary.w);
     domcanvas.store('height',boundary.h);
+    domcanvas.store('line',line);
+    domcanvas.store('colour',colour);
     domcanvas.addEvent('mousedown',startline);
     domcanvas.addEvent('click', selectline);
     if ($defined(id)) {
@@ -826,6 +883,8 @@ function selectline(e) {
     
     updatelastcomment(); // In case we were editing a comment at the time
     document.addEvent('keydown', checkdeleteline);
+    var linecolour = this.retrieve('colour');
+    setcurrentlinecolour(linecolour);
 }
 
 function unselectline() {
@@ -877,7 +936,12 @@ function startjs() {
     if ($defined(colour)) {
 	setcurrentcolour(colour);
     }
+    var linecolour = Cookie.read('uploadpdf_linecolour');
+    if ($defined(linecolour)) {
+	setcurrentlinecolour(linecolour);
+    }
     $('choosecolour').addEvent('change', changecolour);
+    $('chooselinecolour').addEvent('change', changelinecolour);
 
     // Start preloading pages if using js navigation method
     if (server_config.js_navigation) {

@@ -1733,7 +1733,6 @@ class assignment_uploadpdf extends assignment_base {
             $resp['image']->height = $imgheight;
 
         } elseif ($action == 'addannotation') {
-
             $annotation = new Object();
             $annotation->startx = optional_param('annotation_startx', -1, PARAM_INT);
             $annotation->starty = optional_param('annotation_starty', -1, PARAM_INT);
@@ -1746,7 +1745,15 @@ class assignment_uploadpdf extends assignment_base {
             $annotation->assignment_submission = $submission->id;
 
             if (($annotation->startx < 0) || ($annotation->starty < 0) || ($annotation->endx < 0) || ($annotation->endy < 0)) {
-                send_error('Missing annotation data');
+                if ($annotation->id < 0) {
+                    send_error('Missing annotation data');
+                } else {
+                    // OK not to send these when updating a line
+                    unset($annotation->startx);
+                    unset($annotation->starty);
+                    unset($annotation->endx);
+                    unset($annotation->endy);
+                }
             }
 
             if ($annotation->id === -1) {
