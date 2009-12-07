@@ -1733,6 +1733,7 @@ class assignment_uploadpdf extends assignment_base {
             $resp['image']->height = $imgheight;
 
         } elseif ($action == 'addannotation') {
+
             $annotation = new Object();
             $annotation->startx = optional_param('annotation_startx', -1, PARAM_INT);
             $annotation->starty = optional_param('annotation_starty', -1, PARAM_INT);
