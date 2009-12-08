@@ -50,6 +50,8 @@ class assignment_uploadpdf extends assignment_base {
 
             $this->view_feedback();
 
+            $this->view_final_submission();
+
             if ($this->is_finalized($submission)) {
                 print_heading(get_string('submission', 'assignment'), '', 3);
             } else {
@@ -85,7 +87,7 @@ class assignment_uploadpdf extends assignment_base {
                 $this->view_notes();
             }
 
-            $this->view_final_submission();
+
         }
         $this->view_footer();
     }
