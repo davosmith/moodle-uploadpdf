@@ -527,15 +527,15 @@ class assignment_uploadpdf extends assignment_base {
 
         $userlists = implode(',', $users);
 
-        $totalcount = count_records_sql("SELECT COUNT('x')
+        // Count the number of assignments that have been submitted and for
+        // which a response file has been generated (ie data2 = 'responded',
+        // not 'submitted')
+        $markedcount = count_records_sql("SELECT COUNT('x')
                                 FROM {$CFG->prefix}assignment_submissions
                                 WHERE assignment = {$this->cm->instance} AND
-                                timemodified > 0 AND
+                                data2 = 'responded' AND
                                 userid IN ($userlists)");
 
-        if (!$totalcount)
-            return 0;
-        
         // Count the number of assignments that have been submitted, but for
         // which a response file has not been generated (ie data2 = 'submitted',
         // not 'responded')
@@ -544,6 +544,9 @@ class assignment_uploadpdf extends assignment_base {
                                 WHERE assignment = {$this->cm->instance} AND
                                 data2 = 'submitted' AND
                                 userid IN ($userlists)");
+
+        $totalcount = $markedcount + $unmarkedcount;
+
         if ($unmarkedcount) {
             return "{$totalcount}({$unmarkedcount})";
         } else {

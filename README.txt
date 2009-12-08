@@ -109,10 +109,15 @@ will just join them in the order they are uploaded).
 
 * Note: If you have a problem with the new javascript based page navigation
   (added on 22 Nov 2009) or prefer having the list of pages to view,
-  then change the setting in 'uploadpdf_config.php'. Note: the
-  javascript method preloads pages to reduce the delay when changing
-  from one page to the next (and probably reduces server load if you
-  do a lot of switching back and forth between pages).
+  then change the setting in 'uploadpdf_config.php'. The  javascript
+  method preloads pages to reduce the delay when changing from one page
+  to the next (and probably reduces server load if you do a lot of 
+  switching back and forth between pages).
+  
+* Note2: The 'View XX submitted assignments' link has been updated to 
+  show both the total number of assignments submitted for marking and
+  the number still awaiting responses (in brackets). The second number
+  is only shown if there are unmarked assignments. 
 
 ==Edit Templates==
 
