@@ -13,8 +13,6 @@ the future).
 
 ==Installation==
 
-* Unzip the plugin files to <siteroot>/mod/assignment/type/uploadpdf
-
 * Download and install GhostScript ( http://pages.cs.wisc.edu/~ghost )
   - or install from standard respositories, if using Linux.
   Under Windows, do not install to a path with a space in it - that
@@ -23,10 +21,13 @@ the future).
   'gswin32c.exe' and the dll file from the 'bin' folder, all other
   files are unnecessary for this to work).
 
-* Edit the file
-  <siteroot>/mod/assignment/type/uploadpdf/uploadpdf_config.php to
-  include the path to where you installed GhostScript (for Linux, you
-  should be able to leave it as the default 'gs').
+* Unzip the Uploadpdf plugin files to a folder on your local machine
+
+* (Windows server only): Edit the file 'uploadpdf_config.php'  to
+  include the path to where you installed GhostScript (see instructions 
+  in that file for more information)
+
+* Upload the plugin files to <siteroot>/mod/assignment/type/uploadpdf
 
 * Log in to Moodle as administrator, then click on 'Notifications'.
 
