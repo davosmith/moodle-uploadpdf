@@ -162,8 +162,8 @@ if ($savetemplate) {
         $imagename = $pdf->get_image(1);
         unlink($fp);
     } else {
-        echo 'Bad thing happen';
-        die;
+        //echo 'No file uploaded';
+        //die;
     }
 } elseif ($duplicatetemplate) {
     // Should not have access to the 'duplicate' button unless a template is selected
