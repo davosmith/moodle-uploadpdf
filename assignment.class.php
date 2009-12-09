@@ -334,6 +334,12 @@ class assignment_uploadpdf extends assignment_base {
                         $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
                         $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
                         $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+
+                        // To tidy up flags from older versions of this assignment
+                        if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
+                            $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
+                            update_record('assignment_submissions',$submission);
+                        }
                     }
                 }
             } else {
@@ -533,7 +539,7 @@ class assignment_uploadpdf extends assignment_base {
         $markedcount = count_records_sql("SELECT COUNT('x')
                                 FROM {$CFG->prefix}assignment_submissions
                                 WHERE assignment = {$this->cm->instance} AND
-                                data2 = 'responded' AND
+                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED."' AND
                                 userid IN ($userlists)");
 
         // Count the number of assignments that have been submitted, but for
@@ -542,7 +548,7 @@ class assignment_uploadpdf extends assignment_base {
         $unmarkedcount = count_records_sql("SELECT COUNT('x')
                                 FROM {$CFG->prefix}assignment_submissions
                                 WHERE assignment = {$this->cm->instance} AND
-                                data2 = 'submitted' AND
+                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED."' AND
                                 userid IN ($userlists)");
 
         $totalcount = $markedcount + $unmarkedcount;
