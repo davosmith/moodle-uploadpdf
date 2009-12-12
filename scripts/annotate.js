@@ -1065,10 +1065,26 @@ function showpage(pageno) {
 	pdfsize.set('style',style);
     }
     var pdfimg = $('pdfimg');
-    pdfimg.setProperty('src',pagelist[pageno].url);
     pdfimg.setProperty('width',pagelist[pageno].width);
     pdfimg.setProperty('height',pagelist[pageno].height);
+    if (pagelist[pageno].image.complete) {
+	pdfimg.setProperty('src',pagelist[pageno].url);
+    } else {
+	pdfimg.setProperty('src',server_config.blank_image);
+	setTimeout('check_pageimage('+pageno+')', 200);
+    }
     server.getcomments();
+}
+
+function check_pageimage(pageno) {
+    if (pageno != server.pageno.toInt()) {
+	return; // Moved off the page in question
+    }
+    if (pagelist[pageno].image.complete) {
+	$('pdfimg').setProperty('src',pagelist[pageno].url);
+    } else {
+	setTimeout('check_pageimage('+pageno+')', 200);
+    }
 }
 
 function gotopage(pageno) {
