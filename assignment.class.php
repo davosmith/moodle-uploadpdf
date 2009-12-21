@@ -337,8 +337,10 @@ class assignment_uploadpdf extends assignment_base {
 
                         // To tidy up flags from older versions of this assignment
                         if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
-                            $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
-                            update_record('assignment_submissions',$submission);
+                            $update = new Object();
+                            $update->id = $submission->id;
+                            $update->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
+                            update_record('assignment_submissions',$update);
                         }
                     }
                 }
@@ -926,8 +928,10 @@ class assignment_uploadpdf extends assignment_base {
                 $submission = $this->get_submission($userid); 
                 // If the assignment was marked as 'responded to', then mark it as 'submitted' instead
                 if ($submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
-                    $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
-                    update_record('assignment_submissions', $submission);
+                    $updated = new Object();
+                    $updated->id = $submission->id;
+                    $updated->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
+                    update_record('assignment_submissions', $updated);
                 }
                 redirect($returnurl);
             }
@@ -1343,7 +1347,11 @@ class assignment_uploadpdf extends assignment_base {
 
         if (($submission->numfiles & 1) == 0) {
             $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
-            update_record('assignment_submissions', $submission);
+            
+            $updated = new Object();
+            $updated->id = $submission->id;
+            $updated->numfiles = $submission->numfiles;
+            update_record('assignment_submissions', $updated);
         }
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
@@ -1396,7 +1404,12 @@ class assignment_uploadpdf extends assignment_base {
         if ($generateresponse) {
             if ($this->create_response_pdf($userid, $submission->id)) {
                 $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
-                update_record('assignment_submissions', $submission);
+                
+                $updated = new Object();
+                $updated->id = $submission->id;
+                $updated->data2 = $submission->data2;
+                update_record('assignment_submissions', $updated);
+
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
                 print_heading(get_string('responseok', 'assignment_uploadpdf'));
 				require_once($CFG->dirroot.'/version.php');
@@ -2098,7 +2111,11 @@ class assignment_uploadpdf extends assignment_base {
                 if ($filescleared) {
                     echo ' cleared.';
                     $submission->numfiles &= ~1; // Clear flag in final bit
-                    update_record('assignment_submissions', $submission);
+
+                    $updated = new Object();
+                    $updated->id = $submission->id;
+                    $updated->numfiles = $submission->numfiles;
+                    update_record('assignment_submissions', $updated);
                 } else {
                     echo ' too recent - not cleared.';
                 }
