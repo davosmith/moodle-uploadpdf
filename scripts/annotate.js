@@ -977,10 +977,13 @@ function context_quicklistnoitems() {
 function addtoquicklist(item) {
     var itemid = item.id;
     var itemtext = item.text.trim().replace('\n','');
+    var itemfulltext = false;
     if (itemtext.length > 30) {
 	itemtext = itemtext.substring(0, 30) + '&#0133;';
+	itemfulltext = item.text.trim().replace('<','&lt;').replace('>','&gt;');
     }
     itemtext = itemtext.replace('<','&lt;').replace('>','&gt;');
+
 
     quicklist[itemid] = item;
 
@@ -999,7 +1002,7 @@ function addtoquicklist(item) {
 		cb.set('style',style);
 	    }
 	    server.updatecomment(cb);
-	} );
+	}, itemfulltext );
 
     context_quicklist.quickcount++;
     context_quicklistnoitems();

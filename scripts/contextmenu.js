@@ -116,11 +116,14 @@ var ContextMenu = new Class({
 		return this;
 	},
 
-	addItem: function(item, text, deleteicon, func) {
+	addItem: function(item, text, deleteicon, func, titletext) {
 	    var newel = new Element('li');
 	    var link = new Element('a');
 	    link.set('html',text);
 	    link.setProperty('href','#'+item);
+	    if (titletext) {
+		link.setProperty('title',titletext);
+	    }
 	    newel.adopt(link);
 	    if (deleteicon) {
 		var dellink = new Element('a');
