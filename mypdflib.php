@@ -74,10 +74,10 @@ class MyPDFLib extends FPDI {
         return $totalpagecount;
     }
 
-    public function current_page() { return $this->currentpage; }
-    public function page_count() { return $this->pagecount; }
+    function current_page() { return $this->currentpage; }
+    function page_count() { return $this->pagecount; }
 
-    public function load_pdf($filename) {
+    function load_pdf($filename) {
         $this->setPageUnit('pt');
         $this->scale = 72.0 / 100.0;
         $this->SetFont('helvetica','', 12.0 * $this->scale);
@@ -92,7 +92,7 @@ class MyPDFLib extends FPDI {
         return $this->pagecount;
     }
 
-    public function set_pdf($filename, $pagecount=0) {
+    function set_pdf($filename, $pagecount=0) {
         if ($pagecount == 0) {
             return $this->load_pdf($filename);
         } else {
@@ -102,7 +102,7 @@ class MyPDFLib extends FPDI {
         }
     }
     
-    public function copy_page() {		/* Copy next page from source file and set as current page */
+    function copy_page() {		/* Copy next page from source file and set as current page */
         if (!$this->filename) {
             return false;
         }
@@ -117,11 +117,11 @@ class MyPDFLib extends FPDI {
         return true;
     }
   
-    public function copy_remaining_pages() {	/* Copy all the rest of the pages in the file */
+    function copy_remaining_pages() {	/* Copy all the rest of the pages in the file */
         while ($this->copy_page());
     }
   
-    public function add_comment($text, $x, $y, $width, $colour='yellow') { /* Add a comment to the current page */
+    function add_comment($text, $x, $y, $width, $colour='yellow') { /* Add a comment to the current page */
         if (!$this->filename) {
             return false;
         }
@@ -160,7 +160,7 @@ class MyPDFLib extends FPDI {
         return true;
     }
   
-    public function add_annotation($sx, $sy, $ex, $ey, $colour='red') { /* Add an annotation to the current page */
+    function add_annotation($sx, $sy, $ex, $ey, $colour='red') { /* Add an annotation to the current page */
         if (!$this->filename) {
             return false;
         }
@@ -199,15 +199,15 @@ class MyPDFLib extends FPDI {
         return true;
     }
 
-    public function save_pdf($filename) {
+    function save_pdf($filename) {
         $this->Output($filename, 'F');
     }
 
-    public function set_image_folder($folder) {
+    function set_image_folder($folder) {
         $this->imagefolder = $folder;
     }
 
-    public function get_image($pageno) {
+    function get_image($pageno) {
         global $CFG;
 
         if (!$this->filename) {
