@@ -2289,22 +2289,22 @@ class assignment_uploadpdf extends assignment_base {
         }
 
     }
-}
 
-function reset_userdata($data) {
-    global $CFG;
-    if (!empty($data->reset_assignment_submissions)) {
-        delete_records_select('assignment_uploadpdf_comment',
-               'assignment_submission IN (
+    function reset_userdata($data) {
+        global $CFG;
+        if (!empty($data->reset_assignment_submissions)) {
+            delete_records_select('assignment_uploadpdf_comment',
+                                  'assignment_submission IN (
                    SELECT s.id
                    FROM ' . $CFG->prefix . 'assignment_submissions s
                    JOIN ' . $CFG->prefix . 'assignment a
                        ON s.assignment = a.id
                    WHERE a.course = ' . $data->courseid . '
                )'
-        );
+                                  );
+        }
+        return parent::reset_userdata($data);
     }
-    return parent::reset_userdata($data);
 }
 
 class mod_assignment_uploadpdf_notes_form extends moodleform {
