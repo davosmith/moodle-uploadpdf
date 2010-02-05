@@ -56,17 +56,16 @@ class assignment_uploadpdf extends assignment_base {
                 print_heading(get_string('submission', 'assignment'), '', 3);
             } else {
                 print_heading(get_string('submissiondraft', 'assignment'), '', 3);
-            }
-
-            $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
-            if ($extra && $extra->coversheet != '') {
-                $filename = end(explode('/',$extra->coversheet));
-                $partpath = '/'.$this->course->id.'/'.$extra->coversheet;
-                $fullpath = $CFG->dataroot.$partpath;
-                $url = $CFG->wwwroot.'/file.php?file='.$partpath;
-                if (file_exists($fullpath)) {
-                    echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
-                    echo '<a href="'.$url.'" target="_blank">'.$filename.'</a></p>';
+                $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
+                if ($extra && $extra->coversheet != '') {
+                    $filename = end(explode('/',$extra->coversheet));
+                    $partpath = '/'.$this->course->id.'/'.$extra->coversheet;
+                    $fullpath = $CFG->dataroot.$partpath;
+                    $url = $CFG->wwwroot.'/file.php?file='.$partpath;
+                    if (file_exists($fullpath)) {
+                        echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
+                        echo '<a href="'.$url.'" target="_blank">'.$filename.'</a></p>';
+                    }
                 }
             }
 
