@@ -1001,6 +1001,7 @@ function addtoquicklist(item) {
 		var style = cb.get('style')+' width:'+quicklist[id].width+'px;';
 		cb.set('style',style);
 	    }
+	    $('debugout').innerHTML = 'box x = '+pos.x+'; y = '+pos.y;
 	    server.updatecomment(cb);
 	}, itemfulltext );
 

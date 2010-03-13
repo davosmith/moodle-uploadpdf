@@ -64,6 +64,7 @@ var ContextMenu = new Class({
 	addmenu: function(target) {
 	    /* show the menu */
 	    target.addEvent(this.options.trigger,function(e) {
+		    $('debugout').innerHTML = "x = "+e.page.x+"; y = "+e.page.y;
 		    //enabled?
 		    if(!this.options.disabled) {
 			//prevent default, if told to
