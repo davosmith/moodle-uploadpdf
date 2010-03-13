@@ -1,5 +1,9 @@
 <?php
 
+function assignment_type_uploadpdf_upgrade($oldversion) {
+    return true;
+}
+
 function assignment_uploadpdf_upgrade($oldversion) {
     global $CFG, $THEME, $db;
 
