@@ -30,8 +30,8 @@
         <FIELD NAME="coversheet" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Filename of the coversheet to attach" PREVIOUS="assignment" NEXT="template"/>
         <FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="ID of the template to use when a student submits work with this coversheet" PREVIOUS="coversheet" NEXT="onlypdf"/>
         <FIELD NAME="onlypdf" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" ENUM="false" COMMENT="Only allow PDF files to be uploaded" PREVIOUS="template" NEXT="checklist"/> 
-        <FIELD NAME="checklist" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The checklist that you want to link this assignment to" PREVIOUS="onlypdf" NEXT="checkist_percent"/> 
-        <FIELD NAME="checkist_percent" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="What percentage complete the checklist must be to allow a student to submit their assignment" PREVIOUS="checklist"/>
+        <FIELD NAME="checklist" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The checklist that you want to link this assignment to" PREVIOUS="onlypdf" NEXT="checklist_percent"/> 
+        <FIELD NAME="checklist_percent" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="What percentage complete the checklist must be to allow a student to submit their assignment" PREVIOUS="checklist"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for assignment_uploadpdf"/>

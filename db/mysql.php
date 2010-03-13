@@ -118,7 +118,7 @@ function assignment_uploadpdf_upgrade($oldversion) {
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, null, '0', 'onlypdf');
         $result = $result && add_field($table, $field);
         
-        $field = new XMLDBField('checkist_percent');
+        $field = new XMLDBField('checklist_percent');
         $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, null, '0', 'checklist');
         $result = $result && add_field($table, $field);
     }
