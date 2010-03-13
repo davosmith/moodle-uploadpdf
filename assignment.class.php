@@ -91,6 +91,33 @@ class assignment_uploadpdf extends assignment_base {
         $this->view_footer();
     }
 
+    function view_intro() {
+        global $CFG, $USER;
+
+        print_simple_box_start('center', '', '', 0, 'generalbox', 'intro');
+        $formatoptions = new stdClass;
+        $formatoptions->noclean = true;
+        echo format_text($this->assignment->description, $this->assignment->format, $formatoptions);
+
+        if ($this->checklist_installed()) {
+            $extra = get_record('assignment_uploadpdf', 'assignment', $this->assignment->id);
+            if ($extra->checklist) {
+                if (file_exists($CFG->dirroot.'/mod/checklist/locallib.php')) {
+                    require_once($CFG->dirroot.'/mod/checklist/locallib.php');
+
+                    $checklist = get_record('checklist', 'id', $extra->checklist);
+                    if ($checklist) {
+                        $chklink = $CFG->wwwroot.'/mod/checklist/view.php?checklist='.$checklist->id;
+                        echo '<div><a href="'.$chklink.'"><div style="float: left; dispaly: inline; margin-left: 40px; margin-right: 20px;">'.$checklist->name.': </div>';
+                        checklist_class::print_user_progressbar($checklist->id, $USER->id);
+                        echo '</a></div>';
+                    }
+                }
+            }
+        }
+        
+        print_simple_box_end();
+    }
 
     function view_feedback($submission=NULL) {
         global $USER;
@@ -1932,6 +1959,8 @@ class assignment_uploadpdf extends assignment_base {
             $assignment_extra->template = 0;
             $assignment_extra->coversheet = '';
             $assignment_extra->onlypdf = 1;
+            $assignment_extra->checklist = 0;
+            $assignment_extra->checklist_percent = 0;
         }
 
         $mform->addElement('choosecoursefile', 'coversheet', get_string('coversheet','assignment_uploadpdf'));
@@ -1986,6 +2015,26 @@ class assignment_uploadpdf extends assignment_base {
         $mform->setHelpButton('var3', array('hideintro', get_string('hideintro', 'assignment'), 'assignment'));
         $mform->setDefault('var3', 0);
 
+        // Checklist elements
+        if ($this->checklist_installed()) {
+            $checklists = array();
+            $checklists[0] = get_string('none');
+            $checklist_data = get_records('checklist', 'course', $courseid);
+            if ($checklist_data) {
+                foreach ($checklist_data as $chk) {
+                    $checklists[$chk->id] = $chk->name;
+                }
+            }
+            
+            $mform->addElement('select', 'checklist', get_string('displaychecklist', 'assignment_uploadpdf'), $checklists);
+            // $mform->setHelpButton('var3', array('hideintro', get_string('hideintro', 'assignment'), 'assignment'));
+            $mform->setDefault('checklist', $assignment_extra->checklist);
+
+            $mform->addElement('select', 'checklist_percent', get_string('mustcompletechecklist', 'assignment_uploadpdf'), array( 0 => get_string('no'), 100 => get_string('yes')));
+            // $mform->setHelpButton('var3', array('hideintro', get_string('hideintro', 'assignment'), 'assignment'));
+            $mform->setDefault('checklist_percent', $assignment_extra->checklist_percent);
+        }
+            
         $mform->addElement('select', 'emailteachers', get_string("emailteachers", "assignment"), $ynoptions);
         $mform->setHelpButton('emailteachers', array('emailteachers', get_string('emailteachers', 'assignment'), 'assignment'));
         $mform->setDefault('emailteachers', 0);
@@ -1996,9 +2045,13 @@ class assignment_uploadpdf extends assignment_base {
         $assignment_extra->coversheet = $assignment->coversheet; // FIXME: This should be sanitised and checked it is a PDF
         $assignment_extra->template = $assignment->template;
         $assignment_extra->onlypdf = $assignment->onlypdf;
+        $assignment_extra->checklist = $assignment->checklist;
+        $assignment_extra->checklist_percent = $assignment->checklist_percent;
         unset($assignment->coversheet);
         unset($assignment->template);
         unset($assignment->onlypdf);
+        unset($assignment->checklist);
+        unset($assignment->checklist_percent);
 
         $newid = parent::add_instance($assignment);
 
@@ -2037,9 +2090,13 @@ class assignment_uploadpdf extends assignment_base {
         $coversheet = $assignment->coversheet; // FIXME - this should be sanitised and checked that it is a PDF
         $template = $assignment->template;
         $onlypdf = $assignment->onlypdf;
+        $checklist = $assignment->checklist;
+        $checklist_percent = $assignment->checklist_percent;
         unset($assignment->coversheet);
         unset($assignment->template);
         unset($assignment->onlypdf);
+        unset($assignment->checklist);
+        unset($assignment->checklist_percent);
 
         $retval = parent::update_instance($assignment);
         
@@ -2050,6 +2107,8 @@ class assignment_uploadpdf extends assignment_base {
                 $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
                 $assignment_extra->onlypdf = $onlypdf;
+                $assignment_extra->checklist = $checklist;
+                $assignment_extra->checklist_percent = $checklist_percent;
                 update_record('assignment_uploadpdf', $assignment_extra);
             } else {
                 // This shouldn't happen (unless an old development version of this plugin has already been used)
@@ -2058,6 +2117,8 @@ class assignment_uploadpdf extends assignment_base {
                 $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
                 $assignment_extra->onlypdf = $onlypdf;
+                $assignment_extra->checklist = $checklist;
+                $assignment_extra->checklist_percent = $checklist_percent;
                 insert_record('assignment_uploadpdf', $assignment_extra);
             }
         }
@@ -2303,6 +2364,19 @@ class assignment_uploadpdf extends assignment_base {
                                   );
         }
         return parent::reset_userdata($data);
+    }
+
+    function checklist_installed() {
+        $chk = get_record('modules', 'name', 'checklist');
+        if (!$chk) {
+            return false;
+        }
+
+        if ($chk->version < 2010031200) {
+            return false;
+        }
+
+        return true;
     }
 }
 

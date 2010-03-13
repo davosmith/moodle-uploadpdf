@@ -12,6 +12,8 @@ $string['choosetemplate'] = 'Choose a template to edit';
 $string['newtemplate'] = 'New Template...';
 $string['coversheetnotpdf'] = 'Coversheet must be a PDF (or blank)';
 $string['onlypdf'] = 'All files must be PDFs';
+$string['displaychecklist'] = 'Display checklist';
+$string['mustcompletechecklist'] = 'Checklist complete before submission';
 
 //Editing template
 $string['select'] = 'Select';
