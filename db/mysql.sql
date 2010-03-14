@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS `prefix_assignment_uploadpdf` (
   `coversheet` MEDIUMTEXT NULL default '',
   `template` int(10) unsigned NOT NULL default '0',
   `onlypdf` int(2) unsigned NULL default '1',
+  `checklist` int(10) unsigned NULL default '0',
+  `checklist_percent` int(10) unsigned NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `assignment` (`assignment`)
 ) ; 

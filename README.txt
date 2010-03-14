@@ -54,6 +54,14 @@ All being well, you should now be able to add assignments of type
   All files must be PDFs - set to 'No', if you want to collect in some
   supporting documents, which could not be marked as PDFs (e.g. a
   spreadsheet, with formulas you want to check)
+  
+  Display checklist (only if the 'checklist' plugin is installed) - you 
+  can choose to dispaly the progress bar for a checklist after the
+  introduction text
+  
+  Checklist complete before submission (only if the 'checklist' plugin
+  is installed) - you can prevent students from submitting work when
+  they have not yet ticked all the items on the checklist
 
   
 * When a student uploads their files and clicks 'Submit' they will be

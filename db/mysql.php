@@ -1,5 +1,9 @@
 <?php
 
+function assignment_type_uploadpdf_upgrade($oldversion) {
+    return true;
+}
+
 function assignment_uploadpdf_upgrade($oldversion) {
     global $CFG, $THEME, $db;
 
@@ -107,6 +111,17 @@ function assignment_uploadpdf_upgrade($oldversion) {
         $result = $result && change_field_type($table, $field);
     }
 
+    if ($result && $oldversion < 2010031300) {
+        // Add new fields to allow linking with the checklist module
+        $table = new XMLDBTable('assignment_uploadpdf');
+        $field = new XMLDBField('checklist');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, null, '0', 'onlypdf');
+        $result = $result && add_field($table, $field);
+        
+        $field = new XMLDBField('checklist_percent');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, null, '0', 'checklist');
+        $result = $result && add_field($table, $field);
+    }
 
     return $result;
 }
