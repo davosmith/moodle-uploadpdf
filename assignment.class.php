@@ -99,19 +99,15 @@ class assignment_uploadpdf extends assignment_base {
         $formatoptions->noclean = true;
         echo format_text($this->assignment->description, $this->assignment->format, $formatoptions);
 
-        if ($this->checklist_installed()) {
+        if ($this->import_checklist_plugin()) {
             $extra = get_record('assignment_uploadpdf', 'assignment', $this->assignment->id);
             if ($extra->checklist) {
-                if (file_exists($CFG->dirroot.'/mod/checklist/locallib.php')) {
-                    require_once($CFG->dirroot.'/mod/checklist/locallib.php');
-
-                    $checklist = get_record('checklist', 'id', $extra->checklist);
-                    if ($checklist) {
-                        $chklink = $CFG->wwwroot.'/mod/checklist/view.php?checklist='.$checklist->id;
-                        echo '<div><a href="'.$chklink.'"><div style="float: left; dispaly: inline; margin-left: 40px; margin-right: 20px;">'.$checklist->name.': </div>';
-                        checklist_class::print_user_progressbar($checklist->id, $USER->id);
-                        echo '</a></div>';
-                    }
+                $checklist = get_record('checklist', 'id', $extra->checklist);
+                if ($checklist) {
+                    $chklink = $CFG->wwwroot.'/mod/checklist/view.php?checklist='.$checklist->id;
+                    echo '<div><a href="'.$chklink.'" target="_blank"><div style="float: left; dispaly: inline; margin-left: 40px; margin-right: 20px;">'.$checklist->name.': </div>';
+                    checklist_class::print_user_progressbar($checklist->id, $USER->id);
+                    echo '</a></div>';
                 }
             }
         }
@@ -243,6 +239,21 @@ class assignment_uploadpdf extends assignment_base {
             echo '<fieldset class="invisiblefieldset">';
 
             $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
+            $disabled = '';
+            $checklistmessage = '';
+
+            if ($extra->checklist && $extra->checklist_percent) {
+                if ($this->import_checklist_plugin()) {
+                    list($ticked, $total) = checklist_class::get_user_progress($extra->checklist, $USER->id);
+                    if (($ticked * 100 / $total) < $extra->checklist_percent) {
+                        $disabled = ' disabled="disabled" ';
+                        $checklistmessage = '<p class="error">'.get_string('checklistunfinished', 'assignment_uploadpdf').'</p>';
+                    }
+                }
+            }
+
+            echo $checklistmessage;
+
             if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
                 $t_items = get_records('assignment_uploadpdf_tmplitm','template', $extra->template);
                 $ticount = 0;
@@ -253,13 +264,13 @@ class assignment_uploadpdf extends assignment_base {
                             $ticount++;
                             $inputname = 'templ'.$ticount;
                             echo '<tr><td align="right"><label for="'.$inputname.'">'.s($ti->setting).': </label></td>';
-                            echo '<td><textarea name="'.$inputname.'" cols="30" rows="5"></textarea></td></tr>';
+                            echo '<td><textarea name="'.$inputname.'" cols="30" rows="5" '.$disabled.'></textarea></td></tr>';
 
                         } elseif ($ti->type == 'shorttext') {
                             $ticount++;
                             $inputname = 'templ'.$ticount;
                             echo '<tr><td align="right"><label for="'.$inputname.'">'.s($ti->setting).': </label></td>';
-                            echo '<td><input type="text" name="'.$inputname.'" /></td></tr>';
+                            echo '<td><input type="text" name="'.$inputname.'" '.$disabled.'/></td></tr>';
                         }
                         // Date type does not have an input box
                     }
@@ -269,7 +280,7 @@ class assignment_uploadpdf extends assignment_base {
 
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
             echo '<input type="hidden" name="action" value="finalize" />';
-            echo '<input type="submit" name="formarking" value="'.get_string('sendformarking', 'assignment').'" />';
+            echo '<input type="submit" name="formarking" value="'.get_string('sendformarking', 'assignment').'" '.$disabled.'/>';
             echo '</fieldset>';
             echo '</form>';
             echo '</div>';
@@ -775,11 +786,27 @@ class assignment_uploadpdf extends assignment_base {
 
         $optionsno = array('id'=>$this->cm->id);
         $optionsyes = array('id'=>$this->cm->id, 'action'=>'finalize');
+
+        $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
+
+        // Check that they have finished everything on the checklist (if that option is selected)
+        if ($extra->checklist && $extra->checklist_percent) {
+            if ($this->import_checklist_plugin()) {
+                list($ticked, $total) = checklist_class::get_user_progress($extra->checklist, $USER->id);
+                if (($ticked * 100 / $total) < $extra->checklist_percent) {
+                    $this->view_header();
+                    print_heading(get_string('checklistunfinishedheading', 'assignment_uploadpdf'));
+                    notify(get_string('checklistunfinished', 'assignment_uploadpdf'));
+                    print_continue($returnurl);
+                    $this->view_footer();
+                    die;
+                }
+            }
+        }
         
         // Check that form for coversheet has been filled in
         // (but don't complain about it until the PDF check has been done) 
         $templatedataOK = true;
-        $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
         $templateitems = false;
         if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
             $templateitems = get_records('assignment_uploadpdf_tmplitm','template', $extra->template);
@@ -2016,7 +2043,7 @@ class assignment_uploadpdf extends assignment_base {
         $mform->setDefault('var3', 0);
 
         // Checklist elements
-        if ($this->checklist_installed()) {
+        if ($this->import_checklist_plugin()) {
             $checklists = array();
             $checklists[0] = get_string('none');
             $checklist_data = get_records('checklist', 'course', $courseid);
@@ -2366,7 +2393,9 @@ class assignment_uploadpdf extends assignment_base {
         return parent::reset_userdata($data);
     }
 
-    function checklist_installed() {
+    function import_checklist_plugin() {
+        global $CFG;
+        
         $chk = get_record('modules', 'name', 'checklist');
         if (!$chk) {
             return false;
@@ -2376,6 +2405,11 @@ class assignment_uploadpdf extends assignment_base {
             return false;
         }
 
+        if (!file_exists($CFG->dirroot.'/mod/checklist/locallib.php')) {
+            return false;
+        }
+        
+        require_once($CFG->dirroot.'/mod/checklist/locallib.php');
         return true;
     }
 }

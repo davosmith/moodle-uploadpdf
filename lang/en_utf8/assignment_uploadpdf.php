@@ -104,5 +104,7 @@ $string['filenotpdf_continue'] = 'The file \'$a\' is not a PDF - are you sure yo
 $string['createsubmissionfailed'] = 'Unable to create submission PDF';
 $string['heading_templatedatamissing'] = 'Coversheet information not filled in';
 $string['templatedatamissing'] = 'You need to fill in all the requested details to create a coversheet for this assignment';
+$string['checklistunfinishedheading'] = 'Checklist incomplete';
+$string['checklistunfinished'] = 'Checklist incomplete - please tick-off all the items before submitting your work';
 
 ?>
