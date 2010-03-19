@@ -44,6 +44,20 @@ class assignment_uploadpdf extends assignment_base {
 
         $this->view_dates();
 
+        $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
+        $coversheet_filename = false;
+        $coversheet_url = false;
+        if ($extra && $extra->coversheet != '') {
+            $filename = end(explode('/',$extra->coversheet));
+            $partpath = '/'.$this->course->id.'/'.$extra->coversheet;
+            $fullpath = $CFG->dataroot.$partpath;
+            $url = $CFG->wwwroot.'/file.php?file='.$partpath;
+            if (file_exists($fullpath)) {
+                $coversheet_filename = $filename;
+                $coversheet_url = $url;
+            }
+        }
+
         if (has_capability('mod/assignment:submit', $this->context)) {
             $filecount = $this->count_user_files($USER->id);
             $submission = $this->get_submission($USER->id);
@@ -56,16 +70,9 @@ class assignment_uploadpdf extends assignment_base {
                 print_heading(get_string('submission', 'assignment'), '', 3);
             } else {
                 print_heading(get_string('submissiondraft', 'assignment'), '', 3);
-                $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
-                if ($extra && $extra->coversheet != '') {
-                    $filename = end(explode('/',$extra->coversheet));
-                    $partpath = '/'.$this->course->id.'/'.$extra->coversheet;
-                    $fullpath = $CFG->dataroot.$partpath;
-                    $url = $CFG->wwwroot.'/file.php?file='.$partpath;
-                    if (file_exists($fullpath)) {
-                        echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
-                        echo '<a href="'.$url.'" target="_blank">'.$filename.'</a></p>';
-                    }
+                if ($coversheet_filename) {
+                    echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
+                    echo '<a href="'.$coversheet_url.'" target="_blank">'.$coversheet_filename.'</a></p>';
                 }
             }
 
@@ -85,9 +92,13 @@ class assignment_uploadpdf extends assignment_base {
                 print_heading(get_string('notes', 'assignment'), '', 3);
                 $this->view_notes();
             }
-
-
+        } else {
+            if ($coversheet_filename) {
+                echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
+                echo '<a href="'.$coversheet_url.'" target="_blank">'.$coversheet_filename.'</a></p>';
+            }
         }
+        
         $this->view_footer();
     }
 
