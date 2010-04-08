@@ -977,10 +977,13 @@ function context_quicklistnoitems() {
 function addtoquicklist(item) {
     var itemid = item.id;
     var itemtext = item.text.trim().replace('\n','');
+    var itemfulltext = false;
     if (itemtext.length > 30) {
 	itemtext = itemtext.substring(0, 30) + '&#0133;';
+	itemfulltext = item.text.trim().replace('<','&lt;').replace('>','&gt;');
     }
     itemtext = itemtext.replace('<','&lt;').replace('>','&gt;');
+
 
     quicklist[itemid] = item;
 
@@ -999,7 +1002,7 @@ function addtoquicklist(item) {
 		cb.set('style',style);
 	    }
 	    server.updatecomment(cb);
-	} );
+	}, itemfulltext );
 
     context_quicklist.quickcount++;
     context_quicklistnoitems();
@@ -1065,10 +1068,26 @@ function showpage(pageno) {
 	pdfsize.set('style',style);
     }
     var pdfimg = $('pdfimg');
-    pdfimg.setProperty('src',pagelist[pageno].url);
     pdfimg.setProperty('width',pagelist[pageno].width);
     pdfimg.setProperty('height',pagelist[pageno].height);
+    if (pagelist[pageno].image.complete) {
+	pdfimg.setProperty('src',pagelist[pageno].url);
+    } else {
+	pdfimg.setProperty('src',server_config.blank_image);
+	setTimeout('check_pageimage('+pageno+')', 200);
+    }
     server.getcomments();
+}
+
+function check_pageimage(pageno) {
+    if (pageno != server.pageno.toInt()) {
+	return; // Moved off the page in question
+    }
+    if (pagelist[pageno].image.complete) {
+	$('pdfimg').setProperty('src',pagelist[pageno].url);
+    } else {
+	setTimeout('check_pageimage('+pageno+')', 200);
+    }
 }
 
 function gotopage(pageno) {

@@ -44,27 +44,35 @@ class assignment_uploadpdf extends assignment_base {
 
         $this->view_dates();
 
+        $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
+        $coversheet_filename = false;
+        $coversheet_url = false;
+        if ($extra && $extra->coversheet != '') {
+            $filename = end(explode('/',$extra->coversheet));
+            $partpath = '/'.$this->course->id.'/'.$extra->coversheet;
+            $fullpath = $CFG->dataroot.$partpath;
+            $url = $CFG->wwwroot.'/file.php?file='.$partpath;
+            if (file_exists($fullpath)) {
+                $coversheet_filename = $filename;
+                $coversheet_url = $url;
+            }
+        }
+
         if (has_capability('mod/assignment:submit', $this->context)) {
             $filecount = $this->count_user_files($USER->id);
             $submission = $this->get_submission($USER->id);
 
             $this->view_feedback();
 
+            $this->view_final_submission();
+
             if ($this->is_finalized($submission)) {
                 print_heading(get_string('submission', 'assignment'), '', 3);
             } else {
                 print_heading(get_string('submissiondraft', 'assignment'), '', 3);
-            }
-
-            $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
-            if ($extra && $extra->coversheet != '') {
-                $filename = end(explode('/',$extra->coversheet));
-                $partpath = '/'.$this->course->id.'/'.$extra->coversheet;
-                $fullpath = $CFG->dataroot.$partpath;
-                $url = $CFG->wwwroot.'/file.php?file='.$partpath;
-                if (file_exists($fullpath)) {
+                if ($coversheet_filename) {
                     echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
-                    echo '<a href="'.$url.'" target="_blank">'.$filename.'</a></p>';
+                    echo '<a href="'.$coversheet_url.'" target="_blank">'.$coversheet_filename.'</a></p>';
                 }
             }
 
@@ -84,12 +92,39 @@ class assignment_uploadpdf extends assignment_base {
                 print_heading(get_string('notes', 'assignment'), '', 3);
                 $this->view_notes();
             }
-
-            $this->view_final_submission();
+        } else {
+            if ($coversheet_filename) {
+                echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
+                echo '<a href="'.$coversheet_url.'" target="_blank">'.$coversheet_filename.'</a></p>';
+            }
         }
+        
         $this->view_footer();
     }
 
+    function view_intro() {
+        global $CFG, $USER;
+
+        print_simple_box_start('center', '', '', 0, 'generalbox', 'intro');
+        $formatoptions = new stdClass;
+        $formatoptions->noclean = true;
+        echo format_text($this->assignment->description, $this->assignment->format, $formatoptions);
+
+        if ($this->import_checklist_plugin()) {
+            $extra = get_record('assignment_uploadpdf', 'assignment', $this->assignment->id);
+            if ($extra->checklist) {
+                $checklist = get_record('checklist', 'id', $extra->checklist);
+                if ($checklist) {
+                    $chklink = $CFG->wwwroot.'/mod/checklist/view.php?checklist='.$checklist->id;
+                    echo '<div><a href="'.$chklink.'" target="_blank"><div style="float: left; dispaly: inline; margin-left: 40px; margin-right: 20px;">'.$checklist->name.': </div>';
+                    checklist_class::print_user_progressbar($checklist->id, $USER->id);
+                    echo '</a></div>';
+                }
+            }
+        }
+        
+        print_simple_box_end();
+    }
 
     function view_feedback($submission=NULL) {
         global $USER;
@@ -215,6 +250,21 @@ class assignment_uploadpdf extends assignment_base {
             echo '<fieldset class="invisiblefieldset">';
 
             $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
+            $disabled = '';
+            $checklistmessage = '';
+
+            if ($extra->checklist && $extra->checklist_percent) {
+                if ($this->import_checklist_plugin()) {
+                    list($ticked, $total) = checklist_class::get_user_progress($extra->checklist, $USER->id);
+                    if (($ticked * 100 / $total) < $extra->checklist_percent) {
+                        $disabled = ' disabled="disabled" ';
+                        $checklistmessage = '<p class="error">'.get_string('checklistunfinished', 'assignment_uploadpdf').'</p>';
+                    }
+                }
+            }
+
+            echo $checklistmessage;
+
             if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
                 $t_items = get_records('assignment_uploadpdf_tmplitm','template', $extra->template);
                 $ticount = 0;
@@ -225,13 +275,13 @@ class assignment_uploadpdf extends assignment_base {
                             $ticount++;
                             $inputname = 'templ'.$ticount;
                             echo '<tr><td align="right"><label for="'.$inputname.'">'.s($ti->setting).': </label></td>';
-                            echo '<td><textarea name="'.$inputname.'" cols="30" rows="5"></textarea></td></tr>';
+                            echo '<td><textarea name="'.$inputname.'" cols="30" rows="5" '.$disabled.'></textarea></td></tr>';
 
                         } elseif ($ti->type == 'shorttext') {
                             $ticount++;
                             $inputname = 'templ'.$ticount;
                             echo '<tr><td align="right"><label for="'.$inputname.'">'.s($ti->setting).': </label></td>';
-                            echo '<td><input type="text" name="'.$inputname.'" /></td></tr>';
+                            echo '<td><input type="text" name="'.$inputname.'" '.$disabled.'/></td></tr>';
                         }
                         // Date type does not have an input box
                     }
@@ -241,7 +291,7 @@ class assignment_uploadpdf extends assignment_base {
 
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
             echo '<input type="hidden" name="action" value="finalize" />';
-            echo '<input type="submit" name="formarking" value="'.get_string('sendformarking', 'assignment').'" />';
+            echo '<input type="submit" name="formarking" value="'.get_string('sendformarking', 'assignment').'" '.$disabled.'/>';
             echo '</fieldset>';
             echo '</form>';
             echo '</div>';
@@ -332,6 +382,14 @@ class assignment_uploadpdf extends assignment_base {
                         $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
                         $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
                         $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+
+                        // To tidy up flags from older versions of this assignment
+                        if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
+                            $update = new Object();
+                            $update->id = $submission->id;
+                            $update->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
+                            update_record('assignment_submissions',$update);
+                        }
                     }
                 }
             } else {
@@ -525,23 +583,26 @@ class assignment_uploadpdf extends assignment_base {
 
         $userlists = implode(',', $users);
 
-        $totalcount = count_records_sql("SELECT COUNT('x')
+        // Count the number of assignments that have been submitted and for
+        // which a response file has been generated (ie data2 = 'responded',
+        // not 'submitted')
+        $markedcount = count_records_sql("SELECT COUNT('x')
                                 FROM {$CFG->prefix}assignment_submissions
                                 WHERE assignment = {$this->cm->instance} AND
-                                timemodified > 0 AND
+                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED."' AND
                                 userid IN ($userlists)");
 
-        if (!$totalcount)
-            return 0;
-        
         // Count the number of assignments that have been submitted, but for
         // which a response file has not been generated (ie data2 = 'submitted',
         // not 'responded')
         $unmarkedcount = count_records_sql("SELECT COUNT('x')
                                 FROM {$CFG->prefix}assignment_submissions
                                 WHERE assignment = {$this->cm->instance} AND
-                                data2 = 'submitted' AND
+                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED."' AND
                                 userid IN ($userlists)");
+
+        $totalcount = $markedcount + $unmarkedcount;
+
         if ($unmarkedcount) {
             return "{$totalcount}({$unmarkedcount})";
         } else {
@@ -736,11 +797,27 @@ class assignment_uploadpdf extends assignment_base {
 
         $optionsno = array('id'=>$this->cm->id);
         $optionsyes = array('id'=>$this->cm->id, 'action'=>'finalize');
+
+        $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
+
+        // Check that they have finished everything on the checklist (if that option is selected)
+        if ($extra->checklist && $extra->checklist_percent) {
+            if ($this->import_checklist_plugin()) {
+                list($ticked, $total) = checklist_class::get_user_progress($extra->checklist, $USER->id);
+                if (($ticked * 100 / $total) < $extra->checklist_percent) {
+                    $this->view_header();
+                    print_heading(get_string('checklistunfinishedheading', 'assignment_uploadpdf'));
+                    notify(get_string('checklistunfinished', 'assignment_uploadpdf'));
+                    print_continue($returnurl);
+                    $this->view_footer();
+                    die;
+                }
+            }
+        }
         
         // Check that form for coversheet has been filled in
         // (but don't complain about it until the PDF check has been done) 
         $templatedataOK = true;
-        $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
         $templateitems = false;
         if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
             $templateitems = get_records('assignment_uploadpdf_tmplitm','template', $extra->template);
@@ -915,8 +992,10 @@ class assignment_uploadpdf extends assignment_base {
                 $submission = $this->get_submission($userid); 
                 // If the assignment was marked as 'responded to', then mark it as 'submitted' instead
                 if ($submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
-                    $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
-                    update_record('assignment_submissions', $submission);
+                    $updated = new Object();
+                    $updated->id = $submission->id;
+                    $updated->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
+                    update_record('assignment_submissions', $updated);
                 }
                 redirect($returnurl);
             }
@@ -1079,11 +1158,12 @@ class assignment_uploadpdf extends assignment_base {
 
         if (has_capability('mod/assignment:submit', $this->context)           // can submit
             and $this->isopen()                                                 // assignment not closed yet
+            and !empty($submission)                                            // Not sure why this is needed (as already checked by 'is_finalized'
             and !$this->is_finalized($submission)                                      // not submitted already
             and $submission->userid == $USER->id                                // his/her own submission
             and $submission->grade == -1                                        // no reason to finalize already graded submission
             and $this->count_user_files($USER->id)) { // something must be submitted
-
+            
             return true;
         } else {
             return false;
@@ -1331,7 +1411,11 @@ class assignment_uploadpdf extends assignment_base {
 
         if (($submission->numfiles & 1) == 0) {
             $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
-            update_record('assignment_submissions', $submission);
+            
+            $updated = new Object();
+            $updated->id = $submission->id;
+            $updated->numfiles = $submission->numfiles;
+            update_record('assignment_submissions', $updated);
         }
 
         $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
@@ -1384,7 +1468,12 @@ class assignment_uploadpdf extends assignment_base {
         if ($generateresponse) {
             if ($this->create_response_pdf($userid, $submission->id)) {
                 $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
-                update_record('assignment_submissions', $submission);
+                
+                $updated = new Object();
+                $updated->id = $submission->id;
+                $updated->data2 = $submission->data2;
+                update_record('assignment_submissions', $updated);
+
                 print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
                 print_heading(get_string('responseok', 'assignment_uploadpdf'));
 				require_once($CFG->dirroot.'/version.php');
@@ -1908,6 +1997,8 @@ class assignment_uploadpdf extends assignment_base {
             $assignment_extra->template = 0;
             $assignment_extra->coversheet = '';
             $assignment_extra->onlypdf = 1;
+            $assignment_extra->checklist = 0;
+            $assignment_extra->checklist_percent = 0;
         }
 
         $mform->addElement('choosecoursefile', 'coversheet', get_string('coversheet','assignment_uploadpdf'));
@@ -1962,6 +2053,26 @@ class assignment_uploadpdf extends assignment_base {
         $mform->setHelpButton('var3', array('hideintro', get_string('hideintro', 'assignment'), 'assignment'));
         $mform->setDefault('var3', 0);
 
+        // Checklist elements
+        if ($this->import_checklist_plugin()) {
+            $checklists = array();
+            $checklists[0] = get_string('none');
+            $checklist_data = get_records('checklist', 'course', $courseid);
+            if ($checklist_data) {
+                foreach ($checklist_data as $chk) {
+                    $checklists[$chk->id] = $chk->name;
+                }
+            }
+            
+            $mform->addElement('select', 'checklist', get_string('displaychecklist', 'assignment_uploadpdf'), $checklists);
+            // $mform->setHelpButton('var3', array('hideintro', get_string('hideintro', 'assignment'), 'assignment'));
+            $mform->setDefault('checklist', $assignment_extra->checklist);
+
+            $mform->addElement('select', 'checklist_percent', get_string('mustcompletechecklist', 'assignment_uploadpdf'), array( 0 => get_string('no'), 100 => get_string('yes')));
+            // $mform->setHelpButton('var3', array('hideintro', get_string('hideintro', 'assignment'), 'assignment'));
+            $mform->setDefault('checklist_percent', $assignment_extra->checklist_percent);
+        }
+            
         $mform->addElement('select', 'emailteachers', get_string("emailteachers", "assignment"), $ynoptions);
         $mform->setHelpButton('emailteachers', array('emailteachers', get_string('emailteachers', 'assignment'), 'assignment'));
         $mform->setDefault('emailteachers', 0);
@@ -1972,9 +2083,13 @@ class assignment_uploadpdf extends assignment_base {
         $assignment_extra->coversheet = $assignment->coversheet; // FIXME: This should be sanitised and checked it is a PDF
         $assignment_extra->template = $assignment->template;
         $assignment_extra->onlypdf = $assignment->onlypdf;
+        $assignment_extra->checklist = $assignment->checklist;
+        $assignment_extra->checklist_percent = $assignment->checklist_percent;
         unset($assignment->coversheet);
         unset($assignment->template);
         unset($assignment->onlypdf);
+        unset($assignment->checklist);
+        unset($assignment->checklist_percent);
 
         $newid = parent::add_instance($assignment);
 
@@ -2013,9 +2128,13 @@ class assignment_uploadpdf extends assignment_base {
         $coversheet = $assignment->coversheet; // FIXME - this should be sanitised and checked that it is a PDF
         $template = $assignment->template;
         $onlypdf = $assignment->onlypdf;
+        $checklist = $assignment->checklist;
+        $checklist_percent = $assignment->checklist_percent;
         unset($assignment->coversheet);
         unset($assignment->template);
         unset($assignment->onlypdf);
+        unset($assignment->checklist);
+        unset($assignment->checklist_percent);
 
         $retval = parent::update_instance($assignment);
         
@@ -2026,6 +2145,8 @@ class assignment_uploadpdf extends assignment_base {
                 $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
                 $assignment_extra->onlypdf = $onlypdf;
+                $assignment_extra->checklist = $checklist;
+                $assignment_extra->checklist_percent = $checklist_percent;
                 update_record('assignment_uploadpdf', $assignment_extra);
             } else {
                 // This shouldn't happen (unless an old development version of this plugin has already been used)
@@ -2034,6 +2155,8 @@ class assignment_uploadpdf extends assignment_base {
                 $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
                 $assignment_extra->onlypdf = $onlypdf;
+                $assignment_extra->checklist = $checklist;
+                $assignment_extra->checklist_percent = $checklist_percent;
                 insert_record('assignment_uploadpdf', $assignment_extra);
             }
         }
@@ -2086,7 +2209,11 @@ class assignment_uploadpdf extends assignment_base {
                 if ($filescleared) {
                     echo ' cleared.';
                     $submission->numfiles &= ~1; // Clear flag in final bit
-                    update_record('assignment_submissions', $submission);
+
+                    $updated = new Object();
+                    $updated->id = $submission->id;
+                    $updated->numfiles = $submission->numfiles;
+                    update_record('assignment_submissions', $updated);
                 } else {
                     echo ' too recent - not cleared.';
                 }
@@ -2260,22 +2387,42 @@ class assignment_uploadpdf extends assignment_base {
         }
 
     }
-}
 
-function reset_userdata($data) {
-    global $CFG;
-    if (!empty($data->reset_assignment_submissions)) {
-        delete_records_select('assignment_uploadpdf_comment',
-               'assignment_submission IN (
+    function reset_userdata($data) {
+        global $CFG;
+        if (!empty($data->reset_assignment_submissions)) {
+            delete_records_select('assignment_uploadpdf_comment',
+                                  'assignment_submission IN (
                    SELECT s.id
                    FROM ' . $CFG->prefix . 'assignment_submissions s
                    JOIN ' . $CFG->prefix . 'assignment a
                        ON s.assignment = a.id
                    WHERE a.course = ' . $data->courseid . '
                )'
-        );
+                                  );
+        }
+        return parent::reset_userdata($data);
     }
-    return parent::reset_userdata($data);
+
+    function import_checklist_plugin() {
+        global $CFG;
+        
+        $chk = get_record('modules', 'name', 'checklist');
+        if (!$chk) {
+            return false;
+        }
+
+        if ($chk->version < 2010031200) {
+            return false;
+        }
+
+        if (!file_exists($CFG->dirroot.'/mod/checklist/locallib.php')) {
+            return false;
+        }
+        
+        require_once($CFG->dirroot.'/mod/checklist/locallib.php');
+        return true;
+    }
 }
 
 class mod_assignment_uploadpdf_notes_form extends moodleform {

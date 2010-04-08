@@ -13,8 +13,6 @@ the future).
 
 ==Installation==
 
-* Unzip the plugin files to <siteroot>/mod/assignment/type/uploadpdf
-
 * Download and install GhostScript ( http://pages.cs.wisc.edu/~ghost )
   - or install from standard respositories, if using Linux.
   Under Windows, do not install to a path with a space in it - that
@@ -23,10 +21,13 @@ the future).
   'gswin32c.exe' and the dll file from the 'bin' folder, all other
   files are unnecessary for this to work).
 
-* Edit the file
-  <siteroot>/mod/assignment/type/uploadpdf/uploadpdf_config.php to
-  include the path to where you installed GhostScript (for Linux, you
-  should be able to leave it as the default 'gs').
+* Unzip the Uploadpdf plugin files to a folder on your local machine
+
+* (Windows server only): Edit the file 'uploadpdf_config.php'  to
+  include the path to where you installed GhostScript (see instructions 
+  in that file for more information)
+
+* Upload the plugin files to <siteroot>/mod/assignment/type/uploadpdf
 
 * Log in to Moodle as administrator, then click on 'Notifications'.
 
@@ -53,6 +54,14 @@ All being well, you should now be able to add assignments of type
   All files must be PDFs - set to 'No', if you want to collect in some
   supporting documents, which could not be marked as PDFs (e.g. a
   spreadsheet, with formulas you want to check)
+  
+  Display checklist (only if the 'checklist' plugin is installed) - you 
+  can choose to dispaly the progress bar for a checklist after the
+  introduction text
+  
+  Checklist complete before submission (only if the 'checklist' plugin
+  is installed) - you can prevent students from submitting work when
+  they have not yet ticked all the items on the checklist
 
   
 * When a student uploads their files and clicks 'Submit' they will be
@@ -108,10 +117,15 @@ will just join them in the order they are uploaded).
 
 * Note: If you have a problem with the new javascript based page navigation
   (added on 22 Nov 2009) or prefer having the list of pages to view,
-  then change the setting in 'uploadpdf_config.php'. Note: the
-  javascript method preloads pages to reduce the delay when changing
-  from one page to the next (and probably reduces server load if you
-  do a lot of switching back and forth between pages).
+  then change the setting in 'uploadpdf_config.php'. The  javascript
+  method preloads pages to reduce the delay when changing from one page
+  to the next (and probably reduces server load if you do a lot of 
+  switching back and forth between pages).
+  
+* Note2: The 'View XX submitted assignments' link has been updated to 
+  show both the total number of assignments submitted for marking and
+  the number still awaiting responses (in brackets). The second number
+  is only shown if there are unmarked assignments. 
 
 ==Edit Templates==
 
