@@ -992,6 +992,15 @@ function addtoquicklist(item) {
 	    var pos = new Object();
 	    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
 	    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
+	    // Nasty hack to reposition the comment box in IE
+	    if (Browser.Engine.trident) {
+		if (Browser.Engine.version <= 5) {
+		    pos.x += 40;
+		    pos.y -= 20;
+		} else {
+		    pos.y -= 15;
+		}
+	    }
 	    var cb = makecommentbox(pos, quicklist[id].text, quicklist[id].colour);
 	    if (Browser.Engine.trident) {
 		// Does not work with FF & Moodle
@@ -1029,6 +1038,18 @@ function initcontextmenu() {
     context_quicklist.quickcount = 0;
     context_quicklistnoitems();
     quicklist = new Array();
+
+    if (Browser.Engine.trident && Browser.Engine.version <= 5) {
+	// Hack to draw the separator line correctly in IE7 and below
+	var menu = document.getElementById('context-comment');
+	var items = menu.getElementsByTagName('li');
+	var n;
+	for (n in items) {
+	    if (items[n].className == 'separator') {
+		items[n].className = 'separatorie7';
+	    }
+	}
+    }
 
     context_comment = new ContextMenu({
 	    targets: null,

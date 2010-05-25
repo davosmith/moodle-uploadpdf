@@ -75,7 +75,13 @@ var ContextMenu = new Class({
 				    position: 'absolute',
 				    'z-index': '2000'
 				    });
-			this.menu.setPosition({x: (e.page.x + this.options.offsets.x), y: (e.page.y + this.options.offsets.y) });
+			var offx = this.options.offsets.x;
+			var offy = this.options.offsets.y;
+			// Nasty hack to fix positioning problem in IE <= 7 (IE 8 seems fine)
+			if (Browser.Engine.trident && Browser.Engine.version <= 5) {
+			    offx -= 10;
+			}
+			this.menu.setPosition({x: (e.page.x + offx), y: (e.page.y + offy) });
 			//show the menu
 			this.show();
 		    }

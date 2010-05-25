@@ -455,7 +455,7 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
             list($width, $height, $type, $attr) = getimagesize($fullpath);
             echo "<div style='width: {$width}px; height: {$height}px; border: solid 1px black;'>";
             echo '<div style="position: relative;">';
-            $imageurl = $CFG->wwwroot.'/file.php?file='.$partpath;
+            $imageurl = $CFG->wwwroot.'/file.php?file='.$partpath.'&amp;tmpl='.$templateid;  // Templateid added to stop browser from showing incorrect cached image
             echo '<img src="'.$imageurl.'" alt="Preview Template" style="position: absolute; top: 0px; left: 0px;" onclick="clicked_on_image(event);" />';
             if ($templateid > 0) {
                 $templateitems = get_records('assignment_uploadpdf_tmplitm','template',$templateid);

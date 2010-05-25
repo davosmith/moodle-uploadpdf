@@ -444,8 +444,6 @@ class assignment_uploadpdf extends assignment_base {
             }
 
             if ($this->notes_allowed() and !empty($submission->data1) and !empty($mode)) { // only during grading
-                $offset = required_param('offset', PARAM_INT);
-
                 $npurl = "type/upload/notes.php?id={$this->cm->id}&amp;userid=$userid&amp;offset=$offset&amp;mode=single";
                 $output .= '<a href="'.$npurl.'">'.get_string('notes', 'assignment').'</a><br />';
 
