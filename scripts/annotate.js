@@ -619,7 +619,8 @@ function addcomment(e) {
 	return;
     }
 
-    if (!e.control) {  // If control pressed, then drawing line
+    var modifier = Browser.Platform.mac ? e.alt : e.control;
+    if (!modifier) {  // If control pressed, then drawing line
 	// Calculate the relative position of the comment
 	imgpos = $('pdfimg').getPosition();
 	var offs = new Object();
@@ -769,7 +770,8 @@ function startline(e) {
 	return true; // If user clicks very quickly this can happen
     }
 
-    if (!e.control) {
+    modifier = Browser.Platform.mac ? e.alt : e.control;
+    if (!modifier) {
 	return true;
     }
 
