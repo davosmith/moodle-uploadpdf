@@ -2163,7 +2163,6 @@ class assignment_uploadpdf extends assignment_base {
             $assignmentid = $assignment->id;
             $assignment_extra = $DB->get_record('assignment_uploadpdf', array('assignment' => $assignmentid) );
             if ($assignment_extra) {
-                $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
                 $assignment_extra->onlypdf = $onlypdf;
                 $assignment_extra->checklist = $checklist;
@@ -2173,7 +2172,6 @@ class assignment_uploadpdf extends assignment_base {
                 // This shouldn't happen (unless an old development version of this plugin has already been used)
                 $assignment_extra = new Object;
                 $assignment_extra->assignment = $assignmentid;
-                $assignment_extra->coversheet = $coversheet;
                 $assignment_extra->template = $template;
                 $assignment_extra->onlypdf = $onlypdf;
                 $assignment_extra->checklist = $checklist;
