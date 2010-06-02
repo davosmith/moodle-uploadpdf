@@ -18,8 +18,8 @@ define('ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED', 'responded');
  */
 class assignment_uploadpdf extends assignment_base {
 
-    function assignment_uploadpdf($cmid=0) {
-        parent::assignment_base($cmid);
+    function assignment_uploadpdf($cmid='staticonly', $assignment=NULL, $cm=NULL, $course=NULL) {
+        parent::assignment_base($cmid, $assignment, $cm, $course);
         $this->type = 'uploadpdf';
     }
 
@@ -127,8 +127,9 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function view_feedback($submission=NULL) {
-        global $USER;
+        global $USER, $CFG;
 
+        require_once($CFG->libdir.'/gradelib.php');
         if (!$submission) { /// Get submission for this assignment
             $submission = $this->get_submission($USER->id);
         }
@@ -142,8 +143,23 @@ class assignment_uploadpdf extends assignment_base {
             return;
         }
 
+        $grading_info = grade_get_grades($this->course->id, 'mod', 'assignment', $this->assignment->id, $USER->id);
+        $item = $grading_info->items[0];
+        $grade = $item->grades[$USER->id];
+
+        if ($grade->hidden or $grade->grade === false) { // hidden or error
+            return;
+        }
+
+        if ($grade->grade === null and empty($grade->str_feedback)) {   /// Nothing to show yet
+            return;
+        }
+
+        $graded_date = $grade->dategraded;
+        $graded_by   = $grade->usermodified;
+
         /// We need the teacher info
-        if (! $teacher = get_record('user', 'id', $submission->teacher)) {
+        if (! $teacher = get_record('user', 'id', $graded_by)) {
             error('Could not find the teacher');
         }
 
@@ -154,12 +170,12 @@ class assignment_uploadpdf extends assignment_base {
 
         echo '<tr>';
         echo '<td class="left picture">';
-        print_user_picture($teacher->id, $this->course->id, $teacher->picture);
+        print_user_picture($teacher, $this->course->id, $teacher->picture);
         echo '</td>';
         echo '<td class="topic">';
         echo '<div class="from">';
         echo '<div class="fullname">'.fullname($teacher).'</div>';
-        echo '<div class="time">'.userdate($submission->timemarked).'</div>';
+        echo '<div class="time">'.userdate($graded_date).'</div>';
         echo '</div>';
         echo '</td>';
         echo '</tr>';
@@ -169,13 +185,13 @@ class assignment_uploadpdf extends assignment_base {
         echo '<td class="content">';
         if ($this->assignment->grade) {
             echo '<div class="grade">';
-            echo get_string("grade").': '.$this->display_grade($submission->grade);
+            echo get_string("grade").': '.$grade->str_long_grade;
             echo '</div>';
             echo '<div class="clearer"></div>';
         }
 
         echo '<div class="comment">';
-        echo format_text($submission->submissioncomment, $submission->format);
+        echo $grade->str_feedback;
         echo '</div>';
         echo '</tr>';
 
@@ -195,7 +211,8 @@ class assignment_uploadpdf extends assignment_base {
         $submission = $this->get_submission($USER->id);
 
         $struploadafile = get_string('uploadafile');
-        $strmaxsize = get_string('maxsize', '', display_size($this->assignment->maxbytes));
+        $maxbytes = $this->assignment->maxbytes == 0 ? $this->course->maxbytes : $this->assignment->maxbytes;
+        $strmaxsize = get_string('maxsize', '', display_size($maxbytes));
 
         if ($this->is_finalized($submission)) {
             // no uploading
@@ -208,6 +225,7 @@ class assignment_uploadpdf extends assignment_base {
             echo '<fieldset class="invisiblefieldset">';
             echo "<p>$struploadafile ($strmaxsize)</p>";
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+            echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
             echo '<input type="hidden" name="action" value="uploadfile" />';
             require_once($CFG->libdir.'/uploadlib.php');
             upload_print_form_fragment(1,array('newfile'),null,false,null,0,$this->assignment->maxbytes,false);
@@ -290,6 +308,7 @@ class assignment_uploadpdf extends assignment_base {
             }
 
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+            echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
             echo '<input type="hidden" name="action" value="finalize" />';
             echo '<input type="submit" name="formarking" value="'.get_string('sendformarking', 'assignment').'" '.$disabled.'/>';
             echo '</fieldset>';
@@ -302,6 +321,10 @@ class assignment_uploadpdf extends assignment_base {
         }
     }
 
+    function description_is_hidden() {
+        return ($this->assignment->var3 && (time() <= $this->assignment->timeavailable));
+    }
+    
     function custom_feedbackform($submission, $return=false) {
         global $CFG;
 
@@ -309,25 +332,6 @@ class assignment_uploadpdf extends assignment_base {
         $offset       = optional_param('offset', 0, PARAM_INT);
         $forcerefresh = optional_param('forcerefresh', 0, PARAM_BOOL);
 
-        /*        $output = get_string('responsefiles', 'assignment').': ';
-
-                  $output .= '<form enctype="multipart/form-data" method="post" '.
-                  "action=\"$CFG->wwwroot/mod/assignment/upload.php\">";
-                  $output .= '<div>';
-                  $output .= '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-                  $output .= '<input type="hidden" name="action" value="uploadresponse" />';
-                  $output .= '<input type="hidden" name="mode" value="'.$mode.'" />';
-                  $output .= '<input type="hidden" name="offset" value="'.$offset.'" />';
-                  $output .= '<input type="hidden" name="userid" value="'.$submission->userid.'" />';
-                  require_once($CFG->libdir.'/uploadlib.php');
-                  $output .= upload_print_form_fragment(1,array('newfile'),null,false,null,0,0,true);
-                  $output .= '<input type="submit" name="save" value="'.get_string('uploadthisfile').'" />';
-                  $output .= '</div>';
-                  $output .= '</form>';
-        */
-
-        $output = '';
-        
         if ($forcerefresh) {
             $output .= $this->update_main_listing($submission);
         }
@@ -619,9 +623,6 @@ class assignment_uploadpdf extends assignment_base {
         case 'unfinalize':
             $this->unfinalize();
             break;
-        case 'uploadresponse':
-            $this->upload_responsefile();
-            break;
         case 'uploadfile':
             $this->upload_file();
         case 'savenotes':
@@ -674,6 +675,9 @@ class assignment_uploadpdf extends assignment_base {
             if (update_record('assignment_submissions', $updated)) {
                 add_to_log($this->course->id, 'assignment', 'upload', 'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
                 redirect($returnurl);
+                $submission = $this->get_submission($USER->id);
+                $this->update_grade($submission);
+
             } else {
                 $this->view_header(get_string('notes', 'assignment'));
                 notify(get_string('notesupdateerror', 'assignment'));
@@ -692,34 +696,6 @@ class assignment_uploadpdf extends assignment_base {
 
         $this->view_footer();
         die;
-    }
-
-    function upload_responsefile() {
-        global $CFG;
-
-        $userid = required_param('userid', PARAM_INT);
-        $mode   = required_param('mode', PARAM_ALPHA);
-        $offset = required_param('offset', PARAM_INT);
-
-        $returnurl = "submissions.php?id={$this->cm->id}&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset";
-
-        if (data_submitted('nomatch') and $this->can_manage_responsefiles()) {
-            $dir = $this->file_area_name($userid).'/responses';
-            check_dir_exists($CFG->dataroot.'/'.$dir, true, true);
-
-            require_once($CFG->dirroot.'/lib/uploadlib.php');
-            $um = new upload_manager('newfile',false,true,$this->course,false,0,true);
-
-            if (!$um->process_file_uploads($dir)) {
-                print_header(get_string('upload'));
-                notify(get_string('uploaderror', 'assignment'));
-                echo $um->get_errors();
-                print_continue($returnurl);
-                print_footer('none');
-                die;
-            }
-        }
-        redirect($returnurl);
     }
 
     function upload_file() {
@@ -762,6 +738,11 @@ class assignment_uploadpdf extends assignment_base {
             if (update_record('assignment_submissions', $updated)) {
                 add_to_log($this->course->id, 'assignment', 'upload',
                            'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
+                $submission = $this->get_submission($USER->id);
+                $this->update_grade($submission);
+                if (!$this->drafts_tracked()) {
+                    $this->email_teachers($submission);
+                }
             } else {
                 $new_filename = $um->get_new_filename();
                 $this->view_header(get_string('upload'));
@@ -781,6 +762,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function finalize() {
+        //UT
         global $USER;
 
         $confirm = optional_param('confirm', 0, PARAM_BOOL);
@@ -794,13 +776,14 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $optionsno = array('id'=>$this->cm->id);
-        $optionsyes = array('id'=>$this->cm->id, 'action'=>'finalize');
+        $optionsyes = array('id'=>$this->cm->id, 'action'=>'finalize', 'sesskey'=>sesskey());
 
         $extra = get_record('assignment_uploadpdf', 'assignment', $this->cm->instance);
 
         // Check that they have finished everything on the checklist (if that option is selected)
         if ($extra->checklist && $extra->checklist_percent) {
             if ($this->import_checklist_plugin()) {
+                //UT
                 list($ticked, $total) = checklist_class::get_user_progress($extra->checklist, $USER->id);
                 if (($ticked * 100 / $total) < $extra->checklist_percent) {
                     $this->view_header();
@@ -867,7 +850,7 @@ class assignment_uploadpdf extends assignment_base {
             die;
         }
 
-        if (!data_submitted('nomatch') or !$confirm) {
+        if (!data_submitted() or !$confirm or !confirm_sesskey()) {
             $optionsyes['confirmnotpdf'] = 1;
             $optionsyes['confirm'] = 1;
             $this->view_header(get_string('submitformarking', 'assignment'));
@@ -916,7 +899,8 @@ class assignment_uploadpdf extends assignment_base {
 
         if (data_submitted('nomatch')
             and $submission = $this->get_submission($userid)
-            and $this->can_unfinalize($submission)) {
+            and $this->can_unfinalize($submission)
+            and confirm_sesskey()) {
             
             require_once($CFG->libdir.'/filelib.php');
             $subpath = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission';
@@ -930,9 +914,11 @@ class assignment_uploadpdf extends assignment_base {
             if (update_record('assignment_submissions', $updated)) {
                 //TODO: add unfinilize action to log
                 add_to_log($this->course->id, 'assignment', 'view submission', 'submissions.php?id='.$this->assignment->id, $this->assignment->id, $this->cm->id);
+                $submission = $this->get_submission($userid);
+                $this->update_grade($submission);
             } else {
-                $this->view_header(get_string('submitformarking'));
-                notify(get_string('finalizeerror', 'assignment'));
+                $this->view_header(get_string('submitformarking', 'assignment'));
+                notify(get_string('unfinalizeerror', 'assignment'));
                 print_continue($returnurl);
                 $this->view_footer();
                 die;
@@ -974,7 +960,7 @@ class assignment_uploadpdf extends assignment_base {
         $urlreturn = 'submissions.php';
         $optionsreturn = array('id'=>$this->cm->id, 'offset'=>$offset, 'mode'=>$mode, 'userid'=>$userid);
 
-        if (!data_submitted('nomatch') or !$confirm) {
+        if (!data_submitted('nomatch') or !$confirm or !confirm_sesskey()) {
             $optionsyes = array ('id'=>$this->cm->id, 'file'=>$file, 'userid'=>$userid, 'confirm'=>1, 'action'=>'response', 'mode'=>$mode, 'offset'=>$offset);
             print_header(get_string('delete'));
             print_heading(get_string('delete'));
@@ -1040,7 +1026,7 @@ class assignment_uploadpdf extends assignment_base {
         }
         $dir = $this->file_area_name($userid);
 
-        if (!data_submitted('nomatch') or !$confirm) {
+        if (!data_submitted('nomatch') or !$confirm or !confirm_sesskey()) {
             $optionsyes = array ('id'=>$this->cm->id, 'file'=>$file, 'userid'=>$userid, 'confirm'=>1, 'sesskey'=>sesskey(), 'mode'=>$mode, 'offset'=>$offset);
             if (empty($mode)) {
                 $this->view_header(get_string('delete'));
@@ -1066,6 +1052,8 @@ class assignment_uploadpdf extends assignment_base {
                 if (update_record('assignment_submissions', $updated)) {
                     add_to_log($this->course->id, 'assignment', 'upload', //TODO: add delete action to log
                                'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
+                    $submission = $this->get_submission($userid);
+                    $this->update_grade($submission);
                 }
                 $this->renumber_files($userid);
                 redirect($returnurl);
