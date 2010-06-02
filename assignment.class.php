@@ -2069,6 +2069,12 @@ class assignment_uploadpdf extends assignment_base {
             $mform->addElement('select', 'checklist_percent', get_string('mustcompletechecklist', 'assignment_uploadpdf'), array( 0 => get_string('no'), 100 => get_string('yes')));
             // $mform->setHelpButton('var3', array('hideintro', get_string('hideintro', 'assignment'), 'assignment'));
             $mform->setDefault('checklist_percent', $assignment_extra->checklist_percent);
+        } else {
+            $mform->addElement('hidden', 'checklist');
+            $mform->setDefault('checklist', $assignment_extra->checklist);
+
+            $mform->addElement('hidden', 'checklist_percent');
+            $mform->setDefault('checklist_percent', $assignment_extra->checklist_percent);
         }
             
         $mform->addElement('select', 'emailteachers', get_string("emailteachers", "assignment"), $ynoptions);
