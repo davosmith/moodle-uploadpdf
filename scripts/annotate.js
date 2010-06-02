@@ -450,8 +450,8 @@ function showsendfailed(resend) {
 
     // If less than 2 failed messages since the last successful
     // message, then try again immediately
-    if (server.resendfailed < 2) {
-	server.resendfailed++;
+    if (server.retrycount < 2) {
+	server.retrycount++;
 	resend();
 	return;
     }
