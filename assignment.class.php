@@ -269,7 +269,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function view_final_submission() {
-        global $CFG, $USER, $DB;
+        global $CFG, $USER, $DB, $OUTPUT;
 
         //UT
 
@@ -278,7 +278,7 @@ class assignment_uploadpdf extends assignment_base {
         if ($this->can_finalize($submission)) {
             //UT
             //print final submit button
-            print_heading(get_string('submitformarking','assignment'), '', 3);
+            echo $OUTPUT->heading(get_string('submitformarking','assignment'), 3);
             echo '<div style="text-align:center">';
             echo '<form method="post" action="upload.php">';
             echo '<fieldset class="invisiblefieldset">';
@@ -451,7 +451,7 @@ class assignment_uploadpdf extends assignment_base {
      * @return string optional
      */
     function print_user_files($userid=0, $return=false) {
-        global $CFG, $USER;
+        global $CFG, $USER, $OUTPUT;
         //UT
 
         $mode    = optional_param('mode', '', PARAM_ALPHA);
@@ -464,91 +464,125 @@ class assignment_uploadpdf extends assignment_base {
             $userid = $USER->id;
         }
 
-        $filearea = $this->file_area_name($userid);
-
         $output = '';
 
-        if ($submission = $this->get_submission($userid)) {
-            //UT
+        $submission = $this->get_submission($userid);
 
-            $candelete = $this->can_delete_files($submission);
-            $strdelete   = get_string('delete');
+        //UT
 
-            if (!$this->is_finalized($submission) and !empty($mode)) {                 // only during grading
-                $output .= '<strong>'.get_string('draft', 'assignment').':</strong><br />';
-            }
+        $candelete = $this->can_delete_files($submission);
+        $strdelete   = get_string('delete');
 
-            if ($this->notes_allowed() and !empty($submission->data1) and !empty($mode)) { // only during grading
-                //UT
-                $npurl = "type/upload/notes.php?id={$this->cm->id}&amp;userid=$userid&amp;offset=$offset&amp;mode=single";
-                $output .= '<a href="'.$npurl.'">'.get_string('notes', 'assignment').'</a><br />';
-
-            }
-
-            if ($this->is_finalized($submission)) {
-                //UT
-                if ($basedir = $this->file_area($userid)) {
-                    $basedir .= '/submission';
-                    if ($files = get_directory_list($basedir)) {
-                        require_once($CFG->libdir.'/filelib.php');
-                        foreach ($files as $key => $file) {
-                            $icon = mimeinfo('icon', $file);
-                            if ((mimeinfo('type',$file) == 'application/pdf') && (has_capability('mod/assignment:grade', $this->context))) {
-                                $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
-                                $output .= link_to_popup_window($ffurl, 'editcomment'.$userid,
-                                                                '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
-                                                                get_string('annotatesubmission', 'assignment_uploadpdf'), 'none', true, 'editcommentbutton'.$userid);
-                            } else {
-                                $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
-                                $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
-                            }
-                            if ($candelete) {
-                                $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid={$submission->userid}&amp;mode=$mode&amp;offset=$offset";
-                                $output .= '<a href="'.$delurl.'">&nbsp;'
-                                    .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt="" /></a> ';
-                            }
-                            $output .= '<br />';
-                        }
-                    }
-                }
-                
-            } else {
-                //UT
-                if ($basedir = $this->file_area($userid)) {
-                    if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
-                        require_once($CFG->libdir.'/filelib.php');
-                        foreach ($files as $key => $file) {
-
-                            $icon = mimeinfo('icon', $file);
-
-                            $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
-
-
-                            $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
-
-                            if ($candelete) {
-                                $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid={$submission->userid}&amp;mode=$mode&amp;offset=$offset";
-
-                                $output .= '<a href="'.$delurl.'">&nbsp;'
-                                    .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt="" /></a> ';
-                            }
-
-                            $output .= '<br />';
-                        }
-                    }
-                }
-            }
-            if (has_capability('mod/assignment:grade', $this->context)
-                and $this->can_unfinalize($submission)
-                and $mode != '') { // we do not want it on view.php page
-                //UT
-                $options = array ('id'=>$this->cm->id, 'userid'=>$userid, 'action'=>'unfinalize', 'mode'=>$mode, 'offset'=>$offset);
-                $output .= print_single_button('upload.php', $options, get_string('unfinalize', 'assignment'), 'post', '_self', true);
-            }
-
-            $output = '<div class="files">'.$output.'</div>';
-
+        if (!$this->is_finalized($submission) and !empty($mode)) {                 // only during grading
+            $output .= '<strong>'.get_string('draft', 'assignment').':</strong><br />';
         }
+
+        if ($this->notes_allowed() and !empty($submission->data1) and !empty($mode)) { // only during grading
+            //UT
+            $npurl = new moodle_url('/mod/assignment/type/uploadpdf/notes.php', array('id'=>$this->cm->id, 'userid'=>$userid, 'offset'=>$offset, 'mode'=>'single'));
+            $output .= '<a href="'.$npurl.'">'.get_string('notes', 'assignment').'</a><br />';
+        }
+
+        $fs = get_file_storage();
+        //$browser = get_file_browser();
+        
+        if ($this->is_finalized($submission)) {
+            //UT
+            if ($basedir = $this->file_area($userid)) {
+                $basedir .= '/submission';
+                if ($files = get_directory_list($basedir)) {
+                    require_once($CFG->libdir.'/filelib.php');
+                    foreach ($files as $key => $file) {
+                        $icon = mimeinfo('icon', $file);
+                        if ((mimeinfo('type',$file) == 'application/pdf') && (has_capability('mod/assignment:grade', $this->context))) {
+                            $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
+                            $output .= link_to_popup_window($ffurl, 'editcomment'.$userid,
+                                                            '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
+                                                            get_string('annotatesubmission', 'assignment_uploadpdf'), 'none', true, 'editcommentbutton'.$userid);
+                        } else {
+                            $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
+                            $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
+                        }
+                        if ($candelete) {
+                            $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid={$submission->userid}&amp;mode=$mode&amp;offset=$offset";
+                            $output .= '<a href="'.$delurl.'">&nbsp;'
+                                .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt="" /></a> ';
+                        }
+                        $output .= '<br />';
+                    }
+                }
+            }
+                
+        } else {
+            //UT
+            if ($files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, 'timemodified', false)) {
+                //$button = new portfolio_add_button();  // FIXME - Enable the portfolio export (once everything else working)
+                foreach ($files as $file) {
+                    $filename = $file->get_filename();
+                    $mimetype = $file->get_mimetype();
+                    $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_submission/'.$userid.'/'.$filename);
+                    $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />'.s($filename).'</a>';
+
+                    if ($candelete) {
+                        $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=".rawurlencode($filename)."&amp;userid={$submission->userid}&amp;mode=$mode&amp;offset=$offset";
+
+                        $output .= '<a href="'.$delurl.'">&nbsp;'
+                            .'<img title="'.$strdelete.'" src="'.$OUTPUT->pix_url('t/delete') . '" class="iconsmall" alt="" /></a> ';
+                    }
+
+                    /*
+                    if (has_capability('mod/assignment:exportownsubmission', $this->context)) {
+                        $button->set_callback_options('assignment_portfolio_caller', array('id' => $this->cm->id, 'fileid' => $file->get_id()), '/mod/assignment/locallib.php');
+                        $button->set_format_by_file($file);
+                        $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
+                    }
+                    */
+                    $output .= '<br />';
+                }
+                /*
+                if (count($files) > 1 && has_capability('mod/assignment:exportownsubmission', $this->context)) {
+                    $button->set_callback_options('assignment_portfolio_caller', array('id' => $this->cm->id), '/mod/assignment/locallib.php');
+                    $button->reset_formats(); // reset what we set before, since it's multi-file
+                    $output .= $button->to_html();
+                }
+                */
+            }
+
+            /*
+            if ($basedir = $this->file_area($userid)) {
+                if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
+                    require_once($CFG->libdir.'/filelib.php');
+                    foreach ($files as $key => $file) {
+
+                        $icon = mimeinfo('icon', $file);
+
+                        $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
+
+
+                        $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
+
+                        if ($candelete) {
+                            $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid={$submission->userid}&amp;mode=$mode&amp;offset=$offset";
+
+                            $output .= '<a href="'.$delurl.'">&nbsp;'
+                                .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt="" /></a> ';
+                        }
+
+                        $output .= '<br />';
+                    }
+                }
+            }
+            */
+        }
+        if (has_capability('mod/assignment:grade', $this->context)
+            and $this->can_unfinalize($submission)
+            and $mode != '') { // we do not want it on view.php page
+            //UT
+            $options = array ('id'=>$this->cm->id, 'userid'=>$userid, 'action'=>'unfinalize', 'mode'=>$mode, 'offset'=>$offset);
+            $output .= $OUTPUT->single_button(new moodle_url('upload.php', $options), get_string('unfinalize', 'assignment'));
+        }
+
+        $output = '<div class="files">'.$output.'</div>';
 
         if ($return) {
             return $output;
@@ -1093,7 +1127,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function delete_file() {
         //UT
-        global $CFG, $DB;
+        global $CFG, $DB, $OUTPUT, $PAGE;
 
         $file     = required_param('file', PARAM_FILE);
         $userid   = required_param('userid', PARAM_INT);
@@ -1110,49 +1144,45 @@ class assignment_uploadpdf extends assignment_base {
         } else {
             $urlreturn = 'submissions.php';
             $optionsreturn = array('id'=>$this->cm->id, 'offset'=>$offset, 'mode'=>$mode, 'userid'=>$userid);
-            $returnurl = "submissions.php?id={$this->cm->id}&amp;offset=$offset&amp;mode=$mode&amp;userid=$userid";
+            $returnurl = "submissions.php?id={$this->cm->id}&offset=$offset&mode=$mode&userid=$userid";
         }
 
         if (!$submission = $this->get_submission($userid) // incorrect submission
-            or !$this->can_delete_files($submission)) {     // can not delete
+          or !$this->can_delete_files($submission)) {     // can not delete
             $this->view_header(get_string('delete'));
-            notify(get_string('cannotdeletefiles', 'assignment'));
-            print_continue($returnurl);
+            echo $OUTPUT->notification(get_string('cannotdeletefiles', 'assignment'));
+            echo $OUTPUT->continue_button($returnurl);
             $this->view_footer();
             die;
         }
-        $dir = $this->file_area_name($userid);
 
-        if (!data_submitted('nomatch') or !$confirm or !confirm_sesskey()) {
-            $optionsyes = array ('id'=>$this->cm->id, 'file'=>$file, 'userid'=>$userid, 'confirm'=>1, 'sesskey'=>sesskey(), 'mode'=>$mode, 'offset'=>$offset);
+        if (!data_submitted() or !$confirm or !confirm_sesskey()) {
+            $optionsyes = array ('id'=>$this->cm->id, 'file'=>$file, 'userid'=>$userid, 'confirm'=>1, 'sesskey'=>sesskey(), 'mode'=>$mode, 'offset'=>$offset, 'sesskey'=>sesskey());
             if (empty($mode)) {
                 $this->view_header(get_string('delete'));
             } else {
-                print_header(get_string('delete'));
+                $PAGE->set_title(get_string('delete'));
+                echo $OUTPUT->header();
             }
-            print_heading(get_string('delete'));
-            notice_yesno(get_string('confirmdeletefile', 'assignment', $file), 'delete.php', $urlreturn, $optionsyes, $optionsreturn, 'post', 'get');
+            echo $OUTPUT->heading(get_string('delete'));
+            echo $OUTPUT->confirm(get_string('confirmdeletefile', 'assignment', $file), new moodle_url('delete.php', $optionsyes), new moodle_url($urlreturn, $optionsreturn));
             if (empty($mode)) {
                 $this->view_footer();
             } else {
-                print_footer('none');
+                echo $OUTPUT->footer();
             }
             die;
         }
 
-        $filepath = $CFG->dataroot.'/'.$dir.'/'.$file;
-        if (file_exists($filepath)) {
-            if (@unlink($filepath)) {
-                $updated = new object();
-                $updated->id = $submission->id;
-                $updated->timemodified = time();
-                if ($DB->update_record('assignment_submissions', $updated)) {
+        $fs = get_file_storage();
+        if ($file = $fs->get_file($this->context->id, 'assignment_submission', $userid, '/', $file)) {
+            if ($file->delete()) {
+                $submission->timemodified = time();
+                if ($DB->update_record('assignment_submissions', $submission)) {
                     add_to_log($this->course->id, 'assignment', 'upload', //TODO: add delete action to log
-                               'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
-                    $submission = $this->get_submission($userid);
+                            'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
                     $this->update_grade($submission);
                 }
-                $this->renumber_files($userid);
                 redirect($returnurl);
             }
         }
@@ -1161,14 +1191,15 @@ class assignment_uploadpdf extends assignment_base {
         if (empty($mode)) {
             $this->view_header(get_string('delete'));
         } else {
-            print_header(get_string('delete'));
+            $PAGE->set_title(get_string('delete'));
+            echo $OUTPUT->header();
         }
-        notify(get_string('deletefilefailed', 'assignment'));
-        print_continue($returnurl);
+        echo $OUTPUT->notification(get_string('deletefilefailed', 'assignment'));
+        echo $OUTPUT->continue_button($returnurl);
         if (empty($mode)) {
             $this->view_footer();
         } else {
-            print_footer('none');
+            echo $OUTPUT->footer();
         }
         die;
     }
