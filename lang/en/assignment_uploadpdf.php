@@ -25,7 +25,7 @@ This second option may be useful if you want students to be able to submit suppo
 
 //Editing template
 $string['select'] = 'Select';
-$string['templateusecount'] = 'Warning: this template is currently used by {%a} assignment(s) - be careful when making changes';
+$string['templateusecount'] = 'Warning: this template is currently used by {$a} assignment(s) - be careful when making changes';
 $string['showwhereused'] = 'Show';
 $string['showused'] = 'This template is used in the following assignments';
 $string['templatenotused'] = 'This template is not currently being used';
@@ -106,7 +106,7 @@ $string['opennewwindow'] = 'Open this page in a new window';
 //Student upload
 $string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';
 $string['nonpdfheading'] = 'Non-PDF file found';
-$string['filenotpdf'] = 'The file \'{%a}\' is not a PDF - you must resubmit it in that format';
+$string['filenotpdf'] = 'The file \'{$a}\' is not a PDF - you must resubmit it in that format';
 $string['nopdf'] = 'None of the files submitted are PDFs, you must submit at least one file in that format';
 $string['filenotpdf_continue'] = 'The file \'$a\' is not a PDF - are you sure you want to continue?';
 $string['createsubmissionfailed'] = 'Unable to create submission PDF';

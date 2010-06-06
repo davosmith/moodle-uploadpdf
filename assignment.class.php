@@ -488,7 +488,6 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $fs = get_file_storage();
-        //$browser = get_file_browser();
         
         if ($this->is_finalized($submission)) {
             //UT
@@ -890,7 +889,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function finalize() {
         //UT
-        global $USER, $DB;
+        global $USER, $DB, $OUTPUT;
 
         $confirm = optional_param('confirm', 0, PARAM_BOOL);
         $confirmnotpdf = optional_param('confirmnotpdf', 0, PARAM_BOOL);
@@ -928,6 +927,7 @@ class assignment_uploadpdf extends assignment_base {
         $templatedataOK = true;
         $templateitems = false;
         if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
+            //UT
             $templateitems = $DB->get_records('assignment_uploadpdf_tmplitm', array('template' => $extra->template) );
             $ticount = 0;
             foreach ($templateitems as $ti) {
@@ -950,11 +950,10 @@ class assignment_uploadpdf extends assignment_base {
             if (!$confirmnotpdf) {
                 //UT
                 $this->view_header();
-                print_heading(get_string('nonpdfheading', 'assignment_uploadpdf'));
+                echo $OUTPUT->heading(get_string('nonpdfheading', 'assignment_uploadpdf'));
                 if ($extra && $extra->onlypdf) {
-                    //UT
-                    notify(get_string('filenotpdf', 'assignment_uploadpdf', $file));
-                    print_continue($returnurl);
+                    echo $OUTPUT->notification(get_string('filenotpdf', 'assignment_uploadpdf', $file));
+                    echo $OUTPUT->continue_button($returnurl);
                 } else {
                     //UT
                     if ($this->get_pdf_count($USER->id) < 1) {
@@ -1314,21 +1313,14 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function get_not_pdf($userid) {
-        //UT
-        global $CFG;
-
-        $filearea = $this->file_area_name($userid);
-        
-        if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
-            if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
-                require_once($CFG->libdir.'/filelib.php');
-                foreach ($files as $key => $file) {
-                    if (mimeinfo('type', $file) != 'application/pdf') {
-                        return $file;
-                    }
-                }
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, "id", false);
+        foreach ($files as $file) {
+            if ($file->get_mimetype() != 'application/pdf') {
+                return $file->get_filename();
             }
         }
+        
         return false;
     }
 
