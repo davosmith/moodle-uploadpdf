@@ -372,70 +372,74 @@ class assignment_uploadpdf extends assignment_base {
 
 
     function print_student_answer($userid, $return=false){
-        global $CFG, $DB;
+        global $CFG, $DB, $OUTPUT;
         //UT
 
-        $filearea = $this->file_area_name($userid);
         $submission = $this->get_submission($userid);
 
         $output = '';
 
-        if ($basedir = $this->file_area($userid)) {
             //UT
-            if (!$this->is_finalized($submission)) {
-                $output .= '<strong>'.get_string('draft', 'assignment').':</strong> ';
-            }
+        if (!$this->is_finalized($submission)) {
+            $output .= '<strong>'.get_string('draft', 'assignment').':</strong> ';
+        }
 
-            if ($this->notes_allowed() and !empty($submission->data1)) {
-                $output .= link_to_popup_window ('/mod/assignment/type/uploadpdf/notes.php?id='.$this->cm->id.'&amp;userid='.$userid,
-                                                 'notes'.$userid, get_string('notes', 'assignment'), 500, 780, get_string('notes', 'assignment'), 'none', true, 'notesbutton'.$userid);
-                $output .= '&nbsp;';
-            }
+        if ($this->notes_allowed() and !empty($submission->data1)) {
+            $link = new moodle_url("/mod/assignment/type/upload/notes.php", array('id'=>$this->cm->id, 'userid'=>$userid));
+            $action = new popup_action('click', $link, 'notes', array('height' => 500, 'width' => 780));
+            $output .= $OUTPUT->action_link($link, get_string('notes', 'assignment'), $action, array('title'=>get_string('notes', 'assignment')));
 
-            if ($this->is_finalized($submission)) {
-                if ($files = get_directory_list($basedir.'/submission')) {
-                    //UT
-                    foreach ($files as $key => $file) {
-                        require_once($CFG->libdir.'/filelib.php');
-                        $icon = mimeinfo('icon', $file);
-                        if (mimeinfo('type', $file) == 'application/pdf') {
-                            $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
-                            // FIXME - update all images
-                            $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file,
-                                                            700, 1000, get_string('annotatesubmission', 'assignment_uploadpdf'), 'none', true, 'editcommentbutton'.$userid);
-                        } else {
-                            $ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; 
-                            $output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
-                        }
-                    }
-                    if (file_exists($basedir.'/responses/response.pdf')) {
-                        //UT
-                        $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
-                        $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
-                        $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+            $output .= '&nbsp;';
+        }
 
-                        // To tidy up flags from older versions of this assignment
-                        if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
-                            $update = new Object();
-                            $update->id = $submission->id;
-                            $update->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
-                            $DB->update_record('assignment_submissions', $update);
-                        }
-                    }
-                }
-            } else {
+        $fs = get_file_storage();
+
+        if ($this->is_finalized($submission)) {
+            if ($files = $fs->get_area_files($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, 'timemodified', false)) {
                 //UT
-                if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
-                    foreach ($files as $key => $file) {
-                        require_once($CFG->libdir.'/filelib.php');
-                        //FIXME - fix all file references
-                        $icon = mimeinfo('icon', $file);
-                        $ffurl = "$CFG->wwwroot/file.php?file=/$filearea/$file";
-                        $output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
+                foreach ($files as $file) {
+                    $filename = $file->get_filename();
+                    $mimetype = $file->get_mimetype();
+                    if ($mimetype == 'application/pdf') {
+                        //UT
+                        $editurl = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php',array('id'=>$this->cm->id, 'userid'=>$userid));
+                        $img = '<img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />';
+                        $output .= $OUTPUT->action_link($editurl, $img.s($filename), new popup_action('click', $editurl, 'editcomment'.$userid, array('width'=>1000, 'height'=>700))).'&nbsp;';
+
+                    } else {
+                        $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_submission/'.$userid.'/'.$filename);
+                        $output .= '<a href="'.$path.'" ><img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.s($filename).'</a>&nbsp;';
                     }
                 }
+                if (file_exists($basedir.'/responses/response.pdf')) {
+                    //UT
+                    $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
+                    $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
+                    $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+
+                    // To tidy up flags from older versions of this assignment
+                    if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
+                        $update = new Object();
+                        $update->id = $submission->id;
+                        $update->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
+                        $DB->update_record('assignment_submissions', $update);
+                    }
+                }
+            }
+        } else {
+            //UT
+            if ($files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, 'timemodified', false)) {
+                foreach ($files as $file) {
+                    $filename = $file->get_filename();
+                    $found = true;
+                    $mimetype = $file->get_mimetype();
+                    $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_submission/'.$userid.'/'.$filename);
+                    $output .= '<a href="'.$path.'" ><img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.s($filename).'</a>&nbsp;';
+                }
+
             }
         }
+
         $output = '<div class="files">'.$output.'</div>';
         $output .= '<br />';
 
