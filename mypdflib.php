@@ -13,7 +13,7 @@ class MyPDFLib extends FPDI {
     var $imagefolder = null;
     var $filename = null;
 
-    function combine_pdfs($basedir, $pdf_list, $output, $coversheet=null, $comments=null) {
+    function combine_pdfs($pdf_list, $output, $coversheet=null, $comments=null) {
 
         $this->setPageUnit('pt');
         $this->setPrintHeader(false);
@@ -59,7 +59,7 @@ class MyPDFLib extends FPDI {
             }
         }
         foreach ($pdf_list as $key => $file) {
-            $pagecount = $this->setSourceFile($basedir.'/'.$file);
+            $pagecount = $this->setSourceFile($file);
             $totalpagecount += $pagecount;
             for ($i=1; $i<=$pagecount; $i++) {
                 $template = $this->ImportPage($i);
