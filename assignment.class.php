@@ -1364,6 +1364,7 @@ class assignment_uploadpdf extends assignment_base {
     function create_response_pdf($userid, $submissionid) {
         global $CFG, $DB;
         //UT
+        //FIXME
 
         $filearea = $CFG->dataroot.'/'.$this->file_area_name($userid);
         $sourcearea = $filearea.'/submission';
@@ -1429,6 +1430,7 @@ class assignment_uploadpdf extends assignment_base {
     function get_page_image($userid, $pageno, $submission) {
         global $CFG, $DB;
         //UT
+        //FIXME
 
         $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
         check_dir_exists($imagefolder, true, true);
@@ -1468,6 +1470,7 @@ class assignment_uploadpdf extends assignment_base {
     function edit_comment_page($userid, $pageno) {
         global $CFG, $DB;
         //UT
+        //FIXME
 
         require_capability('mod/assignment:grade', $this->context);
 
@@ -1941,6 +1944,7 @@ class assignment_uploadpdf extends assignment_base {
     function show_previous_comments($userid) {
         global $CFG, $DB;
         //UT
+        //FIXME
         
         require_capability('mod/assignment:grade', $this->context);
 
@@ -1988,6 +1992,7 @@ class assignment_uploadpdf extends assignment_base {
     function show_previous_page($userid, $pageno) {
         global $CFG, $DB;
         //UT
+        //FIXME
         
         require_capability('mod/assignment:grade', $this->context);
 
@@ -2025,6 +2030,7 @@ class assignment_uploadpdf extends assignment_base {
             echo 'left: '.$comment->posx.'px; top: '.$comment->posy.'px; width: '.$comment->width.'px;">';
             echo $displaytext.'</div>';
         }
+        //FIXME? Add annotations?
 
         echo '</div></div></div>';
 
@@ -2062,8 +2068,6 @@ class assignment_uploadpdf extends assignment_base {
 
         $mform->addElement('filemanager', 'coversheet', get_string('coversheet','assignment_uploadpdf'), null, 
                            array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes, 'maxfiles' => 1, 'accepted_types' => array('*.pdf')) );
-        // FIXME remove this rule?
-        //        $mform->addRule('coversheet', get_string('coversheetnotpdf','assignment_uploadpdf'), 'callback', 'check_coversheet_pdf');
         $mform->setDefault('coversheet', $assignment_extra->coversheet);
         $mform->addHelpButton('coversheet', 'coversheet','assignment_uploadpdf');
 
@@ -2264,6 +2268,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function cron() {
         //UT
+        //FIXME - this needs quite a rewrite
         global $CFG, $DB;
 
         return;
@@ -2336,6 +2341,8 @@ class assignment_uploadpdf extends assignment_base {
     static function backup_one_mod($bf, $preferences, $assignment) {
         //UT (and needs total rewrite?)
         global $DB;
+
+        return;
         
         if (!$extras = $DB->get_record('assignment_uploadpdf', array('assignment' => $assignment->id) )) {
             debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find extra data");
@@ -2374,8 +2381,11 @@ class assignment_uploadpdf extends assignment_base {
      *Backup extra data about the assignment submission. This is just comments at the moment.
      */
     static function backup_one_submission($bf, $preferences, $assignment, $submission) {
-        //UT 
+        //UT
+        // FIXME
         global $DB;
+
+        return;
         
         if ($comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission' => $submission->id) )) {
             fwrite ($bf,start_tag("COMMENTS",4,true));
@@ -2411,6 +2421,8 @@ class assignment_uploadpdf extends assignment_base {
     static function restore_one_mod($info, $restore, $assignment) {
         global $DB;
         //UT
+        //FIXME
+        return;
         
         // template first, since other things reference it.
         $templateid = 0;
@@ -2461,6 +2473,8 @@ class assignment_uploadpdf extends assignment_base {
     static function restore_one_submission($info, $restore, $assignment, $submission) {
         global $DB;
         //UT
+        //FIXME
+        return;
 
         //Get the submissions array - it might not be present
         if (@isset($info['#']['COMMENTS']['0']['#']['COMMENT'])) {
@@ -2558,20 +2572,5 @@ class mod_assignment_uploadpdf_notes_form extends moodleform {
         $this->add_action_buttons();
     }
 }
-
-
-function check_coversheet_pdf($value) {
-    //UT
-    if ($value['value'] == '') {
-        return true;
-    }
-
-    if (strtolower(substr($value['value'], -4)) == '.pdf') {
-        return true;
-    }
-    
-    return false;
-}
-
 
 ?>
