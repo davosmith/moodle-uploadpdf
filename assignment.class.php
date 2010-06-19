@@ -233,21 +233,21 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function view_notes() {
-        global $USER;
+        global $USER, $OUTPUT;
 
         //UT
 
         if ($submission = $this->get_submission($USER->id)
             and !empty($submission->data1)) {
-            print_simple_box(format_text($submission->data1, FORMAT_HTML), 'center', '630px');
+            echo $OUTPUT->box(format_text($submission->data1, FORMAT_HTML), 'generalbox boxaligncenter boxwidthwide');
         } else {
-            print_simple_box(get_string('notesempty', 'assignment'), 'center');
+            echo $OUTPUT->box(get_string('notesempty', 'assignment'), 'generalbox boxaligncenter');
         }
         if ($this->can_update_notes($submission)) {
             //UT
             $options = array ('id'=>$this->cm->id, 'action'=>'editnotes');
             echo '<div style="text-align:center">';
-            print_single_button('upload.php', $options, get_string('edit'), 'post', '_self', false);
+            echo $OUTPUT->single_button(new moodle_url('upload.php', $options), get_string('edit'));
             echo '</div>';
         }
     }
