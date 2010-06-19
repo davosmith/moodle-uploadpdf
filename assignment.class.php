@@ -1278,17 +1278,14 @@ class assignment_uploadpdf extends assignment_base {
         global $CFG;
 
         $count = 0;
-        $filearea = $this->file_area_name($userid);
-        
-        if ( is_dir($CFG->dataroot.'/'.$filearea) && $basedir = $this->file_area($userid)) {
-            if ($files = get_directory_list($basedir, array('responses','submission','images'))) {
-                foreach ($files as $key => $file) {
-                    if (mimeinfo('type', $file) == 'application/pdf') {
-                        $count++;
-                    }
-                }
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, 'id', false);
+        foreach ($files as $file) {
+            if ($file->get_mimetype() == 'application/pdf') {
+                $count++;
             }
         }
+
         return $count;
     }
 
