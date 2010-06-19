@@ -538,6 +538,7 @@ class assignment_uploadpdf extends assignment_base {
     function print_responsefiles($userid, $return=false) {
         global $CFG, $USER;
         //UT
+        //FIXME
 
         $mode    = optional_param('mode', '', PARAM_ALPHA);
         $offset  = optional_param('offset', 0, PARAM_INT);
@@ -652,7 +653,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function upload_notes() {
-        global $CFG, $USER, $DB;
+        global $CFG, $USER, $DB, $OUTPUT;
         //UT
         
         $action = required_param('action', PARAM_ALPHA);
@@ -680,8 +681,8 @@ class assignment_uploadpdf extends assignment_base {
         if (!$this->can_update_notes($submission)) {
             //UT
             $this->view_header(get_string('upload'));
-            notify(get_string('uploaderror', 'assignment'));
-            print_continue($returnurl);
+            echo $OUTPUT->notification(get_string('uploaderror', 'assignment'));
+            echo $OUTPUT->continue_button($returnurl);
             $this->view_footer();
             die;
         }
@@ -702,8 +703,8 @@ class assignment_uploadpdf extends assignment_base {
 
             } else {
                 $this->view_header(get_string('notes', 'assignment'));
-                notify(get_string('notesupdateerror', 'assignment'));
-                print_continue($returnurl);
+                echo $OUTPUT->notification(get_string('notesupdateerror', 'assignment'));
+                echo $OUTPUT->continue_button($returnurl);
                 $this->view_footer();
                 die;
             }
@@ -712,7 +713,7 @@ class assignment_uploadpdf extends assignment_base {
         /// show notes edit form
         $this->view_header(get_string('notes', 'assignment'));
 
-        print_heading(get_string('notes', 'assignment'), '');
+        echo $OUTPUT->heading(get_string('notes', 'assignment'));
 
         $mform->display();
 
@@ -971,17 +972,20 @@ class assignment_uploadpdf extends assignment_base {
 
         $returnurl = "submissions.php?id={$this->cm->id}&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;forcerefresh=1";
 
-        if (data_submitted('nomatch')
+        if (data_submitted()
             and $submission = $this->get_submission($userid)
             and $this->can_unfinalize($submission)
             and confirm_sesskey()) {
             //UT
+            //FIXME
             
             require_once($CFG->libdir.'/filelib.php');
             $subpath = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission';
             $imgpath = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
             fulldelete($subpath);
             fulldelete($imgpath);
+
+            //End FIXME
 
             $updated = new object();
             $updated->id = $submission->id;
@@ -993,8 +997,8 @@ class assignment_uploadpdf extends assignment_base {
                 $this->update_grade($submission);
             } else {
                 $this->view_header(get_string('submitformarking', 'assignment'));
-                notify(get_string('unfinalizeerror', 'assignment'));
-                print_continue($returnurl);
+                echo $OUTPUT->notification(get_string('unfinalizeerror', 'assignment'));
+                echo $OUTPUT->continue_button($returnurl);
                 $this->view_footer();
                 die;
             }
@@ -1039,10 +1043,11 @@ class assignment_uploadpdf extends assignment_base {
 
         if (!data_submitted('nomatch') or !$confirm or !confirm_sesskey()) {
             $optionsyes = array ('id'=>$this->cm->id, 'file'=>$file, 'userid'=>$userid, 'confirm'=>1, 'action'=>'response', 'mode'=>$mode, 'offset'=>$offset);
-            print_header(get_string('delete'));
-            print_heading(get_string('delete'));
-            notice_yesno(get_string('confirmdeletefile', 'assignment', $file), 'delete.php', $urlreturn, $optionsyes, $optionsreturn, 'post', 'get');
-            print_footer('none');
+            $PAGE->set_title(get_string('delete'));
+            echo $OUTPUT->header();
+            echo $OUTPUT->heading(get_string('delete'));
+            echo $OUTPUT->confirm(get_string('confirmdeletefile', 'assignment', $file), new moodle_url('delete.php', $optionsyes), new moodle_url($urlreturn, $optionsreturn));
+            echo $OUTPUT->footer();
             die;
         }
 
