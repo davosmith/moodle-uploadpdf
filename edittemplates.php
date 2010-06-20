@@ -20,7 +20,15 @@ $uploadpreview = optional_param('uploadpreview', false, PARAM_TEXT);
 
 define('IMAGE_PATH','/moddata/assignment_template');
 
-if (! $course = $DB->get_record("course", "id", $courseid)) {
+$thisurl = new moodle_url('/mod/assignment/type/uploadpdf/edittemplate.php', array('courseid'=>$courseid) );
+if ($templateid) { $thisurl->param('templateid', $templateid); }
+if ($itemid) { $thisurl->param('itemid', $itemid); }
+if ($imagename) { $thisurl->param('imagename', $imagename); }
+
+$PAGE->set_url($thisurl);
+$PAGE->set_pagelayout('popup');
+
+if (! $course = $DB->get_record("course", array('id'=>$courseid) )) {
     error("Course is misconfigured");
 }
 
@@ -249,6 +257,8 @@ show_image($imagename, $templateid, $courseid, $hidden, $itemid);
 echo $OUTPUT->footer($course);
 
 function show_select_template($courseid, $hidden, $templateid = 0) {
+    global $DB;
+    
     //UT
     echo '<form name="selecttemplate" enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';
@@ -276,6 +286,7 @@ function show_select_template($courseid, $hidden, $templateid = 0) {
 
 function show_template_edit_form($templateid, $itemid, $hidden, $caneditsite) {
     //UT
+    global $DB;
 
     echo '<form name="edittemplate" enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';
