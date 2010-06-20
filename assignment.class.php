@@ -395,11 +395,12 @@ class assignment_uploadpdf extends assignment_base {
                         $output .= '<a href="'.$path.'" ><img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.s($filename).'</a>&nbsp;';
                     }
                 }
-                if (file_exists($basedir.'/responses/response.pdf')) {
+                if ($file = $fs->get_file($this->context->id, 'assignement_uploadpdf_response', $userid, '/', 'response.pdf')) {
                     //UT
-                    $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
-                    $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
-                    $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+                    $respmime = $file->get_mimetype();
+                    $respicon = $OUTPUT->pix_url(file_mimetype_icon($respmime));
+                    $respurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_reponse/'.$userid.'/response.pdf');
+                    $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$respicon.'" alt="'.$respmime.'" />response.pdf</a>&nbsp;';
 
                     // To tidy up flags from older versions of this assignment
                     if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
