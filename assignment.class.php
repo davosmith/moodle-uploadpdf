@@ -137,8 +137,7 @@ class assignment_uploadpdf extends assignment_base {
                 //UT
                 echo $OUTPUT->heading(get_string('responsefiles', 'assignment'), $this->course->teacher, '', 3);
                 $responsefiles = $this->print_responsefiles($USER->id, true);
-                //FIXME (use $OUTPUT)
-                print_simple_box($responsefiles, 'center');
+                echo $OUTPUT->box($responsefiles, 'generalbox boxaligncenter');
             }
             return;
         }
