@@ -165,13 +165,13 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         /// Print the feedback
-        print_heading(get_string('submissionfeedback', 'assignment'), '', 3);
+        echo $OUTPUT->heading(get_string('submissionfeedback', 'assignment'), 3);
 
         echo '<table cellspacing="0" class="feedback">';
 
         echo '<tr>';
         echo '<td class="left picture">';
-        print_user_picture($teacher, $this->course->id, $teacher->picture);
+        echo $OUTPUT->user_picture($teacher);
         echo '</td>';
         echo '<td class="topic">';
         echo '<div class="from">';
@@ -1028,7 +1028,6 @@ class assignment_uploadpdf extends assignment_base {
     function delete_responsefile() {
         //UT
         global $CFG, $DB, $PAGE, $OUTPUT;
-        //FIXME
 
         $file     = required_param('file', PARAM_FILE);
         $userid   = required_param('userid', PARAM_INT);
@@ -1530,7 +1529,6 @@ class assignment_uploadpdf extends assignment_base {
     function edit_comment_page($userid, $pageno) {
         global $CFG, $DB, $OUTPUT, $PAGE;
         //UT
-        //FIXME
 
         require_capability('mod/assignment:grade', $this->context);
 
