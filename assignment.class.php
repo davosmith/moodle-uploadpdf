@@ -483,7 +483,7 @@ class assignment_uploadpdf extends assignment_base {
                     $mimetype = $file->get_mimetype();
                     $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_submissionfinal/'.$userid.'/'.$filename);
                     $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />'.s($filename).'</a>';
-                    $output .= '<brr />';
+                    $output .= '<br />';
                 }
             }
                 
