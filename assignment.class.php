@@ -137,6 +137,7 @@ class assignment_uploadpdf extends assignment_base {
                 //UT
                 echo $OUTPUT->heading(get_string('responsefiles', 'assignment'), $this->course->teacher, '', 3);
                 $responsefiles = $this->print_responsefiles($USER->id, true);
+                //FIXME (use $OUTPUT)
                 print_simple_box($responsefiles, 'center');
             }
             return;
@@ -481,9 +482,15 @@ class assignment_uploadpdf extends assignment_base {
                 foreach ($files as $file) {
                     $filename = $file->get_filename();
                     $mimetype = $file->get_mimetype();
-                    $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_submissionfinal/'.$userid.'/'.$filename);
-                    $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />'.s($filename).'</a>';
-                    $output .= '<br />';
+                    if ($mimetype == 'application/pdf' && has_capability('mod/assignment:grade', $this->context)) {
+                        $editurl = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php',array('id'=>$this->cm->id, 'userid'=>$userid));
+                        $img = '<img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />';
+                        $output .= $OUTPUT->action_link($editurl, $img.s($filename), new popup_action('click', $editurl, 'editcomment'.$userid, array('width'=>1000, 'height'=>700))).'&nbsp;';
+                    } else {
+                        $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_submissionfinal/'.$userid.'/'.$filename);
+                        $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />'.s($filename).'</a>';
+                        $output .= '<br />';
+                    }
                 }
             }
                 
@@ -974,7 +981,7 @@ class assignment_uploadpdf extends assignment_base {
         $mode   = required_param('mode', PARAM_ALPHA);
         $offset = required_param('offset', PARAM_INT);
 
-        $returnurl = "submissions.php?id={$this->cm->id}&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;forcerefresh=1";
+        $returnurl = new moodle_url('/mod/assignment/submissions.php', array('id'=>$this->cm->id, 'userid'=>$userid, 'mode'=>$mode, 'offset'=>$offset, 'forcerefresh'=>1) );
 
         if (data_submitted()
             and $submission = $this->get_submission($userid)
