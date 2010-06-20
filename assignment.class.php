@@ -398,11 +398,11 @@ class assignment_uploadpdf extends assignment_base {
                         $output .= '<a href="'.$path.'" ><img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.s($filename).'</a>&nbsp;';
                     }
                 }
-                if ($file = $fs->get_file($this->context->id, 'assignement_uploadpdf_response', $userid, '/', 'response.pdf')) {
+                if ($file = $fs->get_file($this->context->id, 'assignment_response', $userid, '/', 'response.pdf')) {
                     //UT
                     $respmime = $file->get_mimetype();
                     $respicon = $OUTPUT->pix_url(file_mimetype_icon($respmime));
-                    $respurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_reponse/'.$userid.'/response.pdf');
+                    $respurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_response/'.$userid.'/response.pdf');
                     $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$respicon.'" alt="'.$respmime.'" />response.pdf</a>&nbsp;';
 
                     // To tidy up flags from older versions of this assignment
@@ -1028,7 +1028,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function delete_responsefile() {
         //UT
-        global $CFG, $DB;
+        global $CFG, $DB, $PAGE, $OUTPUT;
         //FIXME
 
         $file     = required_param('file', PARAM_FILE);
@@ -1037,7 +1037,7 @@ class assignment_uploadpdf extends assignment_base {
         $offset   = required_param('offset', PARAM_INT);
         $confirm  = optional_param('confirm', 0, PARAM_BOOL);
 
-        $returnurl = "submissions.php?id={$this->cm->id}&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset";
+        $returnurl = new moodle_url('/mod/assignment/submissions.php', array('id'=>$this->cm->id, 'userid'=>$userid, 'mode'=>$mode, 'offset'=>$offset) );
 
         if (!$this->can_manage_responsefiles()) {
             redirect($returnurl);
@@ -1056,14 +1056,13 @@ class assignment_uploadpdf extends assignment_base {
             die;
         }
 
-        $dir = $this->file_area_name($userid).'/responses';
-        $filepath = $CFG->dataroot.'/'.$dir.'/'.$file;
-        if (file_exists($filepath)) {
-            if (@unlink($filepath)) {
+        $fs = get_file_storage();
+        if ($file = $fs->get_file($this->context->id, 'assignment_response', $userid, '/', $file)) {
+            if ($file->delete()) {
                 $submission = $this->get_submission($userid); 
                 // If the assignment was marked as 'responded to', then mark it as 'submitted' instead
                 if ($submission->data2 == ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
-                    $updated = new Object();
+                    $updated = new stdClass;
                     $updated->id = $submission->id;
                     $updated->data2 = ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED;
                     $DB->update_record('assignment_submissions', $updated);
@@ -1073,12 +1072,12 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         // print delete error
-        print_header(get_string('delete'));
-        notify(get_string('deletefilefailed', 'assignment'));
-        print_continue($returnurl);
-        print_footer('none');
+        $PAGE->set_title(get_string('delete'));
+        echo $OUTPUT->header();
+        echo $OUTPUT->notification(get_string('deletefilefailed', 'assignment'));
+        echo $OUTPUT->continue_button($returnurl);
+        echo $OUTPUT->footer();
         die;
-
     }
 
 
@@ -1369,19 +1368,22 @@ class assignment_uploadpdf extends assignment_base {
     function create_response_pdf($userid, $submissionid) {
         global $CFG, $DB;
         //UT
-        //FIXME
-
-        $filearea = $CFG->dataroot.'/'.$this->file_area_name($userid);
-        $sourcearea = $filearea.'/submission';
-        $sourcefile = $sourcearea.'/submission.pdf';
-        if (!is_dir($sourcearea) || !file_exists($sourcefile)) {
+        $fs = get_file_storage();
+        if (!$file = $fs->get_file($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, '/', 'submission.pdf')) {
             print_error('Submitted PDF not found');
             return false;
         }
+        $temparea = $CFG->dataroot.'/temp/uploadpdf/sub';
+        if (!file_exists($temparea)) {
+            if (!mkdir($temparea, 0777, true)) {
+                echo "Unable to create temporary folder";
+                die;
+            }
+        }
+        $sourcefile = $temparea.'/submission.pdf';
+        $destfile = $temparea.'/response.pdf';
         
-        $destarea = $filearea.'/responses';
-        $destfile = $destarea.'/response.pdf';
-        check_dir_exists($destarea, true, true);
+        $file->copy_content_to($sourcefile);
 
         $mypdf = new MyPDFLib();
         $mypdf->load_pdf($sourcefile);
@@ -1428,6 +1430,16 @@ class assignment_uploadpdf extends assignment_base {
         
         $mypdf->copy_remaining_pages();
         $mypdf->save_pdf($destfile);
+
+        $fileinfo = array('contextid'=>$this->context->id,
+                          'filearea'=>'assignment_response',
+                          'itemid'=>$userid,
+                          'filename'=>'response.pdf',
+                          'filepath'=>'/');
+        $fs->create_file_from_pathname($fileinfo, $destfile);
+
+        unlink($sourcefile);
+        unlink($destfile);
         
         return true;
     }
