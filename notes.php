@@ -45,28 +45,28 @@ $assignmentinstance = new assignment_uploadpdf($cm->id, $assignment, $cm, $cours
 $returnurl = "../../submissions.php?id={$assignmentinstance->cm->id}&amp;userid=$userid&amp;offset=$offset&amp;mode=single";
 
 if ($submission = $assignmentinstance->get_submission($user->id)
-    and !empty($submission->data1)) {
-    //UT
-    print_header(fullname($user,true).': '.$assignment->name);
-    print_heading(get_string('notes', 'assignment').' - '.fullname($user,true));
-    print_simple_box(format_text($submission->data1, FORMAT_HTML), 'center', '100%');
+  and !empty($submission->data1)) {
+    $PAGE->set_title(fullname($user,true).': '.$assignment->name);
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('notes', 'assignment').' - '.fullname($user,true));
+    echo $OUTPUT->box(format_text($submission->data1, FORMAT_HTML), 'generalbox boxaligncenter boxwidthwide');
     if ($mode != 'single') {
-        close_window_button();
+        echo $OUTPUT->close_window_button();
     } else {
-        print_continue($returnurl);
+        echo $OUTPUT->continue_button($returnurl);
     }
-    print_footer('none');
+    echo $OUTPUT->footer();
 } else {
-    //UT
-    print_header(fullname($user,true).': '.$assignment->name);
-    print_heading(get_string('notes', 'assignment').' - '.fullname($user,true));
-    print_simple_box(get_string('notesempty', 'assignment'), 'center', '100%');
+    $PAGE->set_title(fullname($user,true).': '.$assignment->name);
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('notes', 'assignment').' - '.fullname($user,true));
+    echo $OUTPUT->box(get_string('notesempty', 'assignment'), 'generalbox boxaligncenter boxwidthwide');
     if ($mode != 'single') {
-        close_window_button();
+        echo $OUTPUT->close_window_button();
     } else {
-        print_continue($returnurl);
+        echo $OUTPUT->continue_button($returnurl);
     }
-    print_footer('none');
+    echo $OUTPUT->footer();
 }
 
 ?>
