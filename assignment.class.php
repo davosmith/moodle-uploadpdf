@@ -161,7 +161,7 @@ class assignment_uploadpdf extends assignment_base {
 
         /// We need the teacher info
         if (! $teacher = $DB->get_record('user', array('id' => $graded_by) )) {
-            error('Could not find the teacher');
+            print_error('Could not find the teacher');
         }
 
         /// Print the feedback
@@ -648,7 +648,7 @@ class assignment_uploadpdf extends assignment_base {
         case 'editnotes':
             $this->upload_notes();
         default:
-            error('Error: Unknow upload action ('.$action.').');
+            print_error('Error: Unknow upload action ('.$action.').');
         }
     }
 
@@ -812,6 +812,9 @@ class assignment_uploadpdf extends assignment_base {
             if (!has_capability('mod/assignment:grade', $this->context)) {
                 return false;
             }
+
+            send_stored_file($file);
+            return;
 
         } else if ($filearea === 'assignment_response') { // Response PDF from teacher
             if ($USER->id != $userid and !has_capability('mod/assignment:grade', $this->context)) {
@@ -977,15 +980,9 @@ class assignment_uploadpdf extends assignment_base {
             and $this->can_unfinalize($submission)
             and confirm_sesskey()) {
             //UT
-            //FIXME
-            
-            require_once($CFG->libdir.'/filelib.php');
-            $subpath = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission';
-            $imgpath = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
-            fulldelete($subpath);
-            fulldelete($imgpath);
-
-            //End FIXME
+            $fs = get_file_storage();
+            $fs->delete_area_files($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid);
+            $fs->delete_area_files($this->context->id, 'assignment_uploadpdf_image', $userid);
 
             $updated = new object();
             $updated->id = $submission->id;
@@ -1370,7 +1367,7 @@ class assignment_uploadpdf extends assignment_base {
         $sourcearea = $filearea.'/submission';
         $sourcefile = $sourcearea.'/submission.pdf';
         if (!is_dir($sourcearea) || !file_exists($sourcefile)) {
-            error('Submitted PDF not found');
+            print_error('Submitted PDF not found');
             return false;
         }
         
@@ -1404,7 +1401,7 @@ class assignment_uploadpdf extends assignment_base {
 
             while ($nextpage > $mypdf->current_page()) {
                 if (!$mypdf->copy_page()) {
-                    error('Ran out of pages - this should not happen! - comment.pageno = '.$comment->pageno.'; currrentpage = '.$mypdf->CurrentPage());
+                    print_error('Ran out of pages - this should not happen! - comment.pageno = '.$comment->pageno.'; currrentpage = '.$mypdf->CurrentPage());
                     return false;
                 }
             }
@@ -1430,30 +1427,59 @@ class assignment_uploadpdf extends assignment_base {
     function get_page_image($userid, $pageno, $submission) {
         global $CFG, $DB;
         //UT
-        //FIXME
+        $pagefilename = 'page'.$pageno.'.png';
+        $pdf = new MyPDFLib();
+        
+        $pagecount = $submission->numfiles >> 1; // Extract the pagecount from 'numfiles' (may be 0)
 
-        $imagefolder = $CFG->dataroot.'/'.$this->file_area_name($userid).'/images';
-        check_dir_exists($imagefolder, true, true);
-        $pdffile = $CFG->dataroot.'/'.$this->file_area_name($userid).'/submission/submission.pdf'; // Check folder exists + file exists
-        if (!file_exists($pdffile)) {
-            error('Attempting to display image for non-existing submission');
+        $fs = get_file_storage();
+        // If pagecount is 0, then we need to skip down to the next stage to find the real page count
+        if ( $pagecount && ($file = $fs->get_file($this->context->id, 'assignment_uploadpdf_image', $userid, '/', $pagefilename)) ) {
+            if ($imageinfo = $file->get_imageinfo()) {
+                $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_image/'.$userid.'/'.$pagefilename);
+                return array($imgurl, $imageinfo['width'], $imageinfo['height'], $pagecount);
+            }
+            // If the image is bad in some way, try to create a new image instead
         }
 
-        $pdf = new MyPDFLib();
-        $pdf->set_image_folder($imagefolder);
-        $pagecount = $submission->numfiles >> 1; // Extract the pagecount from 'numfiles' (may be 0)
-        $pagecount = $pdf->set_pdf($pdffile, $pagecount); // Only loads the PDF if the pagecount is unknown (0)
+        // Generate the image
+        // This is *horribly* slow at the moment
+        
+        $imagefolder = $CFG->dataroot.'/temp/uploadpdf/img';
+        if (!file_exists($imagefolder)) {
+            if (!mkdir($imagefolder, 0777, true)) {
+                echo "Unable to create temporary image folder";
+                die;
+            }
+        }
+        $pdffolder = $CFG->dataroot.'/temp/sub';
+        $pdffile = $pdffolder.'/submission.pdf';
+        if (!file_exists($pdffolder)) {
+            if (!mkdir($pdffolder, 0777, true)) {
+                echo "Unable to create temporary folder";
+                die;
+            }
+        }
 
+        if (!$file = $fs->get_file($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, '/', 'submission.pdf')) {
+            print_error('Attempting to display image for non-existant submission');
+        }
+        $file->copy_content_to($pdffile);  // Copy the PDF out of the file storage, into the temp area
+
+        $pagecount = $pdf->set_pdf($pdffile, $pagecount); // Only loads the PDF if the pagecount is unknown (0)
         if ($pageno > $pagecount) {
+            unlink($pdffile);
             return array(null, 0, 0, $pagecount);
         }
 
-        if (!$imgname = $pdf->get_image($pageno)) {
-            error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
+        $pdf->set_image_folder($imagefolder);
+        if (!$imgname = $pdf->get_image($pageno)) { // Generate the image in the temp area
+            print_error(get_string('errorgenerateimage', 'assignment_uploadpdf'));
         }
 
         if (($submission->numfiles & 1) == 0) {
-            $submission->numfiles = ($pagecount << 1) | 1; /* Use this as a flag that there are images to delete at some point */
+            $submission->numfiles = ($pagecount << 1) | 1; // Use this as a flag that there are images to delete at some point 
+            // Maybe switch to just searching the filestorage database to find old images?
             
             $updated = new stdClass;
             $updated->id = $submission->id;
@@ -1461,25 +1487,41 @@ class assignment_uploadpdf extends assignment_base {
             $DB->update_record('assignment_submissions', $updated);
         }
 
-        $imageurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/images/'.$imgname;
-        list($imgwidth, $imgheight, $imgtype, $imgattr) = getimagesize($CFG->dataroot.'/'.$this->file_area_name($userid).'/images/'.$imgname);
+        $imginfo = array(
+                         'contextid' => $this->context->id,
+                         'filearea' => 'assignment_uploadpdf_image',
+                         'itemid' => $userid,
+                         'filepath' => '/',
+                         'filename' => $pagefilename
+                         );
+        
+        $file = $fs->create_file_from_pathname($imginfo, $imagefolder.'/'.$imgname); // Copy the image into the file storage
 
-        return array($imageurl, $imgwidth, $imgheight, $pagecount);
+        //Delete the temporary files
+        unlink($pdffile);
+        unlink($imagefolder.'/'.$imgname);
+
+        if ($imageinfo = $file->get_imageinfo()) {
+            $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_image/'.$userid.'/'.$pagefilename);
+            return array($imgurl, $imageinfo['width'], $imageinfo['height'], $pagecount);
+        }
+        
+        return array(null, 0, 0, $pagecount);
     }
 
     function edit_comment_page($userid, $pageno) {
-        global $CFG, $DB;
+        global $CFG, $DB, $OUTPUT, $PAGE;
         //UT
         //FIXME
 
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
-            error('No such user!');
+            print_error('No such user!');
         }
 
         if (!$submission = $this->get_submission($user->id)) {
-            error('User has no submission to comment on!');
+            print_error('User has no submission to comment on!');
         }
 
         $showprevious = optional_param('showprevious', -1, PARAM_INT);
@@ -1506,8 +1548,8 @@ class assignment_uploadpdf extends assignment_base {
 
         if ($savedraft) {
             //UT
-            print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-            print_heading(get_string('draftsaved', 'assignment_uploadpdf'));
+            echo $OUTPUT->header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+            echo $OUTPUT->heading(get_string('draftsaved', 'assignment_uploadpdf'));
             close_window();
             die;
         }
@@ -1517,24 +1559,20 @@ class assignment_uploadpdf extends assignment_base {
             if ($this->create_response_pdf($userid, $submission->id)) {
                 $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
                 
-                $updated = new Object();
+                $updated = new stdClass;
                 $updated->id = $submission->id;
                 $updated->data2 = $submission->data2;
                 $DB->update_record('assignment_submissions', $updated);
 
-                print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-                print_heading(get_string('responseok', 'assignment_uploadpdf'));
-				require_once($CFG->dirroot.'/version.php');
-				if ($version >= 2007101500) {
-					require_once($CFG->libdir.'/gradelib.php');
-				}
-                print $this->update_main_listing($submission);
+                echo $OUTPUT->header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+                echo $OUTPUT->heading(get_string('responseok', 'assignment_uploadpdf'));
+                require_once($CFG->libdir.'/gradelib.php');
+                echo $this->update_main_listing($submission);
                 close_window();
                 die;
             } else {
-                print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
-                error(get_string('responseproblem', 'assignment_uploadpdf'));
-                //close_window();
+                echo $OUTPUT->header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+                print_error(get_string('responseproblem', 'assignment_uploadpdf'));
                 die;
             }
         }
@@ -1542,13 +1580,17 @@ class assignment_uploadpdf extends assignment_base {
         //UT
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4-core-yc.js');
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4.2-more-yc.js');
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4-core-yc.js');
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4.2-more-yc.js');
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/annotate.js');
+
+        $PAGE->set_pagelayout('popup');
+        $PAGE->set_title(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
+        $PAGE->set_heading('');
         
-        print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
+        echo $OUTPUT->header();
 
         echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" >';
         echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
@@ -1556,7 +1598,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
         echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment_uploadpdf').'" /> ';
         echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment_uploadpdf').'" /> ';
-		$pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
+		$pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_submissionfinal/'.$userid.'/submission.pdf');
 		echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a>';
         echo '</form>';
 		echo '</div>';
@@ -1698,13 +1740,12 @@ class assignment_uploadpdf extends assignment_base {
                         'lang_okagain' => get_string('okagain', 'assignment_uploadpdf'),
                         'lang_emptyquicklist' => get_string('emptyquicklist', 'assignment_uploadpdf'),
                         'lang_emptyquicklist_instructions' => get_string('emptyquicklist_instructions', 'assignment_uploadpdf'),
-                        'deleteicon' => $CFG->pixpath . '/t/delete.gif',
+                        'deleteicon' => $OUTPUT->pix_url('/t/delete'),
                         'pagecount' => $pagecount,
                         'js_navigation' => $CFG->uploadpdf_js_navigation,
                         'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif'
                         );
         
-        //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
         echo '<script type="text/javascript">server_config = {';
         foreach ($server as $key => $value) {
             echo $key.": '$value', \n";
@@ -1712,7 +1753,7 @@ class assignment_uploadpdf extends assignment_base {
         echo "ignore: ''\n"; // Just there so IE does not complain
         echo '};</script>';
 
-        print_footer('none');
+        echo $OUTPUT->footer();
     }
 
     // Respond to AJAX requests whilst teacher is editing comments
@@ -1949,11 +1990,11 @@ class assignment_uploadpdf extends assignment_base {
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
-            error('No such user!');
+            print_error('No such user!');
         }
 
         if (!$submission = $this->get_submission($user->id)) {
-            error('User has no previous submission to display!');
+            print_error('User has no previous submission to display!');
         }
         
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
@@ -1997,11 +2038,11 @@ class assignment_uploadpdf extends assignment_base {
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
-            error('No such user!');
+            print_error('No such user!');
         }
 
         if (!$submission = $this->get_submission($user->id)) {
-            error('User has no previous submission to display!');
+            print_error('User has no previous submission to display!');
         }
         
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
@@ -2049,7 +2090,7 @@ class assignment_uploadpdf extends assignment_base {
         $add = optional_param('add', 0, PARAM_ALPHA);
         if (!empty($update)) {
             if (! $cm = $DB->get_record('course_modules', array('id' => $update) )) {
-                error('This course module does not exist');
+                print_error('This course module does not exist');
             }
             $courseid = $cm->course;
             $assignment_extra = $DB->get_record('assignment_uploadpdf', array('assignment' => $cm->instance));
@@ -2195,7 +2236,7 @@ class assignment_uploadpdf extends assignment_base {
         //UT
         global $DB;
         
-        error("This bit ain't wrote right");
+        print_error("This bit ain't wrote right");
         die();
 
         $result = true;
