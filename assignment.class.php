@@ -337,6 +337,8 @@ class assignment_uploadpdf extends assignment_base {
         $offset       = optional_param('offset', 0, PARAM_INT);
         $forcerefresh = optional_param('forcerefresh', 0, PARAM_BOOL);
 
+        $output = '';
+
         if ($forcerefresh) {
             //UT
             $output .= $this->update_main_listing($submission);
@@ -537,38 +539,37 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function print_responsefiles($userid, $return=false) {
-        global $CFG, $USER;
+        global $CFG, $USER, $OUTPUT;
         //UT
-        //FIXME
 
         $mode    = optional_param('mode', '', PARAM_ALPHA);
         $offset  = optional_param('offset', 0, PARAM_INT);
-
-        $filearea = $this->file_area_name($userid).'/responses';
 
         $output = '';
 
         $candelete = $this->can_manage_responsefiles();
         $strdelete   = get_string('delete');
 
-        if ($basedir = $this->file_area($userid)) {
-            $basedir .= '/responses';
+        $fs = get_file_storage();
+        $browser = get_file_browser();
 
-            if ($files = get_directory_list($basedir)) {
-                //UT
-                require_once($CFG->libdir.'/filelib.php');
-                foreach ($files as $key => $file) {
+        if ($files = $fs->get_area_files($this->context->id, 'assignment_response', $userid, "timemodified", false)) {
+            foreach ($files as $file) {
+                $filename = $file->get_filename();
+                $found = true;
+                $mimetype = $file->get_mimetype();
+                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_response/'.$userid.'/'.$filename);
 
-                    $icon = mimeinfo('icon', $file);
-                    $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
-                    $output .= '<a href="'.$ffurl.'" ><img class="align" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>';
-                    if ($candelete) {
-                        $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;action=response";
-                        $output .= '<a href="'.$delurl.'">&nbsp;'
-                            .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt=""/></a> ';
-                    }
-                    $output .= '&nbsp;';
+                $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.$filename.'</a>';
+
+                if ($candelete) {
+                    $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=".rawurlencode($filename)."&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;action=response";
+
+                    $output .= '<a href="'.$delurl.'">&nbsp;'
+                              .'<img title="'.$strdelete.'" src="'.$OUTPUT->pix_url('t/delete') . '" class="iconsmall" alt=""/></a> ';
                 }
+
+                $output .= '&nbsp;';
             }
 
             $output = '<div class="responsefiles">'.$output.'</div>';
@@ -968,7 +969,6 @@ class assignment_uploadpdf extends assignment_base {
     function unfinalize() {
         global $CFG, $DB;
         //UT
-        //FIXME
 
         $userid = required_param('userid', PARAM_INT);
         $mode   = required_param('mode', PARAM_ALPHA);
@@ -1427,6 +1427,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function get_page_image($userid, $pageno, $submission) {
         global $CFG, $DB;
+
         //UT
         $pagefilename = 'page'.$pageno.'.png';
         $pdf = new MyPDFLib();
@@ -1444,8 +1445,6 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         // Generate the image
-        // This is *horribly* slow at the moment
-        
         $imagefolder = $CFG->dataroot.'/temp/uploadpdf/img';
         if (!file_exists($imagefolder)) {
             if (!mkdir($imagefolder, 0777, true)) {
