@@ -2056,8 +2056,6 @@ class assignment_uploadpdf extends assignment_base {
     function show_previous_page($userid, $pageno) {
         global $CFG, $DB;
         //UT
-        //FIXME
-        
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
