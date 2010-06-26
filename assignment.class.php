@@ -2001,8 +2001,6 @@ class assignment_uploadpdf extends assignment_base {
     function show_previous_comments($userid) {
         global $CFG, $DB;
         //UT
-        //FIXME
-        
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
@@ -2013,37 +2011,46 @@ class assignment_uploadpdf extends assignment_base {
             print_error('User has no previous submission to display!');
         }
         
-        print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
+        $PAGE->set_pagelayout('popup');
+        $PAGE->set_title(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
+        $PAGE->set_heading('');
+        echo $OUTPUT->header();
 
-        echo '<h2>'.format_string($this->assignment->name).'</h2>';
+        echo $OUTPUT->heading(format_string($this->assignment->name), 2);
 
         // Add download link for submission
-        $pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
-        if (file_exists($CFG->dataroot.'/'.$this->file_area_name($userid).'/responses/response.pdf')) {
-            $pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/responses/response.pdf';
+        $fs = get_file_storage();
+        if ( !($file = $fs->get_file($this->context->id, 'assignment_response', $userid, '/', 'response.pdf')) ) {
+            $file = $fs->get_file($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, '/', 'submission.pdf');
         }
-        echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a><br />';
 
+        if ($file) {
+            $pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_response/'.$userid.'/response.pdf');
+            echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a><br />';            
+        }
 
         // Put all the comments in a table
         $comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission' => $submission->id), 'pageno, posy');
         if (!$comments) {
             echo '<p>'.get_string('nocomments','assignment_uploadpdf').'</p>';
         } else {
+            //UT
             $style1 = ' style="border: black 1px solid;"';
             $style2 = ' style="border: black 1px solid; text-align: center;" ';
             echo '<table'.$style1.'><tr><th'.$style1.'>'.get_string('pagenumber','assignment_uploadpdf').'</th>';
             echo '<th'.$style1.'>'.get_string('comment','assignment_uploadpdf').'</th></tr>';
             foreach ($comments as $comment) {
-                $linkurl = '/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno='.$comment->pageno.'&amp;commentid='.$comment->id.'&amp;action=showpreviouspage';
-                $link = link_to_popup_window($linkurl, 'showpage'.$userid, $comment->pageno,
-                                             700, 700, fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno, null, true);
-                echo '<tr><td'.$style2.'>'.$link.'</td>';
+                $link = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php', array('a'=>$this->assignment->id, 'userid'=>$user->id, 'pageno'=>$comment->pageno, 'commentid'=> $comment->id, 'action'=>'showpreviouspage') );
+                $action = new popup_action('click', $link, 'showpage'.$userid, array('height'=>700, 'width'=>700));
+                echo '<tr><td'.$style2.'>'.$OUTPUT->action_link($link, $comment->pageno, $action);
+                
+                //                $link = link_to_popup_window($linkurl, 'showpage'.$userid, $comment->pageno,
+                //                           700, 700, fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno, null, true);
                 echo '<td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
             }
             echo '</table>';
         }
-        print_footer('none');
+        echo $OUTPUT->footer();
     }
 
     function show_previous_page($userid, $pageno) {
@@ -2058,12 +2065,16 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         if (!$submission = $this->get_submission($user->id)) {
-            print_error('User has no previous submission to display!');
+            echo $OUTPUT->error('User has no previous submission to display!');
         }
         
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
-        print_header(fullname($user, true).':'.format_string($this->assignment->name).':'.$pageno);
+
+        $PAGE->set_pagelayout('popup');
+        $PAGE->set_title(fullname($user, true).':'.format_string($this->assignment->name).':'.$pageno);
+        $PAGE->set_heading('');
+        echo $OUTPUT->header();
 
         // Nasty hack to insert the style-sheet needed for my comment boxes
         // (without having to rewrite every Moodle theme in existence)
@@ -2091,7 +2102,7 @@ class assignment_uploadpdf extends assignment_base {
 
         echo '</div></div></div>';
 
-        print_footer('none');
+        echo $OUTPUT->footer();
     }
 
     function setup_elements(&$mform) {
