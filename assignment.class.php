@@ -47,11 +47,11 @@ class assignment_uploadpdf extends assignment_base {
         $coversheet_url = false;
         
         $fs = get_file_storage();
-        $files = $fs->get_area_files($this->context->id, 'assignment_uploadpdf_coversheet', false, '', false);
+        $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
 
         if (!empty($files)) {
             $coversheet_filename = array_shift(array_values($files))->get_filename();
-            $coversheet_url = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_coversheet/0/'.$coversheet_filename);
+            $coversheet_url = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/coversheet/0/'.$coversheet_filename);
         }
 
         if (has_capability('mod/assignment:submit', $this->context)) {
@@ -381,7 +381,7 @@ class assignment_uploadpdf extends assignment_base {
         $fs = get_file_storage();
 
         if ($this->is_finalized($submission)) {
-            if ($files = $fs->get_area_files($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, 'timemodified', false)) {
+            if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submissionfinal', $userid, 'timemodified', false)) {
                 //UT
                 foreach ($files as $file) {
                     $filename = $file->get_filename();
@@ -393,15 +393,15 @@ class assignment_uploadpdf extends assignment_base {
                         $output .= $OUTPUT->action_link($editurl, $img.s($filename), new popup_action('click', $editurl, 'editcomment'.$userid, array('width'=>1000, 'height'=>700))).'&nbsp;';
 
                     } else {
-                        $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_submission/'.$userid.'/'.$filename);
+                        $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submission/'.$userid.'/'.$filename);
                         $output .= '<a href="'.$path.'" ><img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.s($filename).'</a>&nbsp;';
                     }
                 }
-                if ($file = $fs->get_file($this->context->id, 'assignment_response', $userid, '/', 'response.pdf')) {
+                if ($file = $fs->get_file($this->context->id, 'mod_assignment', 'response', $userid, '/', 'response.pdf')) {
                     //UT
                     $respmime = $file->get_mimetype();
                     $respicon = $OUTPUT->pix_url(file_mimetype_icon($respmime));
-                    $respurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_response/'.$userid.'/response.pdf');
+                    $respurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/response/'.$userid.'/response.pdf');
                     $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$respicon.'" alt="'.$respmime.'" />response.pdf</a>&nbsp;';
 
                     // To tidy up flags from older versions of this assignment
@@ -415,12 +415,12 @@ class assignment_uploadpdf extends assignment_base {
             }
         } else {
             //UT
-            if ($files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, 'timemodified', false)) {
+            if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $userid, 'timemodified', false)) {
                 foreach ($files as $file) {
                     $filename = $file->get_filename();
                     $found = true;
                     $mimetype = $file->get_mimetype();
-                    $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_submission/'.$userid.'/'.$filename);
+                    $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submission/'.$userid.'/'.$filename);
                     $output .= '<a href="'.$path.'" ><img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.s($filename).'</a>&nbsp;';
                 }
             }
@@ -477,7 +477,7 @@ class assignment_uploadpdf extends assignment_base {
         
         if ($this->is_finalized($submission)) {
             //UT
-            if ($files = $fs->get_area_files($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, 'timemodified', false)) {
+            if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submissionfinal', $userid, 'timemodified', false)) {
                 foreach ($files as $file) {
                     $filename = $file->get_filename();
                     $mimetype = $file->get_mimetype();
@@ -486,7 +486,7 @@ class assignment_uploadpdf extends assignment_base {
                         $img = '<img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />';
                         $output .= $OUTPUT->action_link($editurl, $img.s($filename), new popup_action('click', $editurl, 'editcomment'.$userid, array('width'=>1000, 'height'=>700))).'&nbsp;';
                     } else {
-                        $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_submissionfinal/'.$userid.'/'.$filename);
+                        $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submissionfinal/'.$userid.'/'.$filename);
                         $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />'.s($filename).'</a>';
                         $output .= '<br />';
                     }
@@ -495,12 +495,12 @@ class assignment_uploadpdf extends assignment_base {
                 
         } else {
             //UT
-            if ($files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, 'timemodified', false)) {
+            if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $userid, 'timemodified', false)) {
                 //$button = new portfolio_add_button();  // FIXME - Enable the portfolio export (once everything else working)
                 foreach ($files as $file) {
                     $filename = $file->get_filename();
                     $mimetype = $file->get_mimetype();
-                    $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_submission/'.$userid.'/'.$filename);
+                    $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submission/'.$userid.'/'.$filename);
                     $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />'.s($filename).'</a>';
 
                     if ($candelete) {
@@ -559,12 +559,12 @@ class assignment_uploadpdf extends assignment_base {
         $fs = get_file_storage();
         $browser = get_file_browser();
 
-        if ($files = $fs->get_area_files($this->context->id, 'assignment_response', $userid, "timemodified", false)) {
+        if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'response', $userid, "timemodified", false)) {
             foreach ($files as $file) {
                 $filename = $file->get_filename();
                 $found = true;
                 $mimetype = $file->get_mimetype();
-                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_response/'.$userid.'/'.$filename);
+                $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/response/'.$userid.'/'.$filename);
 
                 $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.$filename.'</a>';
 
@@ -755,7 +755,7 @@ class assignment_uploadpdf extends assignment_base {
             $fs = get_file_storage();
             $filename = $mform->get_new_filename('newfile');
             if ($filename !== false) {
-                if (!$fs->file_exists($this->context->id, 'assignment_submission', $USER->id, '/', $filename)) {
+                if (!$fs->file_exists($this->context->id, 'mod_assignment', 'submission', $USER->id, '/', $filename)) {
                     if ($file = $mform->save_stored_file('newfile', $this->context->id, 'assignment_submission', $USER->id, '/', $filename, false, $USER->id)) {
                         $submission = $this->get_submission($USER->id, true); //create new submission if needed
                         $submission->timemodified = time();
@@ -796,11 +796,12 @@ class assignment_uploadpdf extends assignment_base {
         global $CFG, $DB, $USER;
         require_once($CFG->libdir.'/filelib.php');
 
+
         require_login($this->course, false, $this->cm);
 
         $userid = (int)array_shift($args);
-        $relativepath = '/'.implode('/', $args);
-        $fullpath = $this->context->id.$filearea.$userid.$relativepath;
+        $relativepath = implode('/', $args);
+        $fullpath = "/{$this->context->id}/mod_assignment/{$filearea}/{$userid}/{$relativepath}";
 
         $fs = get_file_storage();
 
@@ -808,15 +809,15 @@ class assignment_uploadpdf extends assignment_base {
             return false;
         }
 
-        if ($filearea === 'assignment_submission') {   // Student files (before 'submit for marking' clicked)
+        if ($filearea === 'submission') {   // Student files (before 'submit for marking' clicked)
             if ($USER->id != $userid and !has_capability('mod/assignment:grade', $this->context)) {
                 return false;
             }
-        } else if ($filearea === 'assignment_uploadpdf_submissionfinal') {  // Student files (once submitted & PDF generated)
+        } else if ($filearea === 'submissionfinal') {  // Student files (once submitted & PDF generated)
             if ($USER->id != $userid and !has_capability('mod/assignment:grade', $this->context)) {
                 return false;
             }
-        } else if ($filearea === 'assignment_uploadpdf_image') { // Images generate from submitted PDF
+        } else if ($filearea === 'image') { // Images generate from submitted PDF
             if (!has_capability('mod/assignment:grade', $this->context)) {
                 return false;
             }
@@ -824,12 +825,12 @@ class assignment_uploadpdf extends assignment_base {
             send_stored_file($file);
             return;
 
-        } else if ($filearea === 'assignment_response') { // Response PDF from teacher
+        } else if ($filearea === 'response') { // Response PDF from teacher
             if ($USER->id != $userid and !has_capability('mod/assignment:grade', $this->context)) {
                 return false;
             }
 
-        } else if ($filearea === 'assignment_uploadpdf_coversheet') { // Coversheet to add to all submissions
+        } else if ($filearea === 'coversheet') { // Coversheet to add to all submissions
             if (!has_capability('mod/assignment:view', $this->context)) {
                 return false;
             }
@@ -988,8 +989,8 @@ class assignment_uploadpdf extends assignment_base {
             and confirm_sesskey()) {
             //UT
             $fs = get_file_storage();
-            $fs->delete_area_files($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid);
-            $fs->delete_area_files($this->context->id, 'assignment_uploadpdf_image', $userid);
+            $fs->delete_area_files($this->context->id, 'mod_assignment', 'submissionfinal', $userid);
+            $fs->delete_area_files($this->context->id, 'mod_assignment', 'image', $userid);
 
             $updated = new object();
             $updated->id = $submission->id;
@@ -1055,7 +1056,7 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $fs = get_file_storage();
-        if ($file = $fs->get_file($this->context->id, 'assignment_response', $userid, '/', $file)) {
+        if ($file = $fs->get_file($this->context->id, 'mod_assignment', 'response', $userid, '/', $file)) {
             if ($file->delete()) {
                 $submission = $this->get_submission($userid); 
                 // If the assignment was marked as 'responded to', then mark it as 'submitted' instead
@@ -1129,7 +1130,7 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $fs = get_file_storage();
-        if ($file = $fs->get_file($this->context->id, 'assignment_submission', $userid, '/', $file)) {
+        if ($file = $fs->get_file($this->context->id, 'mod_assignment', 'submission', $userid, '/', $file)) {
             if ($file->delete()) {
                 $submission->timemodified = time();
                 if ($DB->update_record('assignment_submissions', $submission)) {
@@ -1259,13 +1260,13 @@ class assignment_uploadpdf extends assignment_base {
 
     function count_responsefiles($userid) {
         $fs = get_file_storage();
-        $files = $fs->get_area_files($this->context->id, 'assignment_response', $userid, "id", false);
+        $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'response', $userid, "id", false);
         return count($files);
     }
 
     function get_not_pdf($userid) {
         $fs = get_file_storage();
-        $files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, "id", false);
+        $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $userid, "id", false);
         foreach ($files as $file) {
             if ($file->get_mimetype() != 'application/pdf') {
                 return $file->get_filename();
@@ -1281,7 +1282,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $count = 0;
         $fs = get_file_storage();
-        $files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, 'id', false);
+        $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $userid, 'id', false);
         foreach ($files as $file) {
             if ($file->get_mimetype() == 'application/pdf') {
                 $count++;
@@ -1310,11 +1311,11 @@ class assignment_uploadpdf extends assignment_base {
         }
         
         $combine_files = array();
-        if ($files = $fs->get_area_files($this->context->id, 'assignment_submission', $userid, 'timemodified', false)) {
+        if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $userid, 'timemodified', false)) {
             foreach ($files as $key=>$file) {
                 if ($file->get_mimetype() != 'application/pdf') {
                     //UT
-                    $fs->create_file_from_storedfile(array('filearea'=>'assignment_uploadpdf_submissionfinal'), $file); /* Copy any non-PDF files to submission filearea */
+                    $fs->create_file_from_storedfile(array('component'=>'mod_assignment', 'filearea'=>'submissionfinal'), $file); /* Copy any non-PDF files to submission filearea */
                     unset($files[$key]);
                 } else {
                     $destpath = $temparea.$file->get_filename();
@@ -1327,7 +1328,7 @@ class assignment_uploadpdf extends assignment_base {
             }
             if (!empty($combine_files)) { /* Should have already checked there is at least 1 PDF */
                 $coversheet_path = null;
-                $coversheet = $fs->get_area_files($this->context->id, 'assignment_uploadpdf_coversheet', false, '', false);
+                $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
 
                 if (!empty($coversheet)) {
                     $coversheet = array_shift(array_values($coversheet));
@@ -1342,7 +1343,8 @@ class assignment_uploadpdf extends assignment_base {
                     return 0;
                 }
                 $fileinfo = array('contextid'=>$this->context->id,
-                                  'filearea'=>'assignment_uploadpdf_submissionfinal',
+                                  'component'=>'mod_assignment',
+                                  'filearea'=>'submissionfinal',
                                   'itemid'=>$userid,
                                   'filename'=>'submission.pdf',
                                   'filepath'=>'/');
@@ -1367,7 +1369,7 @@ class assignment_uploadpdf extends assignment_base {
         global $CFG, $DB;
         //UT
         $fs = get_file_storage();
-        if (!$file = $fs->get_file($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, '/', 'submission.pdf')) {
+        if (!$file = $fs->get_file($this->context->id, 'mod_assignment', 'submissionfinal', $userid, '/', 'submission.pdf')) {
             print_error('Submitted PDF not found');
             return false;
         }
@@ -1430,7 +1432,8 @@ class assignment_uploadpdf extends assignment_base {
         $mypdf->save_pdf($destfile);
 
         $fileinfo = array('contextid'=>$this->context->id,
-                          'filearea'=>'assignment_response',
+                          'component'=>'mod_assignment',
+                          'filearea'=>'response',
                           'itemid'=>$userid,
                           'filename'=>'response.pdf',
                           'filepath'=>'/');
@@ -1453,9 +1456,9 @@ class assignment_uploadpdf extends assignment_base {
 
         $fs = get_file_storage();
         // If pagecount is 0, then we need to skip down to the next stage to find the real page count
-        if ( $pagecount && ($file = $fs->get_file($this->context->id, 'assignment_uploadpdf_image', $userid, '/', $pagefilename)) ) {
+        if ( $pagecount && ($file = $fs->get_file($this->context->id, 'mod_assignment', 'image', $userid, '/', $pagefilename)) ) {
             if ($imageinfo = $file->get_imageinfo()) {
-                $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_image/'.$userid.'/'.$pagefilename);
+                $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$userid.'/'.$pagefilename);
                 return array($imgurl, $imageinfo['width'], $imageinfo['height'], $pagecount);
             }
             // If the image is bad in some way, try to create a new image instead
@@ -1478,7 +1481,7 @@ class assignment_uploadpdf extends assignment_base {
             }
         }
 
-        if (!$file = $fs->get_file($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, '/', 'submission.pdf')) {
+        if (!$file = $fs->get_file($this->context->id, 'mod_assignment', 'submissionfinal', $userid, '/', 'submission.pdf')) {
             print_error('Attempting to display image for non-existant submission');
         }
         $file->copy_content_to($pdffile);  // Copy the PDF out of the file storage, into the temp area
@@ -1506,7 +1509,8 @@ class assignment_uploadpdf extends assignment_base {
 
         $imginfo = array(
                          'contextid' => $this->context->id,
-                         'filearea' => 'assignment_uploadpdf_image',
+                         'component' => 'mod_assignment',
+                         'filearea' => 'image',
                          'itemid' => $userid,
                          'filepath' => '/',
                          'filename' => $pagefilename
@@ -1519,7 +1523,7 @@ class assignment_uploadpdf extends assignment_base {
         unlink($imagefolder.'/'.$imgname);
 
         if ($imageinfo = $file->get_imageinfo()) {
-            $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_image/'.$userid.'/'.$pagefilename);
+            $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$userid.'/'.$pagefilename);
             return array($imgurl, $imageinfo['width'], $imageinfo['height'], $pagecount);
         }
         
@@ -1614,7 +1618,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
         echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment_uploadpdf').'" /> ';
         echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment_uploadpdf').'" /> ';
-		$pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_uploadpdf_submissionfinal/'.$userid.'/submission.pdf');
+		$pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submissionfinal/'.$userid.'/submission.pdf');
 		echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a>';
         echo '</form>';
 		echo '</div>';
@@ -2020,12 +2024,12 @@ class assignment_uploadpdf extends assignment_base {
 
         // Add download link for submission
         $fs = get_file_storage();
-        if ( !($file = $fs->get_file($this->context->id, 'assignment_response', $userid, '/', 'response.pdf')) ) {
-            $file = $fs->get_file($this->context->id, 'assignment_uploadpdf_submissionfinal', $userid, '/', 'submission.pdf');
+        if ( !($file = $fs->get_file($this->context->id, 'mod_assignment', 'response', $userid, '/', 'response.pdf')) ) {
+            $file = $fs->get_file($this->context->id, 'mod_assignment', 'submissionfinal', $userid, '/', 'submission.pdf');
         }
 
         if ($file) {
-            $pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/assignment_response/'.$userid.'/response.pdf');
+            $pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/response/'.$userid.'/response.pdf');
             echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a><br />';            
         }
 
@@ -2239,7 +2243,7 @@ class assignment_uploadpdf extends assignment_base {
         $draftitemid = $assignment->coversheet;
         $context = get_context_instance(CONTEXT_MODULE, $cmid);
         if ($draftitemid) {
-            file_save_draft_area_files($draftitemid, $context->id, 'assignment_uploadpdf_coversheet', 0, array('subdirs'=>false, 'maxfiles'=>1));
+            file_save_draft_area_files($draftitemid, $context->id, 'mod_assignment', 'coversheet', 0, array('subdirs'=>false, 'maxfiles'=>1));
         }
         unset($assignment->coversheet);
         unset($assignment->template);
@@ -2325,7 +2329,7 @@ class assignment_uploadpdf extends assignment_base {
             $cmid = $assignment->coursemodule;
             $context = get_context_instance(CONTEXT_MODULE, $cmid);
             if ($draftitemid) {
-                file_save_draft_area_files($draftitemid, $context->id, 'assignment_uploadpdf_coversheet', 0, array('subdirs'=>false, 'maxfiles'=>1));
+                file_save_draft_area_files($draftitemid, $context->id, 'mod_assignment', 'coversheet', 0, array('subdirs'=>false, 'maxfiles'=>1));
             }
         }
 
