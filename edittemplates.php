@@ -3,7 +3,7 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
 require_once(dirname(__FILE__).'/mypdflib.php');
 
-//FIXME - really, really need to replace this with formslib code!
+require_once($CFG->libdir.'/formslib.php')
 
 //UT
 
@@ -522,6 +522,11 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
         }
     }
 
+    $mform = new moodleform();
+    $mform->addElement('filepicker', 'uploadpreview', get_string('previewinstructions','assignment_uploadpdf'), null, array('accepted_types'=>array('*.pdf')));
+    $mform->display();
+
+    /*
     // FIXME - replace with file_select form element
     echo '<form enctype="multipart/form-data" method="post" action="edittemplates.php">';
     echo '<fieldset>';
@@ -531,6 +536,6 @@ function show_image($imagename, $templateid, $courseid, $hidden, $itemid) {
     upload_print_form_fragment(1,array('preview'),null,false,null,0,0,false);
     echo '<input type="submit" name="uploadpreview" value="'.get_string('uploadpreview','assignment_uploadpdf').'" />';
     echo '</fieldset>';
-    echo '</form>';
+    echo '</form>';*/
 }
 ?>
