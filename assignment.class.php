@@ -853,7 +853,7 @@ class assignment_uploadpdf extends assignment_base {
         // (but don't complain about it until the PDF check has been done) 
         $templatedataOK = true;
         $templateitems = false;
-        if ($extra &&  ($extra->coversheet != '') && ($extra->template > 0)) {
+        if ($extra &&  $extra->template > 0) {
             $fs = get_file_storage();
             $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
             if (!empty($coversheet)) {
@@ -1311,7 +1311,6 @@ class assignment_uploadpdf extends assignment_base {
                 if (!empty($coversheet)) {
                     $coversheet = array_shift(array_values($coversheet));
                     $coversheet_path = $temparea.'sub/coversheet.pdf';
-                    print_r($coversheet);
                     if (!$coversheet->copy_content_to($coversheet_path)) {
                         return 0;
                     }
