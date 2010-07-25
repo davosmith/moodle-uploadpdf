@@ -422,7 +422,7 @@ class assignment_uploadpdf extends assignment_base {
                         $output .= '<a href="'.$path.'" ><img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />'.s($filename).'</a>&nbsp;';
                     }
                 }
-                if ($mode == '' && $file = $fs->get_file($this->context->id, 'mod_assignment', 'response', $userid, '/', 'response.pdf')) {
+                if (($mode == 'grade' || $mode == '') && $file = $fs->get_file($this->context->id, 'mod_assignment', 'response', $userid, '/', 'response.pdf')) {
                     //UT
                     $respmime = $file->get_mimetype();
                     $respicon = $OUTPUT->pix_url(file_mimetype_icon($respmime));
