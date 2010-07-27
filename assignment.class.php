@@ -2130,7 +2130,7 @@ class assignment_uploadpdf extends assignment_base {
         
         $edittemplate = $mform->addElement('button', 'edittemplate', get_string('edittemplate', 'assignment_uploadpdf').'...');
         $edittmpl_url = new moodle_url('/mod/assignment/type/uploadpdf/edittemplates.php',array('courseid'=>$courseid));
-        //FIXME - check how I *should* do this in Moodle 2.0
+
         $buttonattributes = array('title'=>get_string('edittemplatetip', 'assignment_uploadpdf'), 'onclick'=>'return window.open("'.$edittmpl_url.'", "edittemplates", "menubar=0,location=0,directories=0,toolbar=0,scrollbars,resizable,width=800,height=600");');
         $edittemplate->updateAttributes($buttonattributes);
 
@@ -2143,17 +2143,13 @@ class assignment_uploadpdf extends assignment_base {
         $mform->setDefault('onlypdf', $assignment_extra->onlypdf);
         $mform->addHelpButton('onlypdf', 'onlypdf', 'assignment_uploadpdf');
 
-        $mform->addElement('select', 'resubmit', get_string("allowdeleting", "assignment"), $ynoptions);
-        $mform->addHelpButton('resubmit', 'allowdeleting', 'assignment');
-        $mform->setDefault('resubmit', 1);
-
         $options = array();
-        for($i = 1; $i <= 20; $i++) {
+        for($i = 1; $i <= 40; $i++) {
             $options[$i] = $i;
         }
         $mform->addElement('select', 'var1', get_string("allowmaxfiles", "assignment"), $options);
         $mform->addHelpButton('var1', 'allowmaxfiles', 'assignment');
-        $mform->setDefault('var1', 3);
+        $mform->setDefault('var1', 5);
 
         $mform->addElement('select', 'var2', get_string("allownotes", "assignment"), $ynoptions);
         $mform->addHelpButton('var2', 'allownotes', 'assignment');
