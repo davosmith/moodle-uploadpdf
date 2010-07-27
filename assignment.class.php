@@ -56,9 +56,9 @@ class assignment_uploadpdf extends assignment_base {
 
         if (has_capability('mod/assignment:submit', $this->context)) {
             //UT
-            $filecount = $this->count_user_files($USER->id);
             $submission = $this->get_submission($USER->id);
-
+            $filecount = $submission ? $this->count_user_files($submission->id) : 0;
+            
             $this->view_feedback();
 
             $this->view_final_submission();
@@ -133,7 +133,7 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         if (empty($submission->timemarked)) {   /// Nothing to show, so print nothing
-            if ($this->count_responsefiles($submission->id)) {
+            if ($this->count_responsefiles($USER->id)) {
                 //UT
                 echo $OUTPUT->heading(get_string('responsefiles', 'assignment'), 3);
                 $responsefiles = $this->print_responsefiles($USER->id, true);
@@ -389,7 +389,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $output = '';
 
-            //UT
+        //UT
         if (!$this->is_finalized($submission)) {
             $output .= '<strong>'.get_string('draft', 'assignment').':</strong> ';
         }
@@ -443,10 +443,12 @@ class assignment_uploadpdf extends assignment_base {
 
         } else {
             //UT
-            $renderer = $PAGE->get_renderer('mod_assignment');
-            $output = $OUTPUT->box_start('files').$output;
-            $output .= $renderer->assignment_files($this->context, $userid);
-            $output .= $OUTPUT->box_end();
+            if ($submission) {
+                $renderer = $PAGE->get_renderer('mod_assignment');
+                $output = $OUTPUT->box_start('files').$output;
+                $output .= $renderer->assignment_files($this->context, $submission->id);
+                $output .= $OUTPUT->box_end();
+            }
         }
 
         return $output;
@@ -711,9 +713,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $returnurl = 'view.php?id='.$this->cm->id;
 
-        $filecount = $this->count_user_files($USER->id);
         $submission = $this->get_submission($USER->id);
-
         if (!$this->can_upload_file($submission)) {
             //UT
             $this->view_header(get_string('upload'));
@@ -1135,11 +1135,11 @@ class assignment_uploadpdf extends assignment_base {
     function can_upload_file($submission) {
         global $USER;
 
-        if (has_capability('mod/assignment:submit', $this->context)           // can submit
+        if (is_enrolled($this->context, $USER, 'mod/assignment:submit')           // can submit
             and $this->isopen()                                                 // assignment not closed yet
-            and (empty($submission) or $submission->grade == -1)                // not graded
             and (empty($submission) or $submission->userid == $USER->id)        // his/her own submission
-            and $this->count_user_files($submission->id) < $this->assignment->var1) { // file limit not reached
+            and (empty($submission) or $this->count_user_files($submission->id) < $this->assignment->var1)
+            and !$this->is_finalized($submission)) {
             return true;
         } else {
             return false;
@@ -1230,10 +1230,14 @@ class assignment_uploadpdf extends assignment_base {
         return (boolean)$this->assignment->var2;
     }
 
-    function count_responsefiles($submissionid) {
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'response', $submissionid, "id", false);
-        return count($files);
+    function count_responsefiles($userid) {
+        if ($submission = $this->get_submission($userid)) {
+            $fs = get_file_storage();
+            $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'response', $submission->id, "id", false);
+            return count($files);
+        } else {
+            return 0;
+        }
     }
 
     function get_not_pdf($submissionid) {
