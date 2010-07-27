@@ -55,7 +55,6 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         if (has_capability('mod/assignment:submit', $this->context)) {
-            //UT
             $submission = $this->get_submission($USER->id);
             $filecount = $submission ? $this->count_user_files($submission->id) : 0;
             
@@ -90,7 +89,6 @@ class assignment_uploadpdf extends assignment_base {
                 $this->view_notes();
             }
         } else {
-            //UT
             if ($coversheet_filename) {
                 echo '<p>'.get_string('coversheetnotice','assignment_uploadpdf').': ';
                 echo '<a href="'.$coversheet_url.'" target="_blank">'.$coversheet_filename.'</a></p>';
@@ -124,8 +122,6 @@ class assignment_uploadpdf extends assignment_base {
 
     function view_feedback($submission=NULL) {
         global $USER, $CFG, $DB, $OUTPUT;
-
-        //UT
 
         require_once($CFG->libdir.'/gradelib.php');
         if (!$submission) { /// Get submission for this assignment
@@ -209,8 +205,6 @@ class assignment_uploadpdf extends assignment_base {
     function view_upload_form() {
         global $CFG, $USER, $OUTPUT;
 
-        //UT
-
         $submission = $this->get_submission($USER->id);
 
         $struploadafile = get_string('uploadafile');
@@ -223,7 +217,6 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         if ($this->can_upload_file($submission)) {
-            //UT
             $fs = get_file_storage();
             // edit files in another page
             if ($submission) {
@@ -807,7 +800,6 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function finalize() {
-        //UT
         global $USER, $DB, $OUTPUT;
 
         $confirm = optional_param('confirm', 0, PARAM_BOOL);
@@ -870,7 +862,6 @@ class assignment_uploadpdf extends assignment_base {
         // Check that all files submitted are PDFs
         if ($file = $this->get_not_pdf($submission->id)) {
             if (!$confirmnotpdf) {
-                //UT
                 $this->view_header();
                 echo $OUTPUT->heading(get_string('nonpdfheading', 'assignment_uploadpdf'));
                 if ($extra && $extra->onlypdf) {
@@ -878,11 +869,9 @@ class assignment_uploadpdf extends assignment_base {
                     echo $OUTPUT->continue_button($returnurl);
                 } else {
                     if ($this->get_pdf_count($submission->id) < 1) {
-                        //UT
                         echo $OUTPUT->notification(get_string('nopdf', 'assignment_uploadpdf'));
                         echo $OUTPUT->continue_button($returnurl);
                     } else {
-                        //UT
                         $continueurl->param('confirmnotpdf', 1);
                         echo $OUTPUT->confirm(get_string('filenotpdf_continue', 'assignment_uploadpdf', $file), $continueurl, $returnurl);
                     }
@@ -902,7 +891,6 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         if (!data_submitted() or !$confirm or !confirm_sesskey()) {
-            //UT
             $continueurl->param('confirmnotpdf', 1);
             $continueurl->param('confirm', 1);
             $this->view_header(get_string('submitformarking', 'assignment'));
@@ -913,7 +901,7 @@ class assignment_uploadpdf extends assignment_base {
 
         } else {
             //UT
-            if (!($pagecount = $this->create_submission_pdf($USER->id, $templateitems))) {
+            if (!($pagecount = $this->create_submission_pdf($submission->id, $templateitems))) {
                 $this->view_header(get_string('submitformarking', 'assignment'));
                 echo $OUTPUT->notification(get_string('createsubmissionfailed', 'assignment_uploadpdf'));
                 echo $OUTPUT->continue_button($returnurl);
@@ -1290,7 +1278,6 @@ class assignment_uploadpdf extends assignment_base {
         if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submissionid, 'timemodified', false)) {
             foreach ($files as $key=>$file) {
                 if ($file->get_mimetype() != 'application/pdf') {
-                    //UT
                     $fs->create_file_from_storedfile(array('component'=>'mod_assignment', 'filearea'=>'submissionfinal'), $file); /* Copy any non-PDF files to submission filearea */
                     unset($files[$key]);
                 } else {
@@ -1326,7 +1313,7 @@ class assignment_uploadpdf extends assignment_base {
                 $fs->create_file_from_pathname($fileinfo, $destfile);
 
                 unlink($destfile);
-                unlink($coversheet_path);
+                if ($coversheet_path != null) { unlink($coversheet_path); }
                 foreach ($combine_files as $fl) {
                     unlink($fl);
                 }
@@ -1550,7 +1537,7 @@ class assignment_uploadpdf extends assignment_base {
             //UT
             echo $OUTPUT->header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
             echo $OUTPUT->heading(get_string('draftsaved', 'assignment_uploadpdf'));
-            close_window();
+            echo html_writer::script('self.close()');  // FIXME - use 'close_window()', if it ever starts working again
             die;
         }
 
@@ -1564,11 +1551,12 @@ class assignment_uploadpdf extends assignment_base {
                 $updated->data2 = $submission->data2;
                 $DB->update_record('assignment_submissions', $updated);
 
-                echo $OUTPUT->header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+                $PAGE->set_title(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
+                echo $OUTPUT->header();
                 echo $OUTPUT->heading(get_string('responseok', 'assignment_uploadpdf'));
                 require_once($CFG->libdir.'/gradelib.php');
                 echo $this->update_main_listing($submission);
-                close_window();
+                echo html_writer::script('self.close()');  // FIXME - use 'close_window()', if it ever starts working again
                 die;
             } else {
                 echo $OUTPUT->header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
