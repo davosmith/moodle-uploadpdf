@@ -47,7 +47,7 @@ class assignment_uploadpdf extends assignment_base {
         $coversheet_url = false;
         
         $fs = get_file_storage();
-        $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, 0, false);
+        $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
 
         if (!empty($files)) {
             $coversheet_filename = array_shift(array_values($files))->get_filename();
@@ -294,7 +294,7 @@ class assignment_uploadpdf extends assignment_base {
 
             if ($extra && ($extra->template > 0)) {
                 $fs = get_file_storage();
-                $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, 0, false);
+                $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
                 if (!empty($coversheet)) {
                     //UT
                     $t_items = $DB->get_records('assignment_uploadpdf_tmplitm', array('template' => $extra->template) );
@@ -342,11 +342,9 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function submissions($mode) {
-        // Check for the single button below (unfinalize)
-        // if present, do the unfinalize, then carry on
         $unfinalize = optional_param('unfinalize', FALSE, PARAM_TEXT);
         if ($unfinalize) {
-            $this->unfinalize();
+            $this->unfinalize('single');
         }
   
         parent::submissions($mode);
@@ -440,17 +438,6 @@ class assignment_uploadpdf extends assignment_base {
             }
 
 
-            if (has_capability('mod/assignment:grade', $this->context)
-                and $this->can_unfinalize($submission)
-                and $mode != 'grade'
-                and $mode != '') { // we do not want it on view.php page
-                //UT
-                //$options = array ('id'=>$this->cm->id, 'userid'=>$userid, 'action'=>'unfinalize', 'mode'=>$mode, 'offset'=>$offset);
-                //$output .= $OUTPUT->single_button(new moodle_url('/mod/assignment/upload.php', $options), get_string('unfinalize', 'assignment'));
-                $output .= '<br /><input type="submit" name="unfinalize" value="'.get_string('unfinalize', 'assignment').'" />';
-            }
-
-
             $output = $OUTPUT->box_start('files').$output;
             $output .= $OUTPUT->box_end();
 
@@ -524,9 +511,19 @@ class assignment_uploadpdf extends assignment_base {
                 }
             }
         } else {
-            $renderer = $PAGE->get_renderer('mod_assignment', null);
-            $output .= $renderer->assignment_files($this->context, $USER->id);
+            if ($submission) {
+                $renderer = $PAGE->get_renderer('mod_assignment', null);
+                $output .= $renderer->assignment_files($this->context, $submission->id);
+            }
+        }
 
+        if (has_capability('mod/assignment:grade', $this->context)
+            and $mode != 'grade'
+            and $mode != '') { // we do not want it on view.php page
+            //UT
+            if ($this->can_unfinalize($submission)) {
+                $output .= '<br /><input type="submit" name="unfinalize" value="'.get_string('unfinalize', 'assignment').'" />';
+            }
         }
 
         $output .= $OUTPUT->box_end();
@@ -849,7 +846,7 @@ class assignment_uploadpdf extends assignment_base {
         $templateitems = false;
         if ($extra &&  $extra->template > 0) {
             $fs = get_file_storage();
-            $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, 0, false);
+            $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
             if (!empty($coversheet)) {
                 //UT
                 $templateitems = $DB->get_records('assignment_uploadpdf_tmplitm', array('template' => $extra->template) );
@@ -944,13 +941,17 @@ class assignment_uploadpdf extends assignment_base {
         redirect($returnurl);
     }
 
-    function unfinalize() {
+    function unfinalize($forcemode = null) {
         global $CFG, $DB;
         //UT
 
         $userid = required_param('userid', PARAM_INT);
         $mode   = required_param('mode', PARAM_ALPHA);
         $offset = required_param('offset', PARAM_INT);
+
+        if ($forcemode != null) {
+            $mode = $forcemode;
+        }
 
         $returnurl = new moodle_url('/mod/assignment/submissions.php', array('id'=>$this->cm->id, 'userid'=>$userid, 'mode'=>$mode, 'offset'=>$offset, 'forcerefresh'=>1) );
 
@@ -1299,7 +1300,7 @@ class assignment_uploadpdf extends assignment_base {
             }
             if (!empty($combine_files)) { /* Should have already checked there is at least 1 PDF */
                 $coversheet_path = null;
-                $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, 0, false);
+                $coversheet = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
 
                 if (!empty($coversheet)) {
                     $coversheet = array_shift(array_values($coversheet));
