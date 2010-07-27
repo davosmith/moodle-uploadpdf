@@ -93,7 +93,6 @@ class edit_templates {
     }
 
     function view_template_edit_form() {
-        //UT
         global $DB, $OUTPUT;
 
         if ($this->templateid == 0) {
@@ -158,15 +157,18 @@ class edit_templates {
         if ($this->templateid > 0) {
             echo '<br />';
             echo '<label for="itemid">'.get_string('chooseitem','assignment_uploadpdf').': </label>';
-            echo '<select name="itemid" onchange="document.edittemplate.submit();">';
+            echo '<select name="itemid" id="itemid" onchange="document.edittemplate.submit();">';
             if ($this->itemid == -1) {
                 echo '<option value="-1" selected="selected">'.get_string('newitem','assignment_uploadpdf').'</option>';
             } else {
                 echo '<option value="-1">'.get_string('newitem','assignment_uploadpdf').'</option>';
             }
             $items_data = $DB->get_records('assignment_uploadpdf_tmplitm', array('template' => $this->templateid) );
-            if ($items_data) {
+            if (!empty($items_data)) {
                 $datenum = 1;
+                if ($this->itemid == 0) {
+                    $this->itemid = reset($items_data)->id;
+                }
                 foreach ($items_data as $item) {
                     $selected = '';
                     if ($item->id == $this->itemid) {
@@ -187,7 +189,7 @@ class edit_templates {
                 }
             }
             echo '</select>';
-            echo '<input type="submit" name="selectitem" value="'.get_string('select','assignment_uploadpdf').'" />';
+            echo '<input type="submit" name="selectitem" id="selectitem" value="'.get_string('select','assignment_uploadpdf').'" />';
         }
 
         echo '</fieldset>';
@@ -238,10 +240,20 @@ class edit_templates {
         // Javascript to allow more interactive editing of the items (by clicking on the image)
         echo '<script type="text/javascript">';
         echo 'var oldtype = "'.$item->type.'";';
+        // Enable save/cancel buttons, disable selection
+        echo 'function EnableSave() {';
+        if ($canedit) {
+            echo 'document.getElementById("saveitem").removeAttribute("disabled");';
+            echo 'document.getElementById("cancelitem").removeAttribute("disabled");';
+            echo 'document.getElementById("itemid").setAttribute("disabled", "disabled");';
+            echo 'document.getElementById("selectitem").setAttribute("disabled", "disabled");';
+        }
+        echo '}';
         // Highlight the titles of items that are unsaved
         echo 'function Highlight(name) {';
         echo 'document.getElementById(name+"_label").style.fontWeight = "bold";';
         echo 'UpdatePreview();';
+        echo 'EnableSave();';
         echo '}';
         // Move the preview item on the page
         echo 'function UpdatePreview() {';
@@ -299,10 +311,17 @@ class edit_templates {
         echo '<tr><td><label for="itemwidth" id="itemwidth_label" >'.get_string('itemwidth','assignment_uploadpdf').': </label></td>';
         echo '<td><input type="text" id="itemwidth" name="itemwidth" onChange="Highlight(\'itemwidth\');" value="'.$item->width.'"'.$disabled.' /> '.get_string('textonly','assignment_uploadpdf').'</td></tr>';
         echo '</table>';
-        echo '<input type="submit" name="saveitem" value="'.get_string('saveitem','assignment_uploadpdf').'"'.$disabled.'/>&nbsp;';
+        echo '<input type="submit" name="saveitem" id="saveitem" value="'.get_string('saveitem','assignment_uploadpdf').'"'.$disabled.'/>&nbsp;';
+        echo '<input type="submit" name="cancelitem" id="cancelitem" value="'.get_string('cancel').'"'.$disabled.'/>&nbsp;&nbsp;';
         echo '<input type="submit" name="deleteitem" value="'.get_string('deleteitem','assignment_uploadpdf').'"'.$deletedisabled.'/>';
         echo '</fieldset>';
         echo '</form>';
+
+        //Disable the 'Save Item' button until something to save
+        echo '<script type="text/javascript">';
+        echo 'document.getElementById("saveitem").setAttribute("disabled", "disabled");';
+        echo 'document.getElementById("cancelitem").setAttribute("disabled", "disabled");';
+        echo '</script>';
         
         echo $OUTPUT->box_end();
     }
@@ -312,15 +331,16 @@ class edit_templates {
         //UT
 
         if ($this->imagetime) {
+            $context = get_context_instance(CONTEXT_COURSE, $this->courseid);
             $fs = get_file_storage();
-            if ($image = $fs->get_file($this->templateid, 'mod_assignment', 'previewimage', 0, '/', 'preview.png')) {
+            if ($image = $fs->get_file($context->id, 'mod_assignment', 'previewimage', 0, '/', 'preview.png')) {
 
                 $imginfo = $image->get_imageinfo();
             
                 //                list($width, $height, $type, $attr) = getimagesize($fullpath);
                 echo "<div style='width: {$imginfo['width']}px; height: {$imginfo['height']}px; border: solid 1px black;'>";
                 echo '<div style="position: relative;">';
-                $imageurl = new moodle_url('/mod/assignment/type/uploadpdf/previewimage.php', array('context'=>$this->templateid, 'time'=>$this->imagetime));
+                $imageurl = new moodle_url('/mod/assignment/type/uploadpdf/previewimage.php', array('context'=>$context->id, 'time'=>$this->imagetime));
 
                 echo '<img src="'.$imageurl.'" alt="Preview Template" style="position: absolute; top: 0px; left: 0px;" onclick="clicked_on_image(event);" />';
                 if ($this->templateid > 0) {
@@ -603,19 +623,24 @@ class edit_templates {
 
         $mform = new edit_templates_form();
         $fname = $mform->save_temp_file('preview');
+        if (!$fname) {
+            return;
+        }
 
         $pdf = new MyPDFLib();
         $pdf->load_pdf($fname);
         $pdf->set_image_folder($imagefolder);
         $imgname = $pdf->get_image(1);
 
+        $context = get_context_instance(CONTEXT_COURSE, $this->courseid);
+
         $fs = get_file_storage();
-        if ($oldfile = $fs->get_file($this->templateid, 'mod_assignment', 'previewimage', 0, '/', 'preview.png')) {
+        if ($oldfile = $fs->get_file($context->id, 'mod_assignment', 'previewimage', 0, '/', 'preview.png')) {
             $oldfile->delete();
         }
         
         $imginfo = array(
-                         'contextid' => $this->templateid,
+                         'contextid' => $context->id,
                          'component' => 'mod_assignment',
                          'filearea' => 'previewimage',
                          'itemid' => 0,
