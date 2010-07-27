@@ -2240,9 +2240,6 @@ class assignment_uploadpdf extends assignment_base {
     function delete_instance($assignment) {
         //UT
         global $DB;
-        
-        print_error("This bit ain't wrote right");
-        die();
 
         $result = true;
 
@@ -2251,7 +2248,16 @@ class assignment_uploadpdf extends assignment_base {
                      SELECT s.id
                      FROM {assignment_submissions} AS s
                      WHERE s.assignment = ?
-                  )', $assignment->id )) {
+                  )', array($assignment->id) )) {
+            $result = false;
+        }
+
+        if (! $DB->delete_records_select('assignment_uploadpdf_annot',
+                  'assignment_submission IN (
+                     SELECT s.id
+                     FROM {assignment_submissions} AS s
+                     WHERE s.assignment = ?
+                  )', array($assignment->id) )) {
             $result = false;
         }
         

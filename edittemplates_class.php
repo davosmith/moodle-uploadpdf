@@ -4,8 +4,6 @@ require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php'
 require_once($CFG->libdir . '/formslib.php');
 require_once(dirname(__FILE__).'/mypdflib.php');
 
-define('IMAGE_PATH','/moddata/assignment_template');
-
 class edit_templates {
 
     var $courseid;
