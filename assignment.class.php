@@ -2084,11 +2084,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function cron() {
-        //UT
-        //FIXME - this needs quite a rewrite
         global $CFG, $DB;
-
-        return;
 
         if ($lastcron = get_config('uploadpdf','lastcron')) {
             if ($lastcron + 86400 > time()) { /* Only check once a day for images */
@@ -2098,54 +2094,19 @@ class assignment_uploadpdf extends assignment_base {
 
         echo "Clear up images generated for uploadpdf assignments\n";
 
-        // Find all the old images and delete them
-        $to_clear = $DB->get_records_sql('SELECT sub.*, ass.course FROM {assignment_submissions} AS sub, {assignment} AS ass '.
-                                    'WHERE ass.assignmenttype = "uploadpdf" '.
-                                    'AND sub.assignment = ass.id AND ((sub.numfiles & 1) = 1);');
-        foreach ($to_clear as $submission) {
-            echo 'Checking images for uploadpdf submission: '.$submission->id;
+        $fs = get_file_storage();
 
-            $filescleared = true;
-            // This should be the same as the return value of 'file_area_name'
-            $file_area_name = $submission->course.'/'.$CFG->moddata.'/assignment/'.$submission->assignment.'/'.$submission->userid;
-            $imagefolder = $CFG->dataroot.'/'.$file_area_name.'/images';
+        $deletetime = time() - 86400; // 24 hours ago
+        $to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "image" AND timemodified < ?', array($deletetime));
+        $tmpl_to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "previewimage" AND timemodified < ?', array($deletetime));
+        $to_clear = array_merge($to_clear, $tmpl_to_clear);
 
-            if (is_dir($imagefolder)) {
-                if ($files = get_directory_list($imagefolder)) {
-                    if ($files) {
-                        foreach ($files as $key=>$fl) {
-                            if ((substr($fl,0,10) == 'image_page') && (substr($fl,-4) == '.png')) {
-                                $age = time() - filemtime($imagefolder.'/'.$fl);
-                                if ($age > 86400) { /* only clear images more than 24 hours old */
-                                    unlink($imagefolder.'/'.$fl);
-                                } else {
-                                    $filescleared = false;
-                                }
-                            }
-                        }
-                    }
-                }
+        foreach ($to_clear as $filerecord) {
+            $file = $fs->get_file_by_hash($filerecord->pathnamehash);
+            if ($file && !$file->is_directory()) {
+                $file->delete();
             }
-
-            // Mark submissions as having files cleared (if all of them are gone)
-            if ($filescleared) {
-                echo ' cleared.';
-                $submission->numfiles &= ~1; // Clear flag in final bit
-
-                $updated = new stdClass;
-                $updated->id = $submission->id;
-                $updated->numfiles = $submission->numfiles;
-                $DB->update_record('assignment_submissions', $updated);
-            } else {
-                echo ' too recent - not cleared.';
-            }
-            echo "\n";
         }
-
-        // Delete any template images
-        // I am going to skip doing this, on the grounds that this could take a lot of searching
-        // (assuming an install has lots of courses) and that a few 100kb image files (max 1 per
-        // course) are unlikely to cause a problem.
 
         $lastcron = time(); // Remember when the last cron job ran
         set_config('lastcron', $lastcron, 'uploadpdf');
