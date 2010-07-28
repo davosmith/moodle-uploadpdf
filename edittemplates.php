@@ -3,8 +3,6 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
 require_once(dirname(__FILE__).'/edittemplates_class.php');
 
-//UT
-
 $courseid   = required_param('courseid', PARAM_INT);          // Course ID
 $templateid = optional_param('templateid', 0, PARAM_INT);
 $itemid = optional_param('itemid', 0, PARAM_INT);

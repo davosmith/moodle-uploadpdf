@@ -65,7 +65,6 @@ class edit_templates {
     function view_select_template() {
         global $DB, $OUTPUT;
     
-        //UT
         echo $OUTPUT->box_start();
         echo '<form name="selecttemplate" enctype="multipart/form-data" method="get" action="edittemplates.php">';
         echo '<fieldset>';
@@ -215,7 +214,6 @@ class edit_templates {
             }
         }
 
-        //UT
         $disabled = '';
         if (!$canedit) {
             $disabled = ' disabled="disabled" ';
@@ -328,7 +326,6 @@ class edit_templates {
 
     function view_image() {
         global $CFG, $DB;
-        //UT
 
         if ($this->imagetime) {
             $context = get_context_instance(CONTEXT_COURSE, $this->courseid);
@@ -398,18 +395,15 @@ class edit_templates {
         $uploadpreview = optional_param('uploadpreview', false, PARAM_TEXT);
 
         if ($savetemplate) {
-            //UT
             $templatename = required_param('templatename', PARAM_TEXT);
             $sitewide = optional_param('sitetemplate', false, PARAM_BOOL);
 
             $this->templateid = $this->save_template($this->templateid, $templatename, $sitewide);
 
         } elseif ($deletetemplate) {
-            //UT
             $this->templateid = $this->delete_template($this->templateid);
 
         } elseif ($saveitem) {
-            //UT
             $item = new stdClass;
             $item->type = required_param('itemtype', PARAM_TEXT);
             $item->xpos = required_param('itemx', PARAM_INT);
@@ -421,16 +415,12 @@ class edit_templates {
             $this->itemid = $this->save_item($this->itemid, $item);
 
         } elseif ($deleteitem) {
-            //UT
             $this->itemid = $this->delete_item($this->itemid);
 
         } elseif ($uploadpreview) {
-
-            //UT
             $this->upload_preview();
     
         } elseif ($duplicatetemplate) {
-            //UT
             $this->templateid = $this->duplicate_template($this->templateid);
         }
 
@@ -453,7 +443,6 @@ class edit_templates {
             // New template
             $template = new stdClass;
         } else {
-            //UT
             $template = $DB->get_record('assignment_uploadpdf_tmpl', array('id' => $id) );
             if (!$template) {
                 print_error("Template not found");
@@ -476,7 +465,6 @@ class edit_templates {
         }
 
         if ($id == -1) {
-            //UT
             $id = $DB->insert_record('assignment_uploadpdf_tmpl', $template);
             $this->extrajs .= '<script type="text/javascript">';
             $this->extrajs .= 'var el=window.opener.document.getElementById("id_template");';
@@ -487,7 +475,6 @@ class edit_templates {
             $this->extrajs .= '</script>';
             $this->itemid = -1;
         } else {
-            //UT
             $DB->update_record('assignment_uploadpdf_tmpl', $template);
             if ($oldname != $template->name) {
                 $this->extrajs .= '<script type="text/javascript">';

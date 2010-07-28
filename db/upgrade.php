@@ -6,8 +6,6 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
     $dbman = $DB->get_manager();
     $result = true;
 
-    //UT
-
     if ($result && $oldversion < 2009041700) {
         $table =  new xmldb_table('assignment_uploadpdf');
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);

@@ -27,8 +27,6 @@ require_once(dirname(__FILE__).'/upload_form.php');
 require_once(dirname(__FILE__).'/assignment.class.php');
 require_once("$CFG->dirroot/repository/lib.php");
 
-//UT
-
 $contextid = required_param('contextid', PARAM_INT);
 
 $formdata = new object();
