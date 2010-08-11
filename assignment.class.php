@@ -2097,6 +2097,7 @@ class assignment_uploadpdf extends assignment_base {
         $fs = get_file_storage();
 
         $deletetime = time() - 86400; // 24 hours ago
+        //FIXME $fs->get_area_files('mod_assignment', 'image');
         $to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "image" AND timemodified < ?', array($deletetime));
         $tmpl_to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "previewimage" AND timemodified < ?', array($deletetime));
         $to_clear = array_merge($to_clear, $tmpl_to_clear);
