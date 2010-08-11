@@ -29,6 +29,7 @@ class MyPDFLib extends FPDI {
             $template = $this->ImportPage(1);
             $size = $this->getTemplateSize($template);
             $this->AddPage('P', array($size['w'], $size['h']));
+            $this->setPageOrientation('P', false, 0);
             $this->useTemplate($template);
             if ($comments) {
                 foreach ($comments as $c) {
@@ -55,6 +56,7 @@ class MyPDFLib extends FPDI {
                 $template = $this->ImportPage($i);
                 $size = $this->getTemplateSize($template);
                 $this->AddPage('P', array($size['w'], $size['h']));
+                $this->setPageOrientation('P', false, 0);
                 $this->useTemplate($template);
             }
         }
@@ -65,6 +67,7 @@ class MyPDFLib extends FPDI {
                 $template = $this->ImportPage($i);
                 $size = $this->getTemplateSize($template);
                 $this->AddPage('P', array($size['w'], $size['h']));
+                $this->setPageOrientation('P', false, 0);
                 $this->useTemplate($template);
             }
         }
@@ -113,6 +116,7 @@ class MyPDFLib extends FPDI {
         $template = $this->importPage($this->currentpage);
         $size = $this->getTemplateSize($template);
         $this->AddPage('P', array($size['w'], $size['h']));
+        $this->setPageOrientation('P', false, 0);
         $this->useTemplate($template);
         return true;
     }
