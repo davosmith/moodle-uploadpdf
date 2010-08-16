@@ -1755,7 +1755,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function show_previous_comments($userid) {
-        global $CFG, $DB;
+        global $CFG, $DB, $PAGE, $OUTPUT;
 
         require_capability('mod/assignment:grade', $this->context);
 
@@ -1769,8 +1769,12 @@ class assignment_uploadpdf extends assignment_base {
         
         $PAGE->set_pagelayout('popup');
         $PAGE->set_title(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
+
         $PAGE->set_heading('');
         echo $OUTPUT->header();
+
+        // Nasty javascript hack to stop the page being a minimum of 900 pixels wide
+        echo '<script type="text/javascript">document.getElementById("page-content").setAttribute("style", "min-width:0px;");</script>';
 
         echo $OUTPUT->heading(format_string($this->assignment->name), 2);
 
@@ -1809,7 +1813,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function show_previous_page($userid, $pageno) {
-        global $CFG, $DB;
+        global $CFG, $DB, $PAGE, $OUTPUT;
 
         require_capability('mod/assignment:grade', $this->context);
 

@@ -24,7 +24,7 @@ if ($id) {
     $url->param('id', $id);
     
 } else {
-    if (!$assignment = $DB->get_record('assignment', array('id', $a) )) {
+    if (!$assignment = $DB->get_record('assignment', array('id' => $a) )) {
         error("Course module is incorrect");
     }
     if (! $course = $DB->get_record("course", array('id' => $assignment->course) )) {
