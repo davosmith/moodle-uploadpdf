@@ -471,11 +471,11 @@ class assignment_uploadpdf extends assignment_base {
                                 $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
                                 $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
                             }
-                            if ($candelete) {
+                            /*if ($candelete) {
                                 $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid={$submission->userid}&amp;mode=$mode&amp;offset=$offset";
                                 $output .= '<a href="'.$delurl.'">&nbsp;'
                                     .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt="" /></a> ';
-                            }
+                                    }*/
                             $output .= '<br />';
                         }
                     }
