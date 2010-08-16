@@ -1441,8 +1441,8 @@ class assignment_uploadpdf extends assignment_base {
         echo $pageselector;
         echo '<div id="colourselector">';
         // Show previous assignment
-        $ps_sql = 'SELECT asn.id, asn.name FROM {assignment} AS asn ';
-        $ps_sql .= 'INNER JOIN {assignment_submissions} AS sub ON sub.assignment = asn.id ';
+        $ps_sql = 'SELECT asn.id, asn.name FROM {assignment} asn ';
+        $ps_sql .= 'INNER JOIN {assignment_submissions} sub ON sub.assignment = asn.id ';
         $ps_sql .= 'WHERE course = ? ';
         $ps_sql .= 'AND asn.assignmenttype = "uploadpdf" ';
         $ps_sql .= 'AND userid = ? ';
@@ -2012,7 +2012,7 @@ class assignment_uploadpdf extends assignment_base {
         if (! $DB->delete_records_select('assignment_uploadpdf_comment',
                   'assignment_submission IN (
                      SELECT s.id
-                     FROM {assignment_submissions} AS s
+                     FROM {assignment_submissions} s
                      WHERE s.assignment = ?
                   )', array($assignment->id) )) {
             $result = false;
@@ -2021,7 +2021,7 @@ class assignment_uploadpdf extends assignment_base {
         if (! $DB->delete_records_select('assignment_uploadpdf_annot',
                   'assignment_submission IN (
                      SELECT s.id
-                     FROM {assignment_submissions} AS s
+                     FROM {assignment_submissions} s
                      WHERE s.assignment = ?
                   )', array($assignment->id) )) {
             $result = false;

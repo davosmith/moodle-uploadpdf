@@ -113,7 +113,7 @@ class edit_templates {
             echo '<br/>';
             echo get_string('showused', 'assignment_uploadpdf').':<br />';
             echo '<ul>';
-            $usestemplate = $DB->get_records_sql('SELECT name FROM {assignment_uploadpdf} AS au, {assignment} AS a WHERE au.template= ? AND a.id = au.assignment;', array($this->templateid) );
+            $usestemplate = $DB->get_records_sql('SELECT name FROM {assignment_uploadpdf} au, {assignment} a WHERE au.template= ? AND a.id = au.assignment;', array($this->templateid) );
             foreach ($usestemplate as $ut) {
                 echo '<li>'.s($ut->name).'</li>';
             }
