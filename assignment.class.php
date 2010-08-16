@@ -332,6 +332,8 @@ class assignment_uploadpdf extends assignment_base {
         $offset       = optional_param('offset', 0, PARAM_INT);
         $forcerefresh = optional_param('forcerefresh', 0, PARAM_BOOL);
 
+        $output = '';
+
         if ($forcerefresh) {
             $output .= $this->update_main_listing($submission);
         }
@@ -545,7 +547,7 @@ class assignment_uploadpdf extends assignment_base {
                     $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
                     $output .= '<a href="'.$ffurl.'" ><img class="align" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>';
                     if ($candelete) {
-                        $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;action=response";
+                        $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;action=response&amp;sesskey=".sesskey();
                         $output .= '<a href="'.$delurl.'">&nbsp;'
                             .'<img title="'.$strdelete.'" src="'.$CFG->pixpath.'/t/delete.gif" class="iconsmall" alt=""/></a> ';
                     }
@@ -740,9 +742,7 @@ class assignment_uploadpdf extends assignment_base {
                            'view.php?a='.$this->assignment->id, $this->assignment->id, $this->cm->id);
                 $submission = $this->get_submission($USER->id);
                 $this->update_grade($submission);
-                if (!$this->drafts_tracked()) {
-                    $this->email_teachers($submission);
-                }
+                //$this->email_teachers($submission);
             } else {
                 $new_filename = $um->get_new_filename();
                 $this->view_header(get_string('upload'));
@@ -961,7 +961,7 @@ class assignment_uploadpdf extends assignment_base {
         $optionsreturn = array('id'=>$this->cm->id, 'offset'=>$offset, 'mode'=>$mode, 'userid'=>$userid);
 
         if (!data_submitted('nomatch') or !$confirm or !confirm_sesskey()) {
-            $optionsyes = array ('id'=>$this->cm->id, 'file'=>$file, 'userid'=>$userid, 'confirm'=>1, 'action'=>'response', 'mode'=>$mode, 'offset'=>$offset);
+            $optionsyes = array ('id'=>$this->cm->id, 'file'=>$file, 'userid'=>$userid, 'confirm'=>1, 'action'=>'response', 'mode'=>$mode, 'offset'=>$offset, 'sesskey'=>sesskey());
             print_header(get_string('delete'));
             print_heading(get_string('delete'));
             notice_yesno(get_string('confirmdeletefile', 'assignment', $file), 'delete.php', $urlreturn, $optionsyes, $optionsreturn, 'post', 'get');
