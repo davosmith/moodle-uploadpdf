@@ -1549,8 +1549,8 @@ class assignment_uploadpdf extends assignment_base {
         echo $pageselector;
         echo '<div id="colourselector">';
         // Show previous assignment
-        $ps_sql = 'SELECT asn.id, asn.name FROM `'.$CFG->prefix.'assignment` AS asn ';
-        $ps_sql .= 'INNER JOIN `'.$CFG->prefix.'assignment_submissions` AS sub ON sub.assignment = asn.id ';
+        $ps_sql = 'SELECT asn.id, asn.name FROM `'.$CFG->prefix.'assignment` asn ';
+        $ps_sql .= 'INNER JOIN `'.$CFG->prefix.'assignment_submissions` sub ON sub.assignment = asn.id ';
         $ps_sql .= 'WHERE course = '.$this->course->id;
         $ps_sql .= ' AND asn.assignmenttype = "uploadpdf" ';
         $ps_sql .= ' AND userid = '.$userid;
