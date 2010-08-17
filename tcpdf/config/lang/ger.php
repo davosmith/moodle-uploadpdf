@@ -1,8 +1,8 @@
 <?php
 //============================================================+
-// File name   : ita.php
+// File name   : eng.php
 // Begin       : 2004-03-03
-// Last Update : 2009-09-30
+// Last Update : 2010-01-14
 // 
 // Description : Language module for TCPDF
 //               (contains translated texts)
@@ -39,10 +39,10 @@ $l = Array();
 
 $l['a_meta_charset'] = 'UTF-8';
 $l['a_meta_dir'] = 'ltr';
-$l['a_meta_language'] = 'it';
+$l['a_meta_language'] = 'de';
 
 // TRANSLATIONS --------------------------------------
-$l['w_page'] = 'pagina';
+$l['w_page'] = 'seite';
 
 //============================================================+
 // END OF FILE                                                 
