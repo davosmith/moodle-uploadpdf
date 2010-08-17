@@ -1,3 +1,344 @@
+4.8.032 (2010-02-04)
+	- A bug related to $maxh parameter on Write() and MultiCell() was fixed.
+	- Support for body tag was added.
+
+4.8.031 (2010-01-30)
+	- Bug item #2941589 "paragraph justify not working on some non-C locales" was fixed.
+
+4.8.030 (2010-01-27)
+	- Some text alignment cases were fixed.
+
+4.8.029 (2010-01-27)
+	- Bug item #2941057 "TOC Error in PDF File Output" was fixed. 
+	- Some text alignment cases were fixed.
+
+4.8.028 (2010-01-26)
+	- Text alignment for RTL mode was fixed.
+
+4.8.027 (2010-01-25)
+	- Bug item #2938412 "Table related problems - thead, nobr, table width" was fixed.
+
+4.8.026 (2010-01-19)
+	- The misspelled word "lenght" was replaced with "length" in some variables and comments.
+
+4.8.025 (2010-01-18)
+	- addExtGState() method was improved to reuse existing ExtGState objects.
+
+4.8.024 (2010-01-15)
+	- Justification mode for HTML was fixed (Bug item #2932470).
+
+4.8.023 (2010-01-15)
+	- Bug item #2932470 "Some HTML entities breaks justification" was fixed.
+
+4.8.022 (2010-01-14)
+	- Source code documentation was fixed.
+
+4.8.021 (2010-01-03)
+	- A Bug relative to Table Of Content index was fixed.
+
+4.8.020 (2009-12-21)
+	- Bug item #2918545 "Display problem of the first row of a table with larger font" was fixed.
+	- A Bug relative to table rowspan mode was fixed.
+
+4.8.019 (2009-12-16)
+	- Bug item #2915684 "Image size" was fixed.
+	- Bug item #2914995 "Image jpeg quality" was fixed.
+	- The signature of the Image() method was changed (check the documentation for the $resize parameter).
+
+4.8.018 (2009-12-15)
+	- Bug item #2914352 "write error" was fixed.
+
+4.8.017 (2009-11-27)
+	- THEAD problem when table is used on header/footer was fixed.
+	- A first line alignment on HTML justification was fixed.
+	- Method getImageFileType() was added.
+	- Images with unknown extension and type are now supported via ImageMagick PHP extension.
+
+4.8.016 (2009-11-21)
+	- Document Information Dictionary was fixed.
+	- CSS attributes 'page-break-before', 'page-break-after' and 'page-break-inside' are now supported.
+	- Problem of unclosed last page was fixed.
+	- Problem of 'thead' unnecessarily repeated on the next page was fixed.
+	
+4.8.015 (2009-11-20)
+	- A problem with some PNG transparency images was fixed.
+	- Bug #2900762 "Sort issues in Bookmarks" was fixed.
+	- Text justification was fixed for various modes: underline, strikeout and background.
+	
+4.8.014 (2009-11-04)
+	- Bug item #2891316 "writeHTML, underlining replacing spaces" was fixed.
+	- The handling of temporary RTL text direction mode was fixed.
+	
+4.8.013 (2009-10-26)
+	- Bug item #2884729 "Problem with word-wrap and hyphen" was fixed.
+	
+4.8.012 (2009-10-23)
+	- Table cell alignments for RTL booklet mode were fixed.
+	- Images and barcode alignments for booklet mode were fixed.
+	
+4.8.011 (2009-10-22)
+	- DejaVu fonts were updated to latest version.
+	
+4.8.010 (2009-10-21)
+	- Bookmark for TOC page was added.
+	- Signature of addTOC() method is changed.
+	- Bookmarks are now automatically sorted by page and Y position.
+	- Example n. 45 was updated.
+	- Example n. 55 was added to display all charactes available on core fonts.
+	
+4.8.009 (2009-09-30)
+	- Compatibility with PHP 5.3 was improved.
+	- All examples were updated.
+	- Index file for examples was added.
+	
+4.8.008 (2009-09-29)
+	- Example 49 was updated.
+	- Underline and linethrough now works with cell stretching mode.
+	
+4.8.007 (2009-09-23)
+	- Infinite loop problem caused by nobr attribute was fixed.
+	
+4.8.006 (2009-09-23)
+	- Bug item #2864522 "No images if DOCUMENT_ROOT=='/'" was fixed.
+	- Support for text-indent CSS attribute was added.
+	- Method rollbackTransaction() was changed to support self-reassigment of previous object (check source code documentation).
+	- Support for the HTML "nobr" attribute was added to avoid splitting a table or a table row on two pages (i.e.: <tr nobr="true">...</tr>).
+
+4.8.005 (2009-09-17)
+	- A bug relative to multiple transformations and annotations was fixed.
+
+4.8.004 (2009-09-16)
+	- A bug on _putannotsrefs() method was fixed.
+
+4.8.003 (2009-09-15)
+	- Bug item #2858754 "Division by zero" was fixed.
+	- A bug relative to HTML list items was fixed.
+	- A bug relative to form fields on multiple pages was fixed.
+	- PolyLine() method was added (see example n. 12).
+	- Signature of Polygon() method was changed.
+
+4.8.002 (2009-09-12)
+	- A problem related to CID-0 fonts offset was fixed: if the $cw[1] entry on the CID-0 font file is not defined, then a CID keys offset is introduced.
+
+4.8.001 (2009-09-09)
+	- The appearance streams (AP) for anotations form fields was fixed (see examples n. 14 and 54).
+	- Radiobuttons were fixed.
+
+4.8.000 (2009-09-07)
+	- This version includes some support for Forms fields (see example n. 14) and XHTML forms (see example n. 54).
+	- The following methods were changed to work without JavaScript: TextField(), RadioButton(), ListBox(), ComboBox(), CheckBox(), Button().
+	- Support for Widget annotations was improved.
+	- Alignment of annotation objects was fixed (examples 36 and 41 were updated).
+	- addJavascriptObject() method was added.
+	- Signature of Image() method was changed.
+	- htmlcolors.php file was updated.
+
+--------------------------------------------------------------------------------
+
+4.7.003 (2009-09-03)
+	- Support for TCPDF methods on HTML was improved (see example n. 49).
+	
+4.7.002 (2009-09-02)
+	- Bug item #2848892 "writeHTML + table: Gaps between rows" was fixed.
+	- JavaScript support was fixed (see example n. 53).
+	
+4.7.001 (2009-08-30)
+	- The Polygon() and Arrow() methods were fixed and improved (see example n. 12).
+	
+4.7.000 (2009-08-29)
+	- This is a major release.
+	- Some procedures were internally optimized.
+	- The problem of mixed signature and annotations was fixed (example n. 52).
+	
+4.6.030 (2009-08-29)
+	- IMPORTANT: percentages on table cell widths are now relative to the full table width (as in standard HTML).
+	- Various minor bugs were fixed.
+	- Example n. 52 (digital signature) was updated.
+	
+4.6.029 (2009-08-26)
+	- PHP4 version was fixed.
+
+4.6.028 (2009-08-25)
+	- Signature algorithm was finally fixed (see example n. 52).
+
+4.6.027 (2009-08-24)
+	- TCPDF now supports unembedded TrueTypeUnicode Fonts (just comment the $file entry on the fonts' php file.
+
+4.6.026 (2009-08-21)
+	- Bug #2841693 "Problem with MultiCell and ishtml and justification" was fixed.
+	- Signature functions were improved but not yet fixed (tcpdf.crt and example n. 52 were updated).
+
+4.6.025 (2009-08-17)
+	- Carriage returns (\r) were removed from source code.
+	- Problem related to set_magic_quotes_runtime() depracated was fixed.
+
+4.6.024 (2009-08-07)
+	- Bug item #2833556 "justification using other units than mm" was fixed.
+	- Documentation was fixed/updated.
+
+4.6.023 (2009-08-02)
+	- Bug item #2830537 "MirrorH can show mask for transparent PNGs" was fixed.
+
+4.6.022 (2009-07-24)
+	- A bug relative to single line printing when using WriteHTMLCell() was fixed.
+	- Signature support were improved but is still experimental.
+	- Fonts Free and Dejavu were updated to latest versions.
+
+4.6.021 (2009-07-20)
+	- Bug item #2824015 "XHTML Ampersand &amp; in hyperlink bug" was fixed.
+	- Bug item #2824036 "Image as hyperlink in table, text displaced at page break" was fixed.
+	- Links alignment on justified text was fixed.
+	- Unicode "\u" modifier was added to re_spaces variable by default.
+	
+4.6.020 (2009-07-16)
+	- Bug item #2821921 "issue in example 18" was fixed.
+	- Signature of SetRTL() method was changed.
+	
+4.6.019 (2009-07-13)
+	- Bug item #2820703 "xref table broken" was fixed.
+	
+4.6.018 (2009-07-10)
+	- Bug item #2819319 "Text over text" was fixed.
+	- Method Arrow() was added to print graphic arrows (example 12 was updated).
+	
+4.6.017 (2009-07-05)
+	- Bug item #2816079 "Example 48 not working" was fixed.
+	- The signature of the checkPageBreak() was changed. The parameter $addpage was added to turn off the automatic page creation.
+	
+4.6.016 (2009-06-16)
+	- Method setSpacesRE() was added to set the regular expression used for detecting withespaces or word separators. If you are using chinese, try: setSpacesRE('/[\s\p{Z}\p{Lo}]/');, otherwise you can use setSpacesRE('/[\s\p{Z}]/');
+	- The method _putinfo() now automatically fills the metadata with '?' in case of empty string.
+	
+4.6.015 (2009-06-11)
+	- Bug #2804667 "word wrap bug" was fixed.
+
+4.6.014 (2009-06-04)
+	- Bug #2800931 "Table thead tag bug" was fixed.
+	- A bug related to <pre> tag was fixed.
+
+4.6.013 (2009-05-28)
+	- List bullets position was fixed for RTL languages.
+
+4.6.012 (2009-05-23)
+	- setUserRights() method doesn't work anymore unless you call the setSignature() method with the Adobe private key!
+
+4.6.011 (2009-05-18)
+	- Signature of the Image() method was changed to include the new $fitbox parameter (see source code documentation).
+
+4.6.010 (2009-05-17)
+	- Image() method was improved: now is possible to specify the maximum dimensions for a constraint box defined by $w and $h parameters, and setting the $resize parameter to null.
+	- <tcpdf> tag indent problem was fixed.
+	- $y parameter was added to checkPageBreak() method.
+	- Bug n. 2791773 "writeHTML" was fixed.
+
+4.6.009 (2009-05-13)
+	- xref table for embedded files was fixed.
+
+4.6.008 (2009-05-07)
+	- setSignature() method was improved (but is still experimental).
+	- Example n. 52 was added.
+
+4.6.007 (2009-05-05)
+	- Bug #2786685 "writeHtmlCell and <br /> in custom footer" was fixed.
+	- Table header repeating bug was fixed.
+	- Some newlines and tabs are now automatically removed from HTML strings.
+
+4.6.006 (2009-04-28)
+	- Support for "<a name="...">...</a>" was added.
+	- By default TCPDF requires PCRE Unicode support turned on but now works also without it (with limited ability to detect some Unicode blank spaces).
+
+4.6.005 (2009-04-25)
+	- Points (pt) conversion in getHTMLUnitToUnits() was fixed.
+	- Default tcpdf.pem certificate file was added.
+	- Experimental support for signing document was added but it is not yet completed (some help is needed - I think that the calculation of the ByteRange is OK and the problem is on the signature calculation).
+
+4.6.004 (2009-04-23)
+	- Method deletePage() was added to delete pages (see example n. 44).
+
+4.6.003 (2009-04-21)
+	- The caching mechanism of the UTF8StringToArray() method was fixed.
+
+4.6.002 (2009-04-20)
+	- Documentation of rollbackTransaction() method was fixed.
+	- The setImageScale() and getImageScale() methods now set and get the adjusting parameter used by pixelsToUnits() method.
+	- HTML images now support other units of measure than pixels (getHTMLUnitToUnits() is now used instead of pixelsToUnits()).
+	- WARNING: PDF_IMAGE_SCALE_RATIO has been changed by default to 1.
+
+4.6.001 (2009-04-17)
+	- Spaces between HTML block tags are now automatically removed.
+	- The bug related to cMargin changes between tables was fixed.
+
+4.6.000 (2009-04-16)
+	- WARNING: THIS VERSION CHANGES THE BEHAVIOUR OF $x and $y parameters for several TCPDF methods:
+		zero coordinates for $x and $y are now valid coordinates;
+		set $x and $y as empty strings to get the current value.
+	- Some error caused by 'empty' funtion were fixed.
+	- Default color for convertHTMLColorToDec() method was changed to white and the return value for invalid color is false.
+	- HTML on footer bug was fixed.
+	- The following examples were fixed: 5,7,10,17,19,20,21,33,42,43.
+
+4.5.043 (2009-04-15)
+	- Barcode class (barcode.php) was extended to include new linear barcode types (see example n. 27):
+		C39 : CODE 39 - ANSI MH10.8M-1983 - USD-3 - 3 of 9
+		C39+ : CODE 39 with checksum
+		C39E : CODE 39 EXTENDED
+		C39E+ : CODE 39 EXTENDED + CHECKSUM
+		C93 : CODE 93 - USS-93
+		S25 : Standard 2 of 5
+		S25+ : Standard 2 of 5 + CHECKSUM
+		I25 : Interleaved 2 of 5
+		I25+ : Interleaved 2 of 5 + CHECKSUM
+		C128A : CODE 128 A
+		C128B : CODE 128 B
+		C128C : CODE 128 C
+		EAN2 : 2-Digits UPC-Based Extention
+		EAN5 : 5-Digits UPC-Based Extention
+		EAN8 : EAN 8
+		EAN13 : EAN 13
+		UPCA : UPC-A
+		UPCE : UPC-E
+		MSI : MSI (Variation of Plessey code)
+		MSI+ : MSI + CHECKSUM (modulo 11)
+		POSTNET : POSTNET
+		PLANET : PLANET
+		RMS4CC : RMS4CC (Royal Mail 4-state Customer Code) - CBC (Customer Bar Code)
+		KIX : KIX (Klant index - Customer index)
+		IMB: Intelligent Mail Barcode - Onecode - USPS-B-3200 (NOTE: requires BCMath PHP extension)
+		CODABAR : CODABAR
+		CODE11 : CODE 11
+		PHARMA : PHARMACODE
+		PHARMA2T : PHARMACODE TWO-TRACKS
+
+4.5.042 (2009-04-15)
+	- Method Write() was fixed for the strings containing only zero value.
+
+4.5.041 (2009-04-14)
+	- Barcode methods were fixed.
+
+4.5.040 (2009-04-14)
+	- Method Write() was fixed to handle empty strings.
+
+4.5.039 (2009-04-11)
+	- Support for linear barcodes was extended (see example n. 27 and barcodes.php documentation).
+
+4.5.038 (2009-04-10)
+	- Write() method was improved to support separators for Japanese, Korean, Chinese Traditional and Chinese Simplified.
+
+4.5.037 (2009-04-09)
+	- General performances were improved.
+	- The signature of the method utf8Bidi() was changed.
+	- The method UniArrSubString() was added.
+	- Experimental support for 2D barcodes were added (see example n. 50 and 2dbarcodes.php class).
+
+4.5.036 (2009-04-03)
+	- TCPDF methods can be called inside the HTML code (see example n. 49).
+	- All tag attributes, such as <p align="center"> must be enclosed within double quotes.
+
+4.5.035 (2009-03-28)
+	- Bug #2717436 "writeHTML rowspan problem (continued)" was fixed.
+	- Bug #2719090 "writeHTML fix follow up" was fixed.
+	- The method _putuserrights() was changed to avoid Adobe Reader 9.1 crash. This broken the 'trick' that was used to display forms in Acrobat Reader.
+	
 4.5.034 (2009-03-27)
 	- Bug #2716914 "Bug writeHTML of a table in body and footer related with pb" was fixed.
 	- Bug #2717056 ] "writeHTML problem when setting tr style" was fixed.
@@ -885,3 +1226,4 @@
 	- Bitstream Vera Fonts were added (http://www.bitstream.com/font_rendering/products/dev_fonts/vera.html).
 	- Now the AddFont and SetFont functions returns the basic font if the styled version do not exist.
 
+EOF ----------------------------------------------------------------------------
