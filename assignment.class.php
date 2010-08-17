@@ -509,7 +509,7 @@ class assignment_uploadpdf extends assignment_base {
             if (has_capability('mod/assignment:grade', $this->context)
                 and $this->can_unfinalize($submission)
                 and $mode != '') { // we do not want it on view.php page
-                $options = array ('id'=>$this->cm->id, 'userid'=>$userid, 'action'=>'unfinalize', 'mode'=>$mode, 'offset'=>$offset);
+                $options = array ('id'=>$this->cm->id, 'userid'=>$userid, 'action'=>'unfinalize', 'mode'=>$mode, 'offset'=>$offset, 'sesskey'=>sesskey());
                 $output .= print_single_button('upload.php', $options, get_string('unfinalize', 'assignment'), 'post', '_self', true);
             }
 
