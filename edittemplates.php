@@ -14,7 +14,7 @@ $deleteitem = optional_param('deleteitem', false, PARAM_TEXT);
 $imagename = optional_param('imagename', false, PARAM_FILE);
 $uploadpreview = optional_param('uploadpreview', false, PARAM_TEXT);
 
-define('IMAGE_PATH','/moddata/assignment_template');
+define('IMAGE_PATH','/temp/assignment_template');
 
 if (! $course = get_record("course", "id", $courseid)) {
     error("Course is misconfigured");
