@@ -1913,7 +1913,7 @@ class assignment_uploadpdf extends assignment_base {
         print_footer('none');
     }
 
-    function show_previous_page($userid, $pageno) {
+    function show_previous_page($userid, $pageno, $commentid) {
         global $CFG;
         
         require_capability('mod/assignment:grade', $this->context);
@@ -1948,7 +1948,11 @@ class assignment_uploadpdf extends assignment_base {
             foreach ($comments as $comment) {
                 $displaytext = s($comment->rawtext);
                 $displaytext = str_replace("\n",'<br />',$displaytext);
-                echo '<div class="comment comment'.$comment->colour.'" style="position: absolute; ';
+                $highlight = '';
+                if ($commentid == $comment->id) {
+                    $highlight = ' comment-highlight ';
+                }
+                echo '<div class="comment comment'.$comment->colour.$highlight.'" style="position: absolute; ';
                 echo 'left: '.$comment->posx.'px; top: '.$comment->posy.'px; width: '.$comment->width.'px;">';
                 echo $displaytext.'</div>';
             }
