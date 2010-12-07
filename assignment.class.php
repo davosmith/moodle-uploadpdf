@@ -1928,6 +1928,10 @@ class assignment_uploadpdf extends assignment_base {
         
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4-core-yc.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/drawline.js');
+
         print_header(fullname($user, true).':'.format_string($this->assignment->name).':'.$pageno);
 
         // Nasty hack to insert the style-sheet needed for my comment boxes
@@ -1938,6 +1942,7 @@ class assignment_uploadpdf extends assignment_base {
         echo 'if (typeof fileref!="undefined") document.getElementsByTagName("head")[0].appendChild(fileref);';
         echo '</script>';
 
+        echo '<div id="pageselector">';
         if ($pageno > 1) {
             $linkurl = $CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$userid.'&amp;pageno='.($pageno-1).'&amp;commentid='.$commentid.'&amp;action=showpreviouspage';
             echo '<a href="'.$linkurl.'">&lt;--'.get_string('previous', 'assignment_uploadpdf').'</a>';
@@ -1953,10 +1958,11 @@ class assignment_uploadpdf extends assignment_base {
         } else {
             echo get_string('next','assignment_uploadpdf').'--&gt;';
         }
+        echo '</div>';
 
-        echo '<div style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
+        echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
-        echo '<img id="pdfimg" src="'.$imageurl.'" />';
+        echo '<img id="pdfimg" src="'.$imageurl.'" width="'.$imgwidth.'" height="'.$imgheight.'" />';
 
         // Insert comment boxes
         $comments = get_records_select('assignment_uploadpdf_comment', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
@@ -1975,6 +1981,15 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         echo '</div></div></div>';
+
+        $annotations = get_records_select('assignment_uploadpdf_annot', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
+        if ($annotations) {
+            echo '<script type="text/javascript">';
+            foreach ($annotations as $a) {
+                echo "drawline({$a->startx},{$a->starty},{$a->endx},{$a->endy},'{$a->colour}');";
+            }
+            echo '</script>';
+        }
 
         print_footer('none');
     }
