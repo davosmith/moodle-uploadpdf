@@ -1812,7 +1812,7 @@ class assignment_uploadpdf extends assignment_base {
         echo $OUTPUT->footer();
     }
 
-    function show_previous_page($userid, $pageno) {
+    function show_previous_page($userid, $pageno, $commentid) {
         global $CFG, $DB, $PAGE, $OUTPUT;
 
         require_capability('mod/assignment:grade', $this->context);
@@ -1827,6 +1827,9 @@ class assignment_uploadpdf extends assignment_base {
         
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($pageno, $submission);
 
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4-core-yc.js', true);
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/raphael-min.js', true);
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/drawline.js', true);
 
         $PAGE->set_pagelayout('popup');
         $PAGE->set_title(fullname($user, true).':'.format_string($this->assignment->name).':'.$pageno);
@@ -1842,22 +1845,52 @@ class assignment_uploadpdf extends assignment_base {
         echo 'if (typeof fileref!="undefined") document.getElementsByTagName("head")[0].appendChild(fileref);';
         echo '</script>';
 
-        echo '<div style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
+        echo '<div id="pageselector">';
+        if ($pageno > 1) {
+            $linkurl = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php', array('a'=>$this->assignment->id, 'userid'=>$userid, 'pageno'=>($pageno-1), 'commentid'=>$commentid, 'action'=>'showpreviouspage'));
+            echo '<a href="'.$linkurl.'">&lt;--'.get_string('previous', 'assignment_uploadpdf').'</a>';
+        } else {
+            echo '&lt;--'.get_string('previous','assignment_uploadpdf');
+        }
+
+        echo '&nbsp;';
+
+        if ($pageno < $pagecount) {
+            $linkurl = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php', array('a'=>$this->assignment->id, 'userid'=>$userid, 'pageno'=>($pageno+1), 'commentid'=>$commentid, 'action'=>'showpreviouspage'));
+            echo '<a href="'.$linkurl.'">'.get_string('next', 'assignment_uploadpdf').'--&gt;</a>';
+        } else {
+            echo get_string('next','assignment_uploadpdf').'--&gt;';
+        }
+        echo '</div>';
+
+        echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
-        echo '<img id="pdfimg" src="'.$imageurl.'" />';
+        echo '<img id="pdfimg" src="'.$imageurl.'" width="'.$imgwidth.'" height="'.$imgheight.'" />';
 
         // Insert comment boxes
         $comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission' => $submission->id, 'pageno' => $pageno) );
         foreach ($comments as $comment) {
             $displaytext = s($comment->rawtext);
             $displaytext = str_replace("\n",'<br />',$displaytext);
-            echo '<div class="comment comment'.$comment->colour.'" style="position: absolute; ';
+            $highlight = '';
+            if ($commentid == $comment->id) {
+                $highlight = ' comment-highlight ';
+            }
+            echo '<div class="comment comment'.$comment->colour.$highlight.'" style="position: absolute; ';
             echo 'left: '.$comment->posx.'px; top: '.$comment->posy.'px; width: '.$comment->width.'px;">';
             echo $displaytext.'</div>';
         }
-        //FIXME? Add annotations?
 
         echo '</div></div></div>';
+
+        $annotations = $DB->get_records('assignment_uploadpdf_annot', array('assignment_submission'=>$submission->id, 'pageno'=>$pageno));
+        if ($annotations) {
+            echo '<script type="text/javascript">';
+            foreach ($annotations as $a) {
+                echo "drawline({$a->startx},{$a->starty},{$a->endx},{$a->endy},'{$a->colour}');";
+            }
+            echo '</script>';
+        }
 
         echo $OUTPUT->footer();
     }

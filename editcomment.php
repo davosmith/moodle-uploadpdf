@@ -7,6 +7,7 @@ $id   = optional_param('id', 0, PARAM_INT);          // Course module ID
 $a    = optional_param('a', 0, PARAM_INT);           // Assignment ID
 $userid = optional_param('userid', 0, PARAM_INT);
 $pageno = optional_param('pageno', 1, PARAM_INT);
+$commentid = optional_param('commentid', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php', array('userid'=>$userid, 'pageno'=>$pageno) );
 if ($id) {
@@ -49,7 +50,7 @@ $action = optional_param('action',null,PARAM_TEXT);
 if ($action == 'showprevious') {
     $assignmentinstance->show_previous_comments($userid);
 } elseif ($action == 'showpreviouspage') {
-    $assignmentinstance->show_previous_page($userid, $pageno);
+    $assignmentinstance->show_previous_page($userid, $pageno, $commentid);
 } else {
     $assignmentinstance->edit_comment_page($userid, $pageno);
 }

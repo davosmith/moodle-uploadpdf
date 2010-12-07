@@ -53,6 +53,11 @@
     -moz-background-inline-policy: -moz-initial;
 }
 
+.comment-highlight {
+    border: red 2px dashed;
+    margin: -1px;
+}
+
 #pdfholder .pagewait {
     background-image: url('pagewait.gif');
     width: 24px;
