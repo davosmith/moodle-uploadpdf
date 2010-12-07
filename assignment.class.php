@@ -1938,6 +1938,22 @@ class assignment_uploadpdf extends assignment_base {
         echo 'if (typeof fileref!="undefined") document.getElementsByTagName("head")[0].appendChild(fileref);';
         echo '</script>';
 
+        if ($pageno > 1) {
+            $linkurl = $CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$userid.'&amp;pageno='.($pageno-1).'&amp;commentid='.$commentid.'&amp;action=showpreviouspage';
+            echo '<a href="'.$linkurl.'">&lt;--'.get_string('previous', 'assignment_uploadpdf').'</a>';
+        } else {
+            echo '&lt;--'.get_string('previous','assignment_uploadpdf');
+        }
+
+        echo '&nbsp;';
+
+        if ($pageno < $pagecount) {
+            $linkurl = $CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$userid.'&amp;pageno='.($pageno+1).'&amp;commentid='.$commentid.'&amp;action=showpreviouspage';
+            echo '<a href="'.$linkurl.'">'.get_string('next', 'assignment_uploadpdf').'--&gt;</a>';
+        } else {
+            echo get_string('next','assignment_uploadpdf').'--&gt;';
+        }
+
         echo '<div style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
         echo '<div id="pdfouter" style="position: relative; "> <div id="pdfholder" > ';
         echo '<img id="pdfimg" src="'.$imageurl.'" />';
