@@ -11,6 +11,8 @@ var pagestopreload = 4; // How many pages ahead to load when you hit a non-prelo
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 var pageunloading = false;
 
+var resendtimeout = 4000;
+
 // All to do with line drawing
 var currentpaper = null;
 var currentline = null;
@@ -47,6 +49,7 @@ var ServerComm = new Class({
 	    comment.store('oldcolour', comment.retrieve('colour'));
 	    var request = new Request.JSON({
 		    url: this.url,
+		    timeout: resendtimeout,
 		    
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
@@ -72,6 +75,11 @@ var ServerComm = new Class({
 			showsendfailed(function() {server.updatecomment(comment);});
 			// TODO The following should really be on the 'cancel' (but probably unimportant)
 			comment.retrieve('drag').attach();
+		    },
+
+		    onTimeout: function() {
+			waitel.destroy();
+			showsendfailed(function() {server.updatecomment(comment);});
 		    }
 
 		});
