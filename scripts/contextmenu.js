@@ -15,9 +15,9 @@ var ContextMenu = new Class({
 		targets: 'body',
 		trigger: 'contextmenu',
 		offsets: { x:0, y:0 },
-		onShow: $empty,
-		onHide: $empty,
-		onClick: $empty,
+		onShow: function() {},
+		onHide: function() {},
+		onClick: function() {},
 		fadeSpeed: 200
 	},
 	
@@ -78,7 +78,7 @@ var ContextMenu = new Class({
 			var offx = this.options.offsets.x;
 			var offy = this.options.offsets.y;
 			// Nasty hack to fix positioning problem in IE <= 7 (IE 8 seems fine)
-			if (Browser.Engine.trident && Browser.Engine.version <= 5) {
+			if (Browser.ie6 || Browser.ie7) {
 			    offx -= 10;
 			}
 			this.menu.setPosition({x: (e.page.x + offx), y: (e.page.y + offy) });
