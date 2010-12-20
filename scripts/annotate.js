@@ -11,6 +11,8 @@ var pagestopreload = 4; // How many pages ahead to load when you hit a non-prelo
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 var pageunloading = false;
 
+var resendtimeout = 4000;
+
 // All to do with line drawing
 var currentpaper = null;
 var currentline = null;
@@ -18,6 +20,8 @@ var linestartpos = null;
 var lineselect = null;
 var lineselectid = null;
 var allannotations = new Array();
+
+var $defined = function(obj) { return (obj != undefined); };
 
 var ServerComm = new Class({
 	Implements: [Events],
@@ -45,6 +49,7 @@ var ServerComm = new Class({
 	    comment.store('oldcolour', comment.retrieve('colour'));
 	    var request = new Request.JSON({
 		    url: this.url,
+		    timeout: resendtimeout,
 		    
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
@@ -70,6 +75,11 @@ var ServerComm = new Class({
 			showsendfailed(function() {server.updatecomment(comment);});
 			// TODO The following should really be on the 'cancel' (but probably unimportant)
 			comment.retrieve('drag').attach();
+		    },
+
+		    onTimeout: function() {
+			waitel.destroy();
+			showsendfailed(function() {server.updatecomment(comment);});
 		    }
 
 		});
@@ -136,7 +146,7 @@ var ServerComm = new Class({
 				//$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
 				resp.comments.each(function(comment) {
 					cb = makecommentbox(comment.position, comment.text, comment.colour);
-					if (Browser.Engine.trident) {
+					if (Browser.ie) {
 					    // Does not work with FF & Moodle
 					    cb.setStyle('width',comment.width);
 					} else {
@@ -545,7 +555,7 @@ function makecommentbox(position, content, colour) {
     }
     newcomment.store('oldcolour',colour);
     //newcomment.set('class', 'comment');
-    if (Browser.Engine.trident) {
+    if (Browser.ie) {
 	// Does not work with FF & Moodle
 	newcomment.setStyles({ left: position.x, top: position.y });
     } else {
@@ -995,8 +1005,8 @@ function addtoquicklist(item) {
 	    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
 	    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
 	    // Nasty hack to reposition the comment box in IE
-	    if (Browser.Engine.trident) {
-		if (Browser.Engine.version <= 5) {
+	    if (Browser.ie) {
+		if (Browser.ie6 || Browser.ie7) {
 		    pos.x += 40;
 		    pos.y -= 20;
 		} else {
@@ -1004,7 +1014,7 @@ function addtoquicklist(item) {
 		}
 	    }
 	    var cb = makecommentbox(pos, quicklist[id].text, quicklist[id].colour);
-	    if (Browser.Engine.trident) {
+	    if (Browser.ie) {
 		// Does not work with FF & Moodle
 		cb.setStyle('width',quicklist[id].width);
 	    } else {
@@ -1041,7 +1051,7 @@ function initcontextmenu() {
     context_quicklistnoitems();
     quicklist = new Array();
 
-    if (Browser.Engine.trident && Browser.Engine.version <= 5) {
+    if (Browser.ie6 || Browser.ie7) {
 	// Hack to draw the separator line correctly in IE7 and below
 	var menu = document.getElementById('context-comment');
 	var items = menu.getElementsByTagName('li');
@@ -1081,7 +1091,7 @@ function initcontextmenu() {
 
 function showpage(pageno) {
     var pdfsize = $('pdfsize');
-    if (Browser.Engine.trident) {
+    if (Browser.ie) {
 	// Does not work with FF & Moodle
 	pdfsize.setStyle('width',pagelist[pageno].width);
 	pdfsize.setStyle('height',pagelist[pageno].height);
