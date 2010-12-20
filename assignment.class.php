@@ -1479,10 +1479,8 @@ class assignment_uploadpdf extends assignment_base {
 
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
-        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-core-compressed.js');
-        //require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.1-more-compressed.js');
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4-core-yc.js');
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4.2-more-yc.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-core-1.3.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
@@ -1685,7 +1683,14 @@ class assignment_uploadpdf extends assignment_base {
             
             if ($comment->id === -1) {
                 unset($comment->id);
-                $comment->id = insert_record('assignment_uploadpdf_comment', $comment);
+                $oldsel = "assignment_submission = {$comment->assignment_submission} AND pageno = {$comment->pageno} ";
+                $oldsel .= "AND posx = {$comment->posx} AND posy = {$comment->posy} AND rawtext = '{$comment->rawtext}'";
+                $oldcomments = get_records_select('assignment_uploadpdf_comment', $oldsel);
+                if ($oldcomments) {
+                    $comment->id = reset(array_keys($oldcomments));
+                } else {
+                    $comment->id = insert_record('assignment_uploadpdf_comment', $comment);
+                }
             } else {
                 $oldcomment = get_record('assignment_uploadpdf_comment', 'id', $comment->id);
                 if (!$oldcomment) {
