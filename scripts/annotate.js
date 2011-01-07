@@ -1126,7 +1126,7 @@ function check_pageimage(pageno) {
 function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
-	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
+	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
 	allannotations.each(function(p) { p.remove(); });
 	allannotations.empty();
 	currentpaper = currentline = lineselect = null;
