@@ -53,7 +53,7 @@ var ServerComm = new Class({
 		    
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 
 			if (resp.error == 0) {
 			    comment.store('id', resp.id);
@@ -71,14 +71,14 @@ var ServerComm = new Class({
 		    },
 		    
 		    onFailure: function(req) {
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 			// TODO The following should really be on the 'cancel' (but probably unimportant)
 			comment.retrieve('drag').attach();
 		    },
 
 		    onTimeout: function() {
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 		    }
 
@@ -140,7 +140,7 @@ var ServerComm = new Class({
 
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			if (resp.error == 0) {
 			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
 				//$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
@@ -183,7 +183,7 @@ var ServerComm = new Class({
 		    onFailure: function(resp) {
 			showsendfailed(function() {server.getcomments();});
 			// TODO The following should be on the 'cancel' button (but only a minor visual bug, rarely seen)
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
 		    }
 		});
 
@@ -383,7 +383,7 @@ var ServerComm = new Class({
 
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
 
 			if (resp.error == 0) {
 			    if (details.id < 0) { // A new line
@@ -401,7 +401,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
 			showsendfailed(function() {server.addannotation(details, annotation);});
 		    }
 		    
@@ -1126,7 +1126,7 @@ function check_pageimage(pageno) {
 function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
-	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
+	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
 	allannotations.each(function(p) { p.remove(); });
 	allannotations.empty();
 	currentpaper = currentline = lineselect = null;
