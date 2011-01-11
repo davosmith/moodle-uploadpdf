@@ -9,9 +9,9 @@ class backup_assignment_uploadpdf_subplugin extends backup_subplugin {
         $subplugin = $this->get_subplugin_element(null, '/assignment/assignmenttype', 'uploadpdf');
 
         $assuploadpdf = new backup_nested_element($this->get_recommended_name());
-        $extra = new backup_nested_element('assignment_uploadpdf', null, array('template', 'onlypdf', 'checklist', 'checklist_percent'));
+        $extra = new backup_nested_element('assignment_uploadpdf', array('id'), array('template', 'onlypdf', 'checklist', 'checklist_percent'));
         $template = new backup_nested_element('assignment_uploadpdf_tmpl', array('id'), array('name', 'course'));
-        $template_item = new backup_nested_element('assignment_uploadpdf_tmplitm', null, array('type','xpos','ypos','width','setting'));
+        $template_item = new backup_nested_element('assignment_uploadpdf_tmplitm', array('id'), array('type','xpos','ypos','width','setting'));
         
         $subplugin->add_child($assuploadpdf);
         $assuploadpdf->add_child($extra);
