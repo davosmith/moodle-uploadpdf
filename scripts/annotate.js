@@ -78,7 +78,7 @@ var ServerComm = new Class({
 		    },
 
 		    onTimeout: function() {
-			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 		    }
 
@@ -183,7 +183,7 @@ var ServerComm = new Class({
 		    onFailure: function(resp) {
 			showsendfailed(function() {server.getcomments();});
 			// TODO The following should be on the 'cancel' button (but only a minor visual bug, rarely seen)
-			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 		    }
 		});
 
@@ -383,7 +383,7 @@ var ServerComm = new Class({
 
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 
 			if (resp.error == 0) {
 			    if (details.id < 0) { // A new line
@@ -401,7 +401,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			if (typeof waitel.destroy != 'undefined') { waitel.destory(); }
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.addannotation(details, annotation);});
 		    }
 		    
