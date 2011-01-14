@@ -1933,19 +1933,12 @@ class assignment_uploadpdf extends assignment_base {
         
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-1.2.4-core-yc.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-core-1.3.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/drawline.js');
 
         print_header(fullname($user, true).':'.format_string($this->assignment->name).':'.$pageno);
-
-        // Nasty hack to insert the style-sheet needed for my comment boxes
-        // (without having to rewrite every Moodle theme in existence)
-        echo '<script type="text/javascript">';
-        echo 'var fileref = document.createElement("link"); fileref.setAttribute("rel", "stylesheet"); fileref.setAttribute("type", "text/css");';
-        echo 'fileref.setAttribute("href", "style/annotate.css");';
-        echo 'if (typeof fileref!="undefined") document.getElementsByTagName("head")[0].appendChild(fileref);';
-        echo '</script>';
 
         echo '<div id="pageselector">';
         if ($pageno > 1) {
@@ -1987,6 +1980,8 @@ class assignment_uploadpdf extends assignment_base {
 
         echo '</div></div></div>';
 
+        print_footer('none');
+
         $annotations = get_records_select('assignment_uploadpdf_annot', 'assignment_submission='.$submission->id.' AND pageno='.$pageno);
         if ($annotations) {
             echo '<script type="text/javascript">';
@@ -1995,8 +1990,6 @@ class assignment_uploadpdf extends assignment_base {
             }
             echo '</script>';
         }
-
-        print_footer('none');
     }
 
     function setup_elements(&$mform) {

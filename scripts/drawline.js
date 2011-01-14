@@ -34,3 +34,7 @@ function drawline(lsx, lsy, lex, ley, colour) {
     else { rgb = "#f00"; } // Red
     line.attr("stroke", rgb);
 }
+
+window.addEvent('domready', function() {
+    new Asset.css('style/annotate.css');
+});
