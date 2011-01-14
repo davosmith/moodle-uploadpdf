@@ -1,6 +1,18 @@
 // Only used when viewing previous pages - for all interactive line drawing, see 'annotate.js'
 
+var linestodraw = new Array();
+
 function drawline(lsx, lsy, lex, ley, colour) {
+    linestodraw.push({startx: lsx, starty: lsy, endx: lex, endy: ley, colour: colour});
+}
+
+function drawalllines() {
+    for (var i in linestodraw) {
+	realdrawline(linestodraw[i].startx, linestodraw[i].starty, linestodraw[i].endx, linestodraw[i].endy, linestodraw[i].colour);
+    }
+}
+
+function realdrawline(lsx, lsy, lex, ley, colour) {
     var linewidth = 3.0;
     var halflinewidth = linewidth * 0.5;
     var dims = $('pdfimg').getCoordinates();
@@ -37,4 +49,5 @@ function drawline(lsx, lsy, lex, ley, colour) {
 
 window.addEvent('domready', function() {
     new Asset.css('style/annotate.css');
+    drawalllines();
 });
