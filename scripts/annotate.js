@@ -1207,4 +1207,4 @@ function selectpage2() {
 window.addEvent('domready', function() {
 	startjs();
 	initcontextmenu();
-    });
+});
