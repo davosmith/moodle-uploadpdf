@@ -2264,6 +2264,7 @@ class assignment_uploadpdf extends assignment_base {
             debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find extra data");
             return false;
         }
+        $template = false;
         if ($extras->template != 0 && !$template = get_record('assignment_uploadpdf_tmpl', 'id', $extras->template)) {
             debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find template data");
             return false;
