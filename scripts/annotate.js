@@ -485,6 +485,7 @@ function setcommentcontent(el, content) {
     content = content.replace(/>/gi,'&gt;');
     content = content.replace(/\n/gi, '<br />');
     var resizehandle = el.retrieve('resizehandle');
+    content = '<p>'+content+'</p>';
     el.set('html',content);
     el.adopt(resizehandle);
 }

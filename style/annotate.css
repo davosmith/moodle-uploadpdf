@@ -7,6 +7,10 @@
     width: 120px;
 }
 
+.comment p {
+    margin: 0px 1px;
+}
+
 .commentyellow {
     background-color: #ffffb0;
 }
