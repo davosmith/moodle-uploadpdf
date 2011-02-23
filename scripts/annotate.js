@@ -1036,6 +1036,11 @@ function removefromquicklist(itemid) {
 }
 
 function initcontextmenu() {
+    var content = $('region-main');
+    offs = content.getPosition();
+    offs.x = -offs.x;
+    offs.y = -offs.y;
+
     //create a context menu
     context_quicklist = new ContextMenu({
 	    targets: null,
@@ -1044,7 +1049,8 @@ function initcontextmenu() {
 		removeitem: function(itemid, menu) {
 		    server.removefromquicklist(itemid);
 		}
-	    }
+	    },
+	    offsets: offs
 	});
     context_quicklist.addmenu($('pdfimg'));
     context_quicklist.quickcount = 0;
@@ -1083,7 +1089,8 @@ function initcontextmenu() {
 		    }
 		    element.destroy();
 		}
-	    }
+	    },
+            offsets: offs
 	});
 
     server.getquicklist();
