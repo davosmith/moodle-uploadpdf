@@ -47,7 +47,7 @@ function realdrawline(lsx, lsy, lex, ley, colour) {
     line.attr("stroke", rgb);
 }
 
-window.addEvent('domready', function() {
+window.addEvent('load', function() {
     new Asset.css('style/annotate.css');
     drawalllines();
 });
