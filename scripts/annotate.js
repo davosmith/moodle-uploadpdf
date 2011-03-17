@@ -11,6 +11,8 @@ var pagestopreload = 4; // How many pages ahead to load when you hit a non-prelo
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 var pageunloading = false;
 
+var resendtimeout = 4000;
+
 // All to do with line drawing
 var currentpaper = null;
 var currentline = null;
@@ -18,6 +20,8 @@ var linestartpos = null;
 var lineselect = null;
 var lineselectid = null;
 var allannotations = new Array();
+
+var $defined = function(obj) { return (obj != undefined); };
 
 var ServerComm = new Class({
 	Implements: [Events],
@@ -45,10 +49,11 @@ var ServerComm = new Class({
 	    comment.store('oldcolour', comment.retrieve('colour'));
 	    var request = new Request.JSON({
 		    url: this.url,
+		    timeout: resendtimeout,
 		    
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 
 			if (resp.error == 0) {
 			    comment.store('id', resp.id);
@@ -66,10 +71,15 @@ var ServerComm = new Class({
 		    },
 		    
 		    onFailure: function(req) {
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 			// TODO The following should really be on the 'cancel' (but probably unimportant)
 			comment.retrieve('drag').attach();
+		    },
+
+		    onTimeout: function() {
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
+			showsendfailed(function() {server.updatecomment(comment);});
 		    }
 
 		});
@@ -130,13 +140,13 @@ var ServerComm = new Class({
 
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			if (resp.error == 0) {
 			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
 				//$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
 				resp.comments.each(function(comment) {
 					cb = makecommentbox(comment.position, comment.text, comment.colour);
-					if (Browser.Engine.trident) {
+					if (Browser.ie) {
 					    // Does not work with FF & Moodle
 					    cb.setStyle('width',comment.width);
 					} else {
@@ -173,7 +183,7 @@ var ServerComm = new Class({
 		    onFailure: function(resp) {
 			showsendfailed(function() {server.getcomments();});
 			// TODO The following should be on the 'cancel' button (but only a minor visual bug, rarely seen)
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 		    }
 		});
 
@@ -373,7 +383,7 @@ var ServerComm = new Class({
 
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 
 			if (resp.error == 0) {
 			    if (details.id < 0) { // A new line
@@ -391,7 +401,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(resp) {
-			waitel.destroy();
+			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.addannotation(details, annotation);});
 		    }
 		    
@@ -545,7 +555,7 @@ function makecommentbox(position, content, colour) {
     }
     newcomment.store('oldcolour',colour);
     //newcomment.set('class', 'comment');
-    if (Browser.Engine.trident) {
+    if (Browser.ie) {
 	// Does not work with FF & Moodle
 	newcomment.setStyles({ left: position.x, top: position.y });
     } else {
@@ -995,8 +1005,8 @@ function addtoquicklist(item) {
 	    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
 	    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
 	    // Nasty hack to reposition the comment box in IE
-	    if (Browser.Engine.trident) {
-		if (Browser.Engine.version <= 5) {
+	    if (Browser.ie) {
+		if (Browser.ie6 || Browser.ie7) {
 		    pos.x += 40;
 		    pos.y -= 20;
 		} else {
@@ -1004,7 +1014,7 @@ function addtoquicklist(item) {
 		}
 	    }
 	    var cb = makecommentbox(pos, quicklist[id].text, quicklist[id].colour);
-	    if (Browser.Engine.trident) {
+	    if (Browser.ie) {
 		// Does not work with FF & Moodle
 		cb.setStyle('width',quicklist[id].width);
 	    } else {
@@ -1026,6 +1036,11 @@ function removefromquicklist(itemid) {
 }
 
 function initcontextmenu() {
+    var content = $('region-main');
+    offs = content.getPosition();
+    offs.x = -offs.x;
+    offs.y = -offs.y;
+
     //create a context menu
     context_quicklist = new ContextMenu({
 	    targets: null,
@@ -1034,14 +1049,15 @@ function initcontextmenu() {
 		removeitem: function(itemid, menu) {
 		    server.removefromquicklist(itemid);
 		}
-	    }
+	    },
+	    offsets: offs
 	});
     context_quicklist.addmenu($('pdfimg'));
     context_quicklist.quickcount = 0;
     context_quicklistnoitems();
     quicklist = new Array();
 
-    if (Browser.Engine.trident && Browser.Engine.version <= 5) {
+    if (Browser.ie6 || Browser.ie7) {
 	// Hack to draw the separator line correctly in IE7 and below
 	var menu = document.getElementById('context-comment');
 	var items = menu.getElementsByTagName('li');
@@ -1073,7 +1089,8 @@ function initcontextmenu() {
 		    }
 		    element.destroy();
 		}
-	    }
+	    },
+            offsets: offs
 	});
 
     server.getquicklist();
@@ -1081,7 +1098,7 @@ function initcontextmenu() {
 
 function showpage(pageno) {
     var pdfsize = $('pdfsize');
-    if (Browser.Engine.trident) {
+    if (Browser.ie) {
 	// Does not work with FF & Moodle
 	pdfsize.setStyle('width',pagelist[pageno].width);
 	pdfsize.setStyle('height',pagelist[pageno].height);
@@ -1116,7 +1133,7 @@ function check_pageimage(pageno) {
 function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
-	$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments
+	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
 	allannotations.each(function(p) { p.remove(); });
 	allannotations.empty();
 	currentpaper = currentline = lineselect = null;
@@ -1197,4 +1214,4 @@ function selectpage2() {
 window.addEvent('domready', function() {
 	startjs();
 	initcontextmenu();
-    });
+});

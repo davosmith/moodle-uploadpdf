@@ -22,37 +22,29 @@ $id = required_param('id', PARAM_INT);
 $userid = required_param('userid', PARAM_INT);
 $pageno = required_param('pageno', PARAM_INT);
 
+$url = new moodle_url('/mod/assignment/type/uploadpdf/updatecomment.php', array('id'=>$id, 'userid'=>$userid, 'pageno'=>$pageno) );
 if ($id) {
     if (! $cm = get_coursemodule_from_id('assignment', $id)) {
         send_error("Course Module ID was incorrect");
     }
 
-    if (! $assignment = get_record("assignment", "id", $cm->instance)) {
+    if (! $assignment = $DB->get_record('assignment', array('id' => $cm->instance) )) {
         send_error("assignment ID was incorrect");
     }
 
-    if (! $course = get_record("course", "id", $assignment->course)) {
+    if (! $course = $DB->get_record('course', array('id' => $assignment->course) )) {
         send_error("Course is misconfigured");
-    }
-} else {
-    if (!$assignment = get_record("assignment", "id", $a)) {
-        send_error("Course module is incorrect");
-    }
-    if (! $course = get_record("course", "id", $assignment->course)) {
-        send_error("Course is misconfigured");
-    }
-    if (! $cm = get_coursemodule_from_instance("assignment", $assignment->id, $course->id)) {
-        send_error("Course Module ID was incorrect");
     }
 }
 
+$PAGE->set_url($url);
 require_login($course->id, false, $cm);
 require_capability('mod/assignment:grade', get_context_instance(CONTEXT_MODULE, $cm->id));
 if (!confirm_sesskey()) {
     send_error('You must be logged in to do this', ASSIGNMENT_UPLOADPDF_ERR_NO_LOGIN);
 }
 
-require_once('assignment.class.php');
+require_once(dirname(__FILE__).'/assignment.class.php');
 $assignmentinstance = new assignment_uploadpdf($cm->id, $assignment, $cm, $course);
 $assignmentinstance->update_comment_page($userid, $pageno);
 
