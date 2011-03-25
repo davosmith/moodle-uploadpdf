@@ -12,6 +12,7 @@ var pagesremaining = pagestopreload; // How many more pages to preload before wa
 var pageunloading = false;
 
 var colourMenu = null;
+var lineColourMenu = null;
 
 var resendtimeout = 4000;
 
@@ -734,20 +735,23 @@ function changecolour(e) {
 }
 
 function getcurrentlinecolour() {
-    var el = $('chooselinecolour');
+/*    var el = $('chooselinecolour');
     var idx = el.selectedIndex;
-    return el[idx].value;
+    return el[idx].value;*/
+    return lineColourMenu.get("value");
 }
 
 function setcurrentlinecolour(colour) {
-    var el = $('chooselinecolour');
+    /*var el = $('chooselinecolour');
     var i;
     for (i=0; i<el.length; i++) {
 	if (el[i].value == colour) {
 	    el.selectedIndex = i;
 	    return;
 	}
-    }
+    }*/
+    lineColourMenu.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
+    lineColourMenu.set("value", colour);
 }
 
 function setlinecolour(colour, line) {
@@ -963,6 +967,17 @@ function startjs() {
 	this.set("value", colour);
 	changecolour();
     });
+    lineColourMenu = new YAHOO.widget.Button("chooselinecolour", {
+	type: "menu",
+	menu: "chooselinecolourmenu",
+	lazyloadmenu: false });
+    lineColourMenu.on("selectedMenuItemChange", function(e) {
+	var menuItem = e.newValue;
+	var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
+	this.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
+	this.set("value", colour);
+	changelinecolour();
+    });
     
     server = new ServerComm(server_config);
     server.getcomments();
@@ -979,7 +994,7 @@ function startjs() {
 	setcurrentlinecolour(linecolour);
     }
     //$('choosecolour').addEvent('change', changecolour);
-    $('chooselinecolour').addEvent('change', changelinecolour);
+    //$('chooselinecolour').addEvent('change', changelinecolour);
 
     // Start preloading pages if using js navigation method
     if (server_config.js_navigation) {
