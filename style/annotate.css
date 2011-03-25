@@ -113,3 +113,7 @@
 .contextmenu li a.disabled:hover { background-color:#eee; }
 .contextmenu li a.delete { width: 10px; }
 .contextmenu li a.delete:hover { background-color:#d00; }
+
+#choosecolour-button {
+    line-height: normal;
+}

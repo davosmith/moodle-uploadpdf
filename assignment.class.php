@@ -1479,6 +1479,7 @@ class assignment_uploadpdf extends assignment_base {
 
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($userid, $pageno, $submission);
 
+        require_js(array('yui_yahoo','yui_event','yui_dom','yui_dom-event','yui_container','yui_element','yui_button','yui_menu','yui_utilities'));
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-core-1.3.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
@@ -1574,6 +1575,14 @@ class assignment_uploadpdf extends assignment_base {
             echo '</form>';
         }
         // Choose comment colour
+        echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
+        echo '<div id="choosecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
+        $colours = array('red','yellow','green','blue','white','clear');
+        foreach ($colours as $colour) {
+            echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/'.$colour.'.gif"/></li>';
+        }
+        echo '</ul></div></div>';
+        /*
         echo ' '.get_string('commentcolour','assignment_uploadpdf').': ';
 		echo '<select id="choosecolour" name="choosecolour">';
 		echo '<option value="red">'.get_string('colourred','assignment_uploadpdf').'</option>';
@@ -1583,6 +1592,7 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
 		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
         echo '</select>';
+        */
         echo ' '.get_string('linecolour','assignment_uploadpdf').': ';
 		echo '<select id="chooselinecolour" name="chooselinecolour">';
 		echo '<option value="red" selected="selected">'.get_string('colourred','assignment_uploadpdf').'</option>';
@@ -1635,7 +1645,9 @@ class assignment_uploadpdf extends assignment_base {
                         'deleteicon' => $CFG->pixpath . '/t/delete.gif',
                         'pagecount' => $pagecount,
                         'js_navigation' => $CFG->uploadpdf_js_navigation,
-                        'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif'
+                        'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif',
+                        'image_path' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/',
+                        'css_path' => $CFG->wwwroot.'/lib/yui/assets/skins/sam/'
                         );
         
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
