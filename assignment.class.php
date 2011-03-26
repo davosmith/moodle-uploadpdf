@@ -1547,33 +1547,6 @@ class assignment_uploadpdf extends assignment_base {
         
         echo $pageselector;
         echo '<div id="colourselector">';
-        // Show previous assignment
-        $ps_sql = 'SELECT asn.id, asn.name FROM `'.$CFG->prefix.'assignment` asn ';
-        $ps_sql .= 'INNER JOIN `'.$CFG->prefix.'assignment_submissions` sub ON sub.assignment = asn.id ';
-        $ps_sql .= 'WHERE course = '.$this->course->id;
-        $ps_sql .= ' AND asn.assignmenttype = "uploadpdf" ';
-        $ps_sql .= ' AND userid = '.$userid;
-        $ps_sql .= ' AND asn.id != '.$this->assignment->id;
-        $ps_sql .= ' ORDER BY sub.timemodified DESC;';
-        $previoussubs = get_records_sql($ps_sql);
-        if ($previoussubs) {
-            echo '<form name="showprevious" target="_top" action="editcomment.php" method="get">';
-            echo ' '.get_string('showpreviousassignment','assignment_uploadpdf').': ';
-            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-            echo '<input type="hidden" name="userid" value="'.$userid.'" />';
-            echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-            echo '<input type="hidden" name="topframe" value="1" />';
-            echo '<select id="showprevious" name="showprevious" onChange="this.form.submit();">';
-            echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
-            foreach ($previoussubs as $prevsub) {
-                echo '<option value="'.$prevsub->id.'"';
-                if ($showprevious == $prevsub->id) echo ' selected="selected" ';
-                echo '>'.s($prevsub->name).'</option>';
-            }
-            echo '</select>';
-            echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
-            echo '</form>';
-        }
         // Choose comment colour
         echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
         echo '<div id="choosecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
@@ -1590,6 +1563,35 @@ class assignment_uploadpdf extends assignment_base {
             echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/line'.$colour.'.gif"/></li>';
         }
         echo '</ul></div></div>';
+
+        // Show previous assignment
+        $ps_sql = 'SELECT asn.id, asn.name FROM `'.$CFG->prefix.'assignment` asn ';
+        $ps_sql .= 'INNER JOIN `'.$CFG->prefix.'assignment_submissions` sub ON sub.assignment = asn.id ';
+        $ps_sql .= 'WHERE course = '.$this->course->id;
+        $ps_sql .= ' AND asn.assignmenttype = "uploadpdf" ';
+        $ps_sql .= ' AND userid = '.$userid;
+        $ps_sql .= ' AND asn.id != '.$this->assignment->id;
+        $ps_sql .= ' ORDER BY sub.timemodified DESC;';
+        $previoussubs = get_records_sql($ps_sql);
+        if ($previoussubs) {
+            echo '<form style="display: inline-block;" name="showprevious" target="_top" action="editcomment.php" method="get">';
+            echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
+            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+            echo '<input type="hidden" name="userid" value="'.$userid.'" />';
+            echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
+            echo '<input type="hidden" name="topframe" value="1" />';
+            echo '<select id="showpreviousselect" name="showprevious" onChange="this.form.submit();">';
+            echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
+            foreach ($previoussubs as $prevsub) {
+                echo '<option value="'.$prevsub->id.'"';
+                if ($showprevious == $prevsub->id) echo ' selected="selected" ';
+                echo '>'.s($prevsub->name).'</option>';
+            }
+            echo '</select>';
+            echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
+            echo '</form>';
+        }
+        echo '</div>';
 
         // Output the page image
         echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';

@@ -958,6 +958,10 @@ function startjs() {
 	this.set("value", colour);
 	changelinecolour();
     });
+    var showPreviousMenu = new YAHOO.widget.Button("showpreviousbutton", {
+	type: "menu",
+	menu: "showpreviousselect",
+	lazyloadmenu: false });
     
     server = new ServerComm(server_config);
     server.getcomments();

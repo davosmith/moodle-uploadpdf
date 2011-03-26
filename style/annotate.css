@@ -121,3 +121,7 @@
 #chooselinecolour-button {
     line-height: normal;
 }
+
+#colourselector button {
+    height: 35px;
+}
