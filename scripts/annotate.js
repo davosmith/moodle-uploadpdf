@@ -670,25 +670,13 @@ function typingcomment(e) {
 }
 
 function getcurrentcolour() {
-    /*
-    var el = $('choosecolour');
-    var idx = el.selectedIndex;
-    return el[idx].value;
-*/
     return colourMenu.get("value");
 }
 
 function setcurrentcolour(colour) {
-    /*
-var el = $('choosecolour');
-    var i;
-    for (i=0; i<el.length; i++) {
-	if (el[i].value == colour) {
-	    el.selectedIndex = i;
-	    return;
-	}
+    if (colour != 'red' && colour != 'green' && colour != 'blue' && colour != 'white' && colour != 'clear') {
+	colour = 'yellow';
     }
-*/
     colourMenu.set("label", '<img src="'+server_config.image_path+colour+'.gif" />');
     colourMenu.set("value", colour);
 }
@@ -735,21 +723,13 @@ function changecolour(e) {
 }
 
 function getcurrentlinecolour() {
-/*    var el = $('chooselinecolour');
-    var idx = el.selectedIndex;
-    return el[idx].value;*/
     return lineColourMenu.get("value");
 }
 
 function setcurrentlinecolour(colour) {
-    /*var el = $('chooselinecolour');
-    var i;
-    for (i=0; i<el.length; i++) {
-	if (el[i].value == colour) {
-	    el.selectedIndex = i;
-	    return;
-	}
-    }*/
+    if (colour != 'yellow' && colour != 'green' && colour != 'blue' && colour != 'white' && colour != 'black') {
+	colour = 'red';
+    }
     lineColourMenu.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
     lineColourMenu.set("value", colour);
 }
@@ -986,15 +966,15 @@ function startjs() {
     $('pdfimg').addEvent('mousedown', startline);
     $('pdfimg').ondragstart = function() { return false; }; // To stop ie trying to drag the image
     var colour = Cookie.read('uploadpdf_colour');
-    if ($defined(colour)) {
-	setcurrentcolour(colour);
+    if (!$defined(colour)) {
+	colour = 'yellow';
     }
+    setcurrentcolour(colour);
     var linecolour = Cookie.read('uploadpdf_linecolour');
-    if ($defined(linecolour)) {
-	setcurrentlinecolour(linecolour);
+    if (!$defined(linecolour)) {
+	linecolour = 'red';
     }
-    //$('choosecolour').addEvent('change', changecolour);
-    //$('chooselinecolour').addEvent('change', changelinecolour);
+    setcurrentlinecolour(linecolour);
 
     // Start preloading pages if using js navigation method
     if (server_config.js_navigation) {
