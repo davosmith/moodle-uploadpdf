@@ -1596,6 +1596,25 @@ class assignment_uploadpdf extends assignment_base {
         }
         echo '</ul></div></div>';
 
+        // Choose annotation type
+        echo '<span id="choosedrawingtool" class="yui-buttongroup yui-radio-button">';
+        echo '<span class="yui-button yui-radio-button yui-button-checked"><span class="first-child"><button type="button" name="choosedrawingtool" value="comment">';
+        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/commenticon.png" title="'.get_string('commenticon','assignment_uploadpdf').'"/>';
+        echo '</button></span></span>';
+        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="line">';
+        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/lineicon.png" title="'.get_string('lineicon','assignment_uploadpdf').'"/>';
+        echo '</button></span></span>';
+        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="rectangle">';
+        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/rectangleicon.png" title="'.get_string('rectangleicon','assignment_uploadpdf').'"/>';
+        echo '</button></span></span>';
+        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="oval">';
+        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/ovalicon.png" title="'.get_string('ovalicon','assignment_uploadpdf').'"/>';
+        echo '</button></span></span>';
+        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="freehand">';
+        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/freehandicon.png" title="'.get_string('freehandicon','assignment_uploadpdf').'"/>';
+        echo '</button></span></span>';
+        echo '</span>';
+
         echo '</div>';
 
         // Output the page image
