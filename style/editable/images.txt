@@ -1,0 +1,8 @@
+The original versions of some of these images are available online at the following addresses:
+
+http://commons.wikimedia.org/wiki/File:Gtk-arrow-utl.svg
+http://commons.wikimedia.org/wiki/File:Emblem-person-purple.svg
+http://commons.wikimedia.org/wiki/File:Gtk-go-down.svg
+http://commons.wikimedia.org/wiki/File:Gtk-directory.svg
+http://commons.wikimedia.org/wiki/File:Gtk-save-as.svg
+http://commons.wikimedia.org/wiki/File:Gtk-quit.svg

@@ -114,14 +114,21 @@
 .contextmenu li a.delete { width: 10px; }
 .contextmenu li a.delete:hover { background-color:#d00; }
 
-#choosecolour-button {
-    line-height: normal;
-}
-
-#chooselinecolour-button {
-    line-height: normal;
-}
-
 #toolbar-line2 button {
     height: 35px;
+    line-height: normal;
+}
+
+#toolbar-line2  select {
+    height: 37px;
+    position: absolute;
+    top: 0px;
+}
+
+#saveoptions {
+    margin-bottom: 5px;
+}
+
+#saveoptions .yui-button button, #saveoptions .yui-button a {
+    line-height: 1.5;
 }
