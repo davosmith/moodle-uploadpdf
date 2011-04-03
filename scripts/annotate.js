@@ -23,8 +23,8 @@ var resendtimeout = 4000;
 var currentpaper = null;
 var currentline = null;
 var linestartpos = null;
-var lineselect = null;
-var lineselectid = null;
+//var lineselect = null;
+//var lineselectid = null;
 var allannotations = new Array();
 
 var $defined = function(obj) { return (obj != undefined); };
@@ -392,10 +392,10 @@ var ServerComm = new Class({
 			if (resp.error == 0) {
 			    if (details.id < 0) { // A new line
 				annotation.store('id', resp.id);
-				if ($defined(lineselect) && (annotation.retrieve("paper") == lineselect.paper)) {
-				    unselectline();
-				    annotation.fireEvent('click');
-				}
+				//if ($defined(lineselect) && (annotation.retrieve("paper") == lineselect.paper)) {
+				    //unselectline();
+				//    annotation.fireEvent('click');
+				//}
 			    }
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
@@ -634,6 +634,10 @@ function addcomment(e) {
 	return;
     }
 
+    if (getcurrenttool() != 'comment') {
+	return;
+    }
+
     var modifier = Browser.Platform.mac ? e.alt : e.control;
     if (!modifier) {  // If control pressed, then drawing line
 	// Calculate the relative position of the comment
@@ -647,7 +651,7 @@ function addcomment(e) {
 }
 
 function editcomment(el) {
-    unselectline();
+    //unselectline();
     
     if (currentcomment == el) {
 	return;
@@ -749,6 +753,7 @@ function setlinecolour(colour, line) {
 }
 
 function changelinecolour(e) {
+/*
     if ($defined(lineselect)) {
 	var canvas = $(lineselect.paper.canvas);
 	if (!lineselectid) {
@@ -764,7 +769,7 @@ function changelinecolour(e) {
 		server.addannotation({type: "line", colour: colour, id: canvas.retrieve("id"), coords: {sx:-1,sy:-1,ex:-1,ey:-1} }, canvas);
 	    }
 	}
-    }
+    }*/
     Cookie.write('uploadpdf_linecolour', getcurrentlinecolour());
 }
 
@@ -787,7 +792,7 @@ function setcurrenttool(toolname) {
 }
 
 function startline(e) {
-    unselectline();
+    //unselectline();
 
     if (currentpaper) {
 	return true; // If user clicks very quickly this can happen
@@ -797,6 +802,9 @@ function startline(e) {
 
     modifier = Browser.Platform.mac ? e.alt : e.control;
     if (tool == 'comment' && !modifier) {
+	return true;
+    }
+    if (tool == 'erase') {
 	return true;
     }
 
@@ -916,7 +924,7 @@ function makeline(coords, type, id, colour) {
     domcanvas.store('line',line);
     domcanvas.store('colour',colour);
     domcanvas.addEvent('mousedown',startline);
-    domcanvas.addEvent('click', selectline);
+    domcanvas.addEvent('click', eraseline);
     if ($defined(id)) {
 	domcanvas.store('id',id);
     } else {
@@ -926,6 +934,7 @@ function makeline(coords, type, id, colour) {
     allannotations.push(paper);
 }
 
+/*
 function selectline(e) {
     var paper = this.retrieve('paper');
     var width = this.retrieve('width');
@@ -943,7 +952,24 @@ function selectline(e) {
     var linecolour = this.retrieve('colour');
     setcurrentlinecolour(linecolour);
 }
+*/
+function eraseline(e) {
+    if (getcurrenttool() != 'erase') {
+	return false;
+    }
 
+    var id = this.retrieve('id');
+    if (id) {
+	var paper = this.retrieve('paper');
+	allannotations.erase(paper);
+	paper.remove();
+	server.removeannotation(id);
+    }
+
+    return true;
+}
+
+/*
 function unselectline() {
     if ($defined(lineselect)) {
 	lineselect.remove();
@@ -968,6 +994,7 @@ function checkdeleteline(e) {
 	}
     }
 }
+*/
 
 function keyboardnavigation(e) {
     if ($defined(currentcomment)) {
@@ -1214,7 +1241,7 @@ function gotopage(pageno) {
 	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
 	allannotations.each(function(p) { p.remove(); });
 	allannotations.empty();
-	currentpaper = currentline = lineselect = null;
+	currentpaper = currentline = /*lineselect =*/ null;
 	currentcomment = null; // Throw away any comments in progress
 	editbox = null;
 
