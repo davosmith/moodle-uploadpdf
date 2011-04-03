@@ -96,6 +96,7 @@ $string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to
 $string['opennewwindow'] = 'Open this page in a new window';
 
 $string['commenticon'] = "Add comments\nHold Ctrl to draw a line";
+$string['eraseicon'] = 'Erase lines and shapes';
 $string['freehandicon'] = 'Draw freehand lines';
 $string['lineicon'] = 'Draw straight lines';
 $string['ovalicon'] = 'Draw ovals';
