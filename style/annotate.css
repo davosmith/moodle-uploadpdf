@@ -132,3 +132,13 @@
 #saveoptions .yui-button button, #saveoptions .yui-button a {
     line-height: 1.5;
 }
+
+#choosetoolgroup .yui-radio-button {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#choosetoolgroup {
+    display: inline-block;
+    margin-left: 5px;
+}

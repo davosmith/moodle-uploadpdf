@@ -972,7 +972,8 @@ function startjs() {
     var savedraftbutton = new YAHOO.widget.Button("savedraft");
     var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
     var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
-    choosedrawingtool = new YAHOO.widget.ButtonGroup("choosedrawingtool"); 
+    choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
+
     /*var selectpage = new YAHOO.widget.Button("selectpagebutton", {
 	type: "menu",
 	menu: "selectpage",

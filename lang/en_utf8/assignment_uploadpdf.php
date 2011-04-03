@@ -68,8 +68,8 @@ $string['keyboardprev'] = 'Press \'p\' for previous page';
 $string['showpreviousassignment'] = 'Compare to';
 $string['previousnone'] = 'None';
 $string['showprevious'] = 'Show';
-$string['commentcolour'] = 'Background';
-$string['linecolour'] = 'Line';
+$string['commentcolour'] = 'Comment background colour';
+$string['linecolour'] = 'Line colour';
 $string['colourred'] = 'Red';
 $string['colouryellow'] = 'Yellow';
 $string['colourgreen'] = 'Green';
@@ -94,6 +94,12 @@ $string['deletecomment'] = 'Delete Comment';
 $string['emptyquicklist'] = 'No items in Quicklist';
 $string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
 $string['opennewwindow'] = 'Open this page in a new window';
+
+$string['commenticon'] = "Add comments\nHold Ctrl to draw a line";
+$string['freehandicon'] = 'Draw freehand lines';
+$string['lineicon'] = 'Draw straight lines';
+$string['ovalicon'] = 'Draw ovals';
+$string['rectangleicon'] = 'Draw rectangles';
 
 //Student upload
 $string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';

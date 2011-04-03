@@ -1581,7 +1581,7 @@ class assignment_uploadpdf extends assignment_base {
 
         // Choose comment colour
         echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
-        echo '<div id="choosecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
+        echo '<div id="choosecolourmenu" class="yuimenu" title="'.get_string('commentcolour', 'assignment_uploadpdf').'"><div class="bd"><ul class="first-of-type">';
         $colours = array('red','yellow','green','blue','white','clear');
         foreach ($colours as $colour) {
             echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/'.$colour.'.gif"/></li>';
@@ -1597,24 +1597,20 @@ class assignment_uploadpdf extends assignment_base {
         echo '</ul></div></div>';
 
         // Choose annotation type
-        echo '<span id="choosedrawingtool" class="yui-buttongroup yui-radio-button">';
-        echo '<span class="yui-button yui-radio-button yui-button-checked"><span class="first-child"><button type="button" name="choosedrawingtool" value="comment">';
-        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/commenticon.png" title="'.get_string('commenticon','assignment_uploadpdf').'"/>';
-        echo '</button></span></span>';
-        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="line">';
-        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/lineicon.png" title="'.get_string('lineicon','assignment_uploadpdf').'"/>';
-        echo '</button></span></span>';
-        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="rectangle">';
-        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/rectangleicon.png" title="'.get_string('rectangleicon','assignment_uploadpdf').'"/>';
-        echo '</button></span></span>';
-        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="oval">';
-        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/ovalicon.png" title="'.get_string('ovalicon','assignment_uploadpdf').'"/>';
-        echo '</button></span></span>';
-        echo '<span class="yui-button yui-radio-button"><span class="first-child"><button type="button" name="choosedrawingtool" value="freehand">';
-        echo '<img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/freehandicon.png" title="'.get_string('freehandicon','assignment_uploadpdf').'"/>';
-        echo '</button></span></span>';
-        echo '</span>';
+        $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon');
+        $checked = ' yui-button-checked';
+        echo '<div id="choosetoolgroup" class="yui-buttongroup">';
 
+        foreach ($drawingtools as $drawingtool) {
+            echo '<span id="'.$drawingtool.'" class="yui-button yui-radio-button'.$checked.'">';
+            echo ' <span class="first-child">';
+            echo '  <button type="button" name="choosetoolradio" value="'.$drawingtool.'" title="'.get_string($drawingtool,'assignment_uploadpdf').'">';
+            echo '   <img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/'.$drawingtool.'.png" />';
+            echo '  </button>';
+            echo ' </span>';
+            echo '</span>';
+            $checked = '';
+        }
         echo '</div>';
 
         // Output the page image
