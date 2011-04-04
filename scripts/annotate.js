@@ -868,10 +868,15 @@ function updateline(e) {
 	currentline = currentpaper.ellipse(sx, sy, rx, ry);
 	break;
     case 'freehand':
-	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
-	freehandpoints.push({x:ex, y:ey});
-	linestartpos.x = ex;
-	linestartpos.y = ey;
+	var dx = linestartpos.x-ex;
+	var dy = linestartpos.y-ey;
+	var dist = Math.sqrt(dx*dx+dy*dy);
+	if (dist > 2) { // Trying to reduce the number of points a bit
+	    currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
+	    freehandpoints.push({x:ex, y:ey});
+	    linestartpos.x = ex;
+	    linestartpos.y = ey;
+	}
 	break;
     default: // Comment + Ctrl OR line
 	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
