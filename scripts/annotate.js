@@ -23,6 +23,7 @@ var resendtimeout = 4000;
 var currentpaper = null;
 var currentline = null;
 var linestartpos = null;
+var freehandpoints = null;
 //var lineselect = null;
 //var lineselectid = null;
 var allannotations = new Array();
@@ -383,48 +384,54 @@ var ServerComm = new Class({
 	    }
 
 	    var request = new Request.JSON({
-		    url: this.url,
+		url: this.url,
 
-		    onSuccess: function(resp) {
-			server.retrycount = 0;
-			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
+		onSuccess: function(resp) {
+		    server.retrycount = 0;
+		    if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 
-			if (resp.error == 0) {
-			    if (details.id < 0) { // A new line
-				annotation.store('id', resp.id);
-				//if ($defined(lineselect) && (annotation.retrieve("paper") == lineselect.paper)) {
-				    //unselectline();
-				//    annotation.fireEvent('click');
-				//}
-			    }
-			} else {
-			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
-				server.addannotation(details, annotation);
-			    }
+		    if (resp.error == 0) {
+			if (details.id < 0) { // A new line
+			    annotation.store('id', resp.id);
+			    //if ($defined(lineselect) && (annotation.retrieve("paper") == lineselect.paper)) {
+			    //unselectline();
+			    //    annotation.fireEvent('click');
+			    //}
 			}
-		    },
-
-		    onFailure: function(resp) {
-			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
-			showsendfailed(function() {server.addannotation(details, annotation);});
+		    } else {
+			if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
+			    server.addannotation(details, annotation);
+			}
 		    }
-		    
-		});
+		},
 
-	    request.send({ data: {
-			action: 'addannotation',
-			    annotation_startx: details.coords.sx,
-			    annotation_starty: details.coords.sy,
-			    annotation_endx: details.coords.ex,
-			    annotation_endy: details.coords.ey,
-			    annotation_colour: details.colour,
-			    annotation_type: details.type,
-			    annotation_id: details.id,
-			    id: this.id,
-			    userid: this.userid,
-			    pageno: this.pageno,
-			    sesskey: this.sesskey
-			    } });
+		onFailure: function(resp) {
+		    if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
+		    showsendfailed(function() {server.addannotation(details, annotation);});
+		}
+	    });
+
+	    var requestdata = {
+		    action: 'addannotation',
+		    annotation_colour: details.colour,
+		    annotation_type: details.type,
+		    annotation_id: details.id,
+		    id: this.id,
+		    userid: this.userid,
+		    pageno: this.pageno,
+		    sesskey: this.sesskey
+	    };
+
+	    if (details.type == 'freehand') {
+		// Does not send yet
+	    } else {
+		requestdata.annotation_startx = details.coords.sx;
+		requestdata.annotation_starty = details.coords.sy,
+		requestdata.annotation_endx = details.coords.ex,
+		requestdata.annotation_endy = details.coords.ey,
+		
+		request.send({ data: requestdata }); // Move this line down, once all working
+	    }
 	},
 
 	removeannotation: function(aid) {
@@ -817,6 +824,9 @@ function startline(e) {
     currentpaper = Raphael(dims.left,dims.top,dims.width,dims.height);
     $(document).addEvent('mousemove', updateline);
     linestartpos = {x: sx, y: sy};
+    if (tool == 'freehand') {
+	freehandpoints = new Array({x:linestartpos.x, y:linestartpos.y});
+    }
 
     return false;
 }
@@ -826,13 +836,15 @@ function updateline(e) {
     var ex = e.page.x - dims.left;
     var ey = e.page.y - dims.top;
 
-    if ($defined(currentline)) {
+    var currenttool = getcurrenttool();
+
+    if ($defined(currentline) && currenttool != 'freehand') {
 	currentline.remove();
     } else {
 	// Doing this earlier catches the starting mouse click by mistake
 	$(document).addEvent('mouseup',finishline);
     }
-    switch (getcurrenttool()) {
+    switch (currenttool) {
     case 'rectangle':
 	var w = Math.abs(ex-linestartpos.x);
 	var h = Math.abs(ey-linestartpos.y);
@@ -847,9 +859,14 @@ function updateline(e) {
 	var sy = Math.min(linestartpos.y, ey) + ry; 
 	currentline = currentpaper.ellipse(sx, sy, rx, ry);
 	break;
-    case 'freehand': // Not yet implemented
+    case 'freehand':
+	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
+	freehandpoints.push({x:ex, y:ey});
+	linestartpos.x = ex;
+	linestartpos.y = ey;
+	break;
     default: // Comment + Ctrl OR line
-	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+" L"+ex+" "+ey);
+	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
 	break;
     }
     currentline.attr("stroke-width", 3);
@@ -865,67 +882,100 @@ function finishline(e) {
     }
 
     var dims = $('pdfimg').getCoordinates();
-    var coords = {sx:linestartpos.x, sy:linestartpos.y, ex: (e.page.x-dims.left), ey: (e.page.y-dims.top)};
+    var coords;
+    var tool = getcurrenttool();
+    if (tool == 'freehand') {
+	coords = freehandpoints;
+    } else {
+	coords = {sx:linestartpos.x, sy:linestartpos.y, ex: (e.page.x-dims.left), ey: (e.page.y-dims.top)};
+    }
 
     currentpaper.remove();
     currentpaper = null;
     currentline = null;
 
-    makeline(coords, getcurrenttool());
+    makeline(coords, tool);
 }
 
 function makeline(coords, type, id, colour) {
     var linewidth = 3.0;
     var halflinewidth = linewidth * 0.5;
     var dims = $('pdfimg').getCoordinates();
-    var startcoords = { sx: coords.sx, sy: coords.sy, ex: coords.ex, ey: coords.ey };
+    var paper;
+    var line;
+    var details;
+    var boundary;
 
     if (!$defined(colour)) {
 	colour = getcurrentlinecolour();
     }
-    var details = {type: type, coords: startcoords, colour: colour};
+    details = {type: type, colour: colour};
+    
+    if (type == 'freehand') {
+	details.coords = coords;
 
-    coords.sx += dims.left;   coords.ex += dims.left;
-    coords.sy += dims.top;    coords.ey += dims.top;
-
-    if (coords.sx > coords.ex) { // Always go left->right
-	var temp = coords.sx; coords.sx = coords.ex; coords.ex = temp;
-	temp = coords.sy;     coords.sy = coords.ey; coords.ey = temp;
-    }
-    if (coords.sy < coords.ey) {
-	var boundary = {x: (coords.sx-halflinewidth), y: (coords.sy-halflinewidth), w: (coords.ex+linewidth-coords.sx), h: (coords.ey+linewidth-coords.sy)};
-	coords.sy = halflinewidth; coords.ey = boundary.h - halflinewidth;
+	var maxx = minx = coords[0].x;
+	var maxy = miny = coords[0].y;
+	for (var i=1; i<coords.length; i++) {
+	    minx = Math.min(minx, coords[i].x);
+	    maxx = Math.max(maxx, coords[i].x);
+	    miny = Math.min(miny, coords[i].y);
+	    maxy = Math.max(maxy, coords[i].y);
+	}
+	boundary = {x: (minx-(halflinewidth*0.5)+dims.left), y: (miny-(halflinewidth*0.5)+dims.top), w: (maxx+linewidth-minx), h: (maxy+linewidth-miny)};
+	paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
+	minx -= halflinewidth;
+	miny -= halflinewidth;
+	
+	var pathstr = 'M'+(coords[0].x-minx)+' '+(coords[0].y-miny);
+	for (var i=1; i<coords.length; i++) {
+	    pathstr += 'L'+(coords[i].x-minx)+' '+(coords[i].y-miny);
+	}
+	line = paper.path(pathstr);
     } else {
-	var boundary = {x: (coords.sx-halflinewidth), y: (coords.ey-halflinewidth), w: (coords.ex+linewidth-coords.sx), h: (coords.sy+linewidth-coords.ey)};
-	coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
+	details.coords = { sx: coords.sx, sy: coords.sy, ex: coords.ex, ey: coords.ey };
+
+	coords.sx += dims.left;   coords.ex += dims.left;
+	coords.sy += dims.top;    coords.ey += dims.top;
+
+	if (coords.sx > coords.ex) { // Always go left->right
+	    var temp = coords.sx; coords.sx = coords.ex; coords.ex = temp;
+	    temp = coords.sy;     coords.sy = coords.ey; coords.ey = temp;
+	}
+	if (coords.sy < coords.ey) {
+	    boundary = {x: (coords.sx-(halflinewidth*0.5)), y: (coords.sy-(halflinewidth*0.5)), w: (coords.ex+linewidth-coords.sx), h: (coords.ey+linewidth-coords.sy)};
+	    coords.sy = halflinewidth; coords.ey = boundary.h - halflinewidth;
+	} else {
+	    boundary = {x: (coords.sx-(halflinewidth*0.5)), y: (coords.ey-(halflinewidth*0.5)), w: (coords.ex+linewidth-coords.sx), h: (coords.sy+linewidth-coords.ey)};
+	    coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
+	}
+	coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
+	paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
+	switch (type) {
+	case 'rectangle':
+	    var w = Math.abs(coords.ex - coords.sx);
+	    var h = Math.abs(coords.ey - coords.sy);
+	    var sx = Math.min(coords.sx, coords.ex);
+	    var sy = Math.min(coords.sy, coords.ey);
+	    line = paper.rect(sx, sy, w, h);
+	    break;
+	case 'oval':
+	    var rx = Math.abs(coords.ex - coords.sx) / 2;
+	    var ry = Math.abs(coords.ey - coords.sy) / 2;
+	    var sx = Math.min(coords.sx, coords.ex)+rx;
+	    var sy = Math.min(coords.sy, coords.ey)+ry;
+	    line = paper.ellipse(sx, sy, rx, ry);
+	    break;
+	default:
+	    line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
+	    details.type = 'line';
+	    break;
+	}
     }
-    coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
-    var paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
-    var line;
-    switch (type) {
-    case 'rectangle':
-	var w = Math.abs(coords.ex - coords.sx);
-	var h = Math.abs(coords.ey - coords.sy);
-	var sx = Math.min(coords.sx, coords.ex);
-	var sy = Math.min(coords.sy, coords.ey);
-	line = paper.rect(sx, sy, w, h);
-	break;
-    case 'oval':
-	var rx = Math.abs(coords.ex - coords.sx) / 2;
-	var ry = Math.abs(coords.ey - coords.sy) / 2;
-	var sx = Math.min(coords.sx, coords.ex)+rx;
-	var sy = Math.min(coords.sy, coords.ey)+ry;
-	line = paper.ellipse(sx, sy, rx, ry);
-	break;
-    case 'freehand': // Not yet implemented
-    default:
-	line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
-	details.type = 'line';
-	break;
-    }
+    
     line.attr("stroke-width", linewidth);
     setlinecolour(colour, line);
-    
+
     var domcanvas = $(paper.canvas);
 
     domcanvas.store('paper',paper);
