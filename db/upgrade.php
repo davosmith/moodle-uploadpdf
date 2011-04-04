@@ -119,5 +119,12 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $result = $result && add_field($table, $field);
     }
 
+    if ($result && $oldversion < 2011040400) {
+        $table = new XMLDBTable('assignment_uploadpdf_annot');
+        $field = new XMLDBField('path');
+        $field->setAttributes(XMLDB_TYPE_TEXT. 'medium', null, null, null, null, null, 'endy');
+        $result = $result && add_field($table, $field);
+    }
+
     return $result;
 }

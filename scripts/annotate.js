@@ -169,12 +169,21 @@ var ServerComm = new Class({
 				allannotations.each(function(p) {p.remove()});
 				allannotations.empty();
 				resp.annotations.each(function(annotation) {
-				    var coords = {
-					sx: annotation.coords.startx.toInt(),
-					sy: annotation.coords.starty.toInt(),
-					ex: annotation.coords.endx.toInt(),
-					ey: annotation.coords.endy.toInt()
-				    };
+				    var coords;
+				    if (annotation.type == 'freehand') {
+					coords = new Array();
+					points = annotation.path.split(',');
+					for (var i=0; (i+1)<points.length; i+=2) {
+					    coords.push({x:points[i].toInt(), y:points[i+1].toInt()});
+					}
+				    } else {
+					coords = {
+					    sx: annotation.coords.startx.toInt(),
+					    sy: annotation.coords.starty.toInt(),
+					    ex: annotation.coords.endx.toInt(),
+					    ey: annotation.coords.endy.toInt()
+					};
+				    }
 				    makeline(coords, annotation.type, annotation.id, annotation.colour);
 				});
 			    }
@@ -423,15 +432,14 @@ var ServerComm = new Class({
 	    };
 
 	    if (details.type == 'freehand') {
-		// Does not send yet
+		requestdata.annotation_path = details.path;
 	    } else {
 		requestdata.annotation_startx = details.coords.sx;
-		requestdata.annotation_starty = details.coords.sy,
-		requestdata.annotation_endx = details.coords.ex,
-		requestdata.annotation_endy = details.coords.ey,
-		
-		request.send({ data: requestdata }); // Move this line down, once all working
+		requestdata.annotation_starty = details.coords.sy;
+		requestdata.annotation_endx = details.coords.ex;
+		requestdata.annotation_endy = details.coords.ey;
 	    }
+	    request.send({ data: requestdata });
 	},
 
 	removeannotation: function(aid) {
@@ -912,7 +920,10 @@ function makeline(coords, type, id, colour) {
     details = {type: type, colour: colour};
     
     if (type == 'freehand') {
-	details.coords = coords;
+	details.path = coords[0].x+','+coords[0].y;
+	for (var i=1; i<coords.length; i++) {
+	    details.path += ','+coords[i].x+','+coords[i].y;
+	}
 
 	var maxx = minx = coords[0].x;
 	var maxy = miny = coords[0].y;
