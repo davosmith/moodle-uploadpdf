@@ -1434,7 +1434,7 @@ class assignment_uploadpdf extends assignment_base {
             if ($showprevious != -1) {
                 echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">';
                 echo '<html><head><title>'.get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name).'</title></head>';
-                echo '<frameset cols="70%, 30%">';
+                echo '<frameset cols="60%, 40%">';
                 echo '<frame src="editcomment.php?';
                 echo 'id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='.$pageno.'&amp;showprevious='.$showprevious;
                 echo '">';
@@ -1532,6 +1532,21 @@ class assignment_uploadpdf extends assignment_base {
             echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
             echo '</form>';
         }
+
+
+        $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id, 'pageno, posy');
+        echo '<button id="findcommentsbutton">'.get_string('findcomments','assignment_uploadpdf').'</button>';
+        echo '<select id="findcommentsselect" name="findcomments" >';
+        foreach ($comments as $comment) {
+            $text = $comment->rawtext;
+            if (strlen($text) > 40) {
+                $text = substr($text, 0, 39).'&hellip;';
+            }
+            echo '<option value="'.$comment->pageno.'"';
+            echo '>'.$comment->pageno.': '.s($text).'</option>';
+        }
+        echo '</select>';
+
 		echo '</div>';
 
         echo '<div id="toolbar-line2">';
@@ -1617,6 +1632,7 @@ class assignment_uploadpdf extends assignment_base {
             $checked = '';
         }
         echo '</div>';
+        echo '</div>'; // toolbar-line-2
 
         // Output the page image
         echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
@@ -1626,6 +1642,7 @@ class assignment_uploadpdf extends assignment_base {
         if ($CFG->uploadpdf_js_navigation) {
             $pageselector = str_replace(array('selectpage','"nextpage"','"prevpage"'),array('selectpage2','"nextpage2"','"prevpage2"'),$pageselector);
         }
+        echo '<br/>';
         echo $pageselector;
         if ($CFG->uploadpdf_js_navigation) {
             echo '<p><a id="opennewwindow" target="_blank" href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. $pageno .'&amp;showprevious='.$showprevious.'">'.get_string('opennewwindow','assignment_uploadpdf').'</a></p>';

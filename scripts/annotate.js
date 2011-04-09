@@ -16,6 +16,7 @@ var lineColourMenu = null;
 var nextbutton = null;
 var prevbutton = null;
 var choosedrawingtool = null;
+var findcommentsmenu = null;
 
 var resendtimeout = 4000;
 
@@ -39,7 +40,7 @@ var ServerComm = new Class({
 	url: null,
 	js_navigation: true,
 	retrycount: 0,
-	
+
 	initialize: function(settings) {
 	    this.id = settings.id;
 	    this.userid = settings.userid;
@@ -48,7 +49,7 @@ var ServerComm = new Class({
 	    this.url = settings.updatepage;
 	    this.js_navigation = settings.js_navigation;
 	},
-	
+
 	updatecomment: function(comment) {
 	    var waitel = new Element('div');
 	    waitel.set('class', 'wait');
@@ -57,7 +58,7 @@ var ServerComm = new Class({
 	    var request = new Request.JSON({
 		    url: this.url,
 		    timeout: resendtimeout,
-		    
+
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
@@ -76,7 +77,7 @@ var ServerComm = new Class({
 			    }
 			}
 		    },
-		    
+
 		    onFailure: function(req) {
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
@@ -107,7 +108,7 @@ var ServerComm = new Class({
 			    }
 		});
 	},
-	
+
 	removecomment: function(cid) {
 	    var request = new Request.JSON({
 		    url: this.url,
@@ -135,7 +136,7 @@ var ServerComm = new Class({
 			    }
 		});
 	},
-	
+
 	getcomments: function() {
 	    var waitel = new Element('div');
 	    waitel.set('class', 'pagewait');
@@ -253,7 +254,7 @@ var ServerComm = new Class({
 			    }
 			}
 		    },
-		    
+
 		    onFailure: function(resp) {
 			showsendfailed(function() { server.addtoquicklist(element); });
 		    }
@@ -317,7 +318,7 @@ var ServerComm = new Class({
 		    $('pdfimg').setProperty('src',server_config.blank_image);
 		}
 	    }
-	    
+
 	    var pagecount = server_config.pagecount.toInt();
 	    if (pageno > pagecount) {
 		pageno = 1;
@@ -338,7 +339,7 @@ var ServerComm = new Class({
 		    pageno++;
 		}
 	    }
-	    
+
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -361,7 +362,7 @@ var ServerComm = new Class({
 				var nextpage = pageno.toInt()+1;
 				server.getimageurl(nextpage, false);
 			    }
-			    
+
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.getimageurl(pageno, false);
@@ -469,7 +470,7 @@ var ServerComm = new Class({
 			    }
 		});
 	}
-	
+
     });
 
 function showsendfailed(resend) {
@@ -484,7 +485,7 @@ function showsendfailed(resend) {
 	resend();
 	return;
     }
-    
+
     var el = $('sendagain');
     el.addEvent('click', resend);
     el.addEvent('click', hidesendfailed);
@@ -551,7 +552,7 @@ function makeeditbox(comment, content) {
     if (!$defined(content)) {
 	content = '';
     }
-    
+
     editbox = new Element('textarea');
     editbox.set('rows', '5');
     editbox.set('wrap', 'soft');
@@ -583,7 +584,7 @@ function makecommentbox(position, content, colour) {
 	newcomment.set('style', 'position:absolute; top:'+position.y+'px; left:'+position.x+'px;');
     }
     newcomment.store('id', -1);
-    
+
     if (context_comment) {
 	context_comment.addmenu(newcomment);
     }
@@ -622,7 +623,7 @@ function makecommentbox(position, content, colour) {
 	    },
 	    onComplete: function(el) {
 		resizing = false;
-		if (!$defined(editbox)) { 
+		if (!$defined(editbox)) {
 		    server.updatecomment(el); // Do not update on resize when editing the text
 		}
 	    }
@@ -667,7 +668,7 @@ function addcomment(e) {
 
 function editcomment(el) {
     //unselectline();
-    
+
     if (currentcomment == el) {
 	return;
     }
@@ -828,7 +829,7 @@ function startline(e) {
     var dims = $('pdfimg').getCoordinates();
     var sx = e.page.x - dims.left;
     var sy = e.page.y - dims.top;
-    
+
     currentpaper = Raphael(dims.left,dims.top,dims.width,dims.height);
     $(document).addEvent('mousemove', updateline);
     linestartpos = {x: sx, y: sy};
@@ -864,7 +865,7 @@ function updateline(e) {
 	var rx = Math.abs(ex - linestartpos.x) / 2;
 	var ry = Math.abs(ey - linestartpos.y) / 2;
 	var sx = Math.min(linestartpos.x, ex) + rx; // Add 'rx'/'ry' to get to the middle
-	var sy = Math.min(linestartpos.y, ey) + ry; 
+	var sy = Math.min(linestartpos.y, ey) + ry;
 	currentline = currentpaper.ellipse(sx, sy, rx, ry);
 	break;
     case 'freehand':
@@ -889,7 +890,7 @@ function updateline(e) {
 function finishline(e) {
     $(document).removeEvent('mousemove', updateline);
     $(document).removeEvent('mouseup', finishline);
-    
+
     if (!$defined(currentpaper)) {
 	return;
     }
@@ -923,7 +924,7 @@ function makeline(coords, type, id, colour) {
 	colour = getcurrentlinecolour();
     }
     details = {type: type, colour: colour};
-    
+
     if (type == 'freehand') {
 	details.path = coords[0].x+','+coords[0].y;
 	for (var i=1; i<coords.length; i++) {
@@ -942,7 +943,7 @@ function makeline(coords, type, id, colour) {
 	paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
 	minx -= halflinewidth;
 	miny -= halflinewidth;
-	
+
 	var pathstr = 'M'+(coords[0].x-minx)+' '+(coords[0].y-miny);
 	for (var i=1; i<coords.length; i++) {
 	    pathstr += 'L'+(coords[i].x-minx)+' '+(coords[i].y-miny);
@@ -988,7 +989,7 @@ function makeline(coords, type, id, colour) {
 	    break;
 	}
     }
-    
+
     line.attr("stroke-width", linewidth);
     setlinecolour(colour, line);
 
@@ -1022,7 +1023,7 @@ function selectline(e) {
 	colour = "#555";
     }
     lineselect = paper.rect(1,1,width-2,height-2).attr({stroke: colour, "stroke-dasharray": "- ", "stroke-width": 1, fill: null});
-    
+
     updatelastcomment(); // In case we were editing a comment at the time
     document.addEvent('keydown', checkdeleteline);
     var linecolour = this.retrieve('colour');
@@ -1125,6 +1126,16 @@ function startjs() {
     var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
     choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
     setcurrenttool('commenticon');
+    findcommentsmenu = new YAHOO.widget.Button("findcommentsbutton", {
+	type: "menu",
+	menu: "findcommentsselect",
+	lazyloadmenu: false });
+    findcommentsmenu.on("selectedMenuItemChange", function(e) {
+	    var pageno = e.newValue.value;
+	    if (server.pageno.toInt() != pageno) {
+		gotopage(pageno);
+	    }
+	});
 
     server = new ServerComm(server_config);
     server.getcomments();
@@ -1346,7 +1357,7 @@ function gotopage(pageno) {
 	var opennew = $('opennewwindow');
 	var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
 	opennew.set('href', on_link);
-    
+
 	//Update the next/previous buttons
 	if (pageno == pagecount) {
 	    nextbutton.set('disabled',true);
@@ -1362,7 +1373,7 @@ function gotopage(pageno) {
 	    prevbutton.set('disabled',false);
 	    $('prevpage2').erase('disabled');
 	}
-	
+
 	server.pageno = ""+pageno;
 	server.getimageurl(pageno, true);
     }
