@@ -2369,12 +2369,21 @@ class assignment_uploadpdf extends assignment_base {
                 fwrite ($bf,full_tag("STARTY",6,false,$annotation->starty));
                 fwrite ($bf,full_tag("ENDX",6,false,$annotation->endx));
                 fwrite ($bf,full_tag("ENDY",6,false,$annotation->endy));
+                fwrite ($bf,full_tag("PATH",6,false,$annotation->path));
                 fwrite ($bf,full_tag("PAGENO",6,false,$annotation->pageno));
                 fwrite ($bf,full_tag("COLOUR",6,false,$annotation->colour));
                 fwrite ($bf,full_tag("TYPE",6,false,$annotation->type));
                 fwrite ($bf,end_tag("ANNOTATION",5,true));
             }
             fwrite ($bf,end_tag("ANNOTATIONS",4,true));
+        }
+    }
+
+    function backup_todb_optional_field($data, $field, $default) {
+        if (array_key_exists($field, $data['#'])) {
+            return backup_todb($data['#'][$field]['0']['#']);
+        } else {
+            return $default;
         }
     }
 
@@ -2454,6 +2463,7 @@ class assignment_uploadpdf extends assignment_base {
             $dba->starty = backup_todb($annotation['#']['STARTY']['0']['#']);
             $dba->endx = backup_todb($annotation['#']['ENDX']['0']['#']);
             $dba->endy = backup_todb($annotation['#']['ENDY']['0']['#']);
+            $dba->path = $this->backup_todb_optional_field($annotation, 'PATH', null);
             $dba->pageno = backup_todb($annotation['#']['PAGENO']['0']['#']);
             $dba->colour = backup_todb($annotation['#']['COLOUR']['0']['#']);
             $dba->type = backup_todb($annotation['#']['TYPE']['0']['#']);
