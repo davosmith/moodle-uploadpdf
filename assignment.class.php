@@ -1542,7 +1542,7 @@ class assignment_uploadpdf extends assignment_base {
             if (strlen($text) > 40) {
                 $text = substr($text, 0, 39).'&hellip;';
             }
-            echo '<option value="'.$comment->pageno.'"';
+            echo '<option value="'.$comment->pageno.':'.$comment->id.'"';
             echo '>'.$comment->pageno.': '.s($text).'</option>';
         }
         echo '</select>';
