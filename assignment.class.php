@@ -377,17 +377,20 @@ class assignment_uploadpdf extends assignment_base {
                         $icon = mimeinfo('icon', $file);
                         if (mimeinfo('type', $file) == 'application/pdf') {
                             $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
-                            $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file,
+                            $output .= link_to_popup_window($ffurl, 'editcomment'.$userid, '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.get_string('annotatesubmission','assignment_uploadpdf'),
                                                             700, 1000, get_string('annotatesubmission', 'assignment_uploadpdf'), 'none', true, 'editcommentbutton'.$userid);
                         } else {
                             $ffurl = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file";
+                            if (mimeinfo('type', $file) == 'application/pdf') {
+                                $file = get_string('completedsubmission', 'assignment_uploadpdf');
+                            }
                             $output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
                         }
                     }
                     if (file_exists($basedir.'/responses/response.pdf')) {
                         $respicon = mimeinfo('icon', $basedir.'/responses/response.pdf');
                         $respurl = "$CFG->wwwroot/file.php?file=/$filearea/responses/response.pdf";
-                        $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />response.pdf</a>&nbsp;';
+                        $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$respicon.'" alt="'.$respicon.'" />'.get_string('viewresponse','assignment_uploadpdf').'</a>&nbsp;';
 
                         // To tidy up flags from older versions of this assignment
                         if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
@@ -404,6 +407,9 @@ class assignment_uploadpdf extends assignment_base {
                         require_once($CFG->libdir.'/filelib.php');
                         $icon = mimeinfo('icon', $file);
                         $ffurl = "$CFG->wwwroot/file.php?file=/$filearea/$file";
+                        if ($file == 'response.pdf') {
+                            $file = get_string('viewresponse','assignment_uploadpdf');
+                        }
                         $output .= '<a href="'.$ffurl.'" ><img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>&nbsp;';
                     }
                 }
@@ -465,10 +471,13 @@ class assignment_uploadpdf extends assignment_base {
                             if ((mimeinfo('type',$file) == 'application/pdf') && (has_capability('mod/assignment:grade', $this->context))) {
                                 $ffurl = '/mod/assignment/type/uploadpdf/editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                                 $output .= link_to_popup_window($ffurl, 'editcomment'.$userid,
-                                                                '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file, 700, 1000,
+                                                                '<img class="icon" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.get_string('annotatesubmission','assignment_uploadpdf'), 700, 1000,
                                                                 get_string('annotatesubmission', 'assignment_uploadpdf'), 'none', true, 'editcommentbutton'.$userid);
                             } else {
                                 $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
+                                if (mimeinfo('type', $file) == 'application/pdf') {
+                                    $file = get_string('completedsubmission', 'assignment_uploadpdf');
+                                }
                                 $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
                             }
                             /*if ($candelete) {
@@ -488,12 +497,8 @@ class assignment_uploadpdf extends assignment_base {
                         foreach ($files as $key => $file) {
 
                             $icon = mimeinfo('icon', $file);
-
                             $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
-
-
                             $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
-
                             if ($candelete) {
                                 $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid={$submission->userid}&amp;mode=$mode&amp;offset=$offset";
 
@@ -545,6 +550,9 @@ class assignment_uploadpdf extends assignment_base {
 
                     $icon = mimeinfo('icon', $file);
                     $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
+                    if ($file == 'response.pdf') {
+                        $file = get_string('viewresponse', 'assignment_uploadpdf');
+                    }
                     $output .= '<a href="'.$ffurl.'" ><img class="align" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>';
                     if ($candelete) {
                         $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;action=response&amp;sesskey=".sesskey();
