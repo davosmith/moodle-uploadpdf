@@ -1122,6 +1122,18 @@ function keyboardnavigation(e) {
 	gotonextpage();
     } else if (e.key == 'p') {
 	gotoprevpage();
+    } else if (e.key == 'c') {
+	setcurrenttool('comment');
+    } else if (e.key == 'l') {
+	setcurrenttool('line');
+    } else if (e.key == 'r') {
+	setcurrenttool('rectangle');
+    } else if (e.key == 'o') {
+	setcurrenttool('oval');
+    } else if (e.key == 'f') {
+	setcurrenttool('freehand');
+    } else if (e.key == 'e') {
+	setcurrenttool('erase');
     }
 }
 
