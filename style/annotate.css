@@ -5,6 +5,7 @@
     font-size: 12px;
     cursor: move;
     width: 120px;
+    line-height: normal;
 }
 
 .comment p {
