@@ -944,6 +944,11 @@ function startline(e) {
 	return true; // If user clicks very quickly this can happen
     }
 
+    if ($defined(currentcomment)) {
+	updatelastcomment();
+	return;
+    }
+
     var tool = getcurrenttool();
 
     modifier = Browser.Platform.mac ? e.alt : e.control;
@@ -1125,7 +1130,7 @@ function makeline(coords, type, id, colour) {
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: absolute });
 	} else {
 	    // Does not work with IE
-	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+';');
+	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+'px;');
 	}
 	$('pdfholder').adopt(container);
 	paper = Raphael(container);
@@ -1161,7 +1166,7 @@ function makeline(coords, type, id, colour) {
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: absolute });
 	} else {
 	    // Does not work with IE
-	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+';');
+	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+'px;');
 	}
 	$('pdfholder').adopt(container);
 	paper = Raphael(container);
