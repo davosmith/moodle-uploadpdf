@@ -971,6 +971,9 @@ function startjs() {
     prevbutton.on("click", gotoprevpage);
     nextbutton = new YAHOO.widget.Button("nextpage");
     nextbutton.on("click", gotonextpage);
+    savedraftbutton = new YAHOO.widget.Button("savedraft");
+    generateresponsebutton = new YAHOO.widget.Button("generateresponse");
+    downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
 
     server.getcomments();
 

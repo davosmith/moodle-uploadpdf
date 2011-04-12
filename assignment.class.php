@@ -1380,16 +1380,45 @@ class assignment_uploadpdf extends assignment_base {
 
         echo $OUTPUT->header();
 
-        echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" >';
+        echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" style="display: inline-block;" >';
         echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
         echo '<input type="hidden" name="userid" value="'.$userid.'" />';
         echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-        echo '<input type="submit" name="savedraft" value="'.get_string('savedraft', 'assignment_uploadpdf').'" /> ';
-        echo '<input type="submit" name="generateresponse" value="'.get_string('generateresponse', 'assignment_uploadpdf').'" /> ';
+        echo '<button type="submit" id="savedraft" name="savedraft" value="savedraft" title="'.get_string('savedraft', 'assignment_uploadpdf').'"><img src="'.$OUTPUT->pix_url('savequit','assignment_uploadpdf').'"/></button>';
+        echo '<button type="submit" id="generateresponse" name="generateresponse" value="generateresponse" title="'.get_string('generateresponse','assignment_uploadpdf').'"><img src="'.$OUTPUT->pix_url('tostudent','assignment_uploadpdf').'"/></button>';
 		$pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submissionfinal/'.$submission->id.'/submission.pdf');
-		echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a>';
+        $downloadorig = get_string('downloadoriginal', 'assignment_uploadpdf');
+		echo '<a href="'.$pdfurl.'" target="_blank" id="downloadpdf" title="'.$downloadorig.'" alt="'.$downloadorig.'" ><img src="'.$OUTPUT->pix_url('download','assignment_uploadpdf').'" alt="'.$downloadorig.'" title="'.$downloadorig.'" /></a>';
         echo '</form>';
-		echo '</div>';
+
+        // Show previous assignment
+        $ps_sql = 'SELECT asn.id, asn.name FROM {assignment} asn ';
+        $ps_sql .= 'INNER JOIN {assignment_submissions} sub ON sub.assignment = asn.id ';
+        $ps_sql .= 'WHERE course = ? ';
+        $ps_sql .= 'AND asn.assignmenttype = "uploadpdf" ';
+        $ps_sql .= 'AND userid = ? ';
+        $ps_sql .= 'AND asn.id != ? ';
+        $ps_sql .= 'ORDER BY sub.timemodified DESC;';
+        $previoussubs = $DB->get_records_sql($ps_sql, array($this->course->id, $userid, $this->assignment->id) );
+        if ($previoussubs) {
+            echo '<form style="display: inline-block;" id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
+            echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
+            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+            echo '<input type="hidden" name="userid" value="'.$userid.'" />';
+            echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
+            echo '<input type="hidden" name="topframe" value="1" />';
+            echo '<select id="showpreviousselect" name="showprevious" onChange="this.form.submit();">';
+            echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
+            foreach ($previoussubs as $prevsub) {
+                echo '<option value="'.$prevsub->id.'"';
+                if ($showprevious == $prevsub->id) echo ' selected="selected" ';
+                echo '>'.s($prevsub->name).'</option>';
+            }
+            echo '</select>';
+            echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
+            echo '</form>';
+        }
+        echo '</div>';
 
         echo '<div id="toolbar-line2">';
         if (!$CFG->uploadpdf_js_navigation) {
@@ -1425,7 +1454,7 @@ class assignment_uploadpdf extends assignment_base {
             $disabled = ($pageno == 1) ? ' disabled = "disabled" ' : '';
             $pageselector .= '<button id="prevpage" '.$disabled.'onClick="gotoprevpage();" title="'.get_string('keyboardprev','assignment_uploadpdf').'" >&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
 
-            $pageselector .= '<select name="selectpage" id="selectpage" onChange="selectpage();">';
+            $pageselector .= '<span style="position:relative; width:50px; display:inline-block; height:34px"><select name="selectpage" id="selectpage" onChange="selectpage();">';
             for ($i=1; $i<=$pagecount; $i++) {
                 if ($i == $pageno) {
                     $pageselector .= "<option value='$i' selected='selected'>$i</option>";
@@ -1433,7 +1462,7 @@ class assignment_uploadpdf extends assignment_base {
                     $pageselector .= "<option value='$i'>$i</option>";
                 }
             }
-            $pageselector .= '</select>';
+            $pageselector .= '</select></span>';
 
             $disabled = ($pageno == $pagecount) ? ' disabled = "disabled" ' : '';
             $pageselector .= '<button id="nextpage" '.$disabled.'onClick="gotonextpage();" title="'.get_string('keyboardnext','assignment_uploadpdf').'">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
@@ -1458,34 +1487,7 @@ class assignment_uploadpdf extends assignment_base {
             echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$OUTPUT->pix_url('line'.$colour, 'assignment_uploadpdf').'"/></li>';
         }
         echo '</ul></div></div>';
-
-        // Show previous assignment
-        $ps_sql = 'SELECT asn.id, asn.name FROM {assignment} asn ';
-        $ps_sql .= 'INNER JOIN {assignment_submissions} sub ON sub.assignment = asn.id ';
-        $ps_sql .= 'WHERE course = ? ';
-        $ps_sql .= 'AND asn.assignmenttype = "uploadpdf" ';
-        $ps_sql .= 'AND userid = ? ';
-        $ps_sql .= 'AND asn.id != ? ';
-        $ps_sql .= 'ORDER BY sub.timemodified DESC;';
-        $previoussubs = $DB->get_records_sql($ps_sql, array($this->course->id, $userid, $this->assignment->id) );
-        if ($previoussubs) {
-            echo '<form style="display: inline-block;" id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
-            echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
-            echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-            echo '<input type="hidden" name="userid" value="'.$userid.'" />';
-            echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-            echo '<input type="hidden" name="topframe" value="1" />';
-            echo '<select id="showpreviousselect" name="showprevious" onChange="this.form.submit();">';
-            echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
-            foreach ($previoussubs as $prevsub) {
-                echo '<option value="'.$prevsub->id.'"';
-                if ($showprevious == $prevsub->id) echo ' selected="selected" ';
-                echo '>'.s($prevsub->name).'</option>';
-            }
-            echo '</select>';
-            echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
-            echo '</form>';
-        }
+        echo '</div>';
         echo '</div>';
 
         // Output the page image
