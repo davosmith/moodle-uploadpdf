@@ -78,7 +78,7 @@ $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
 $string['colourblack'] = 'Black';
 
-$string['completedsubmission'] = 'Completed submission';
+$string['completedsubmission'] = 'Download completed submission';
 $string['viewresponse'] = 'Download response';
 
 $string['findcomments'] = 'Find comments';
