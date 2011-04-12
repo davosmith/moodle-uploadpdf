@@ -1472,7 +1472,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '<div id="colourselector">';
         // Choose comment colour
         echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
-        echo '<div id="choosecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
+        echo '<div id="choosecolourmenu" class="yuimenu" title="'.get_string('commentcolour', 'assignment_uploadpdf').'"><div class="bd"><ul class="first-of-type">';
         $colours = array('red','yellow','green','blue','white','clear');
         foreach ($colours as $colour) {
             echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$OUTPUT->pix_url($colour,'assignment_uploadpdf').'"/></li>';
@@ -1487,6 +1487,23 @@ class assignment_uploadpdf extends assignment_base {
             echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$OUTPUT->pix_url('line'.$colour, 'assignment_uploadpdf').'"/></li>';
         }
         echo '</ul></div></div>';
+
+        // Choose annotation type
+        $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon');
+        $checked = ' yui-button-checked';
+        echo '<div id="choosetoolgroup" class="yui-buttongroup">';
+
+        foreach ($drawingtools as $drawingtool) {
+            echo '<span id="'.$drawingtool.'" class="yui-button yui-radio-button'.$checked.'">';
+            echo ' <span class="first-child">';
+            echo '  <button type="button" name="choosetoolradio" value="'.$drawingtool.'" title="'.get_string($drawingtool,'assignment_uploadpdf').'">';
+            echo '   <img src="'.$OUTPUT->pix_url($drawingtool, 'assignment_uploadpdf').'" />';
+            echo '  </button>';
+            echo ' </span>';
+            echo '</span>';
+            $checked = '';
+        }
+
         echo '</div>';
         echo '</div>';
 

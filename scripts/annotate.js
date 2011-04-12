@@ -15,6 +15,7 @@ var colourmenu = null;
 var linecolourmenu = null;
 var nextbutton = null;
 var prevbutton = null;
+var choosedrawingtool = null;
 
 var resendtimeout = 4000;
 
@@ -971,9 +972,10 @@ function startjs() {
     prevbutton.on("click", gotoprevpage);
     nextbutton = new YAHOO.widget.Button("nextpage");
     nextbutton.on("click", gotonextpage);
-    savedraftbutton = new YAHOO.widget.Button("savedraft");
-    generateresponsebutton = new YAHOO.widget.Button("generateresponse");
-    downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
+    var savedraftbutton = new YAHOO.widget.Button("savedraft");
+    var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
+    var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
+    choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
 
     server.getcomments();
 

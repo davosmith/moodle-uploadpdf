@@ -71,13 +71,13 @@ $string['isresubmission'] = 'This is a resubmission - ';
 $string['downloadfirstsubmission'] = 'download the first submission';
 $string['next'] = 'Next';
 $string['previous'] = 'Prev';
-$string['keyboardnext'] = 'Press \'n\' for next page';
-$string['keyboardprev'] = 'Press \'p\' for previous page';
+$string['keyboardnext'] = 'n - next page';
+$string['keyboardprev'] = 'p - previous page';
 $string['showpreviousassignment'] = 'Compare to';
 $string['previousnone'] = 'None';
 $string['showprevious'] = 'Show';
-$string['commentcolour'] = 'Background';
-$string['linecolour'] = 'Line';
+$string['commentcolour'] = '[,] - comment background colour';
+$string['linecolour'] = '{,} - line colour';
 $string['colourred'] = 'Red';
 $string['colouryellow'] = 'Yellow';
 $string['colourgreen'] = 'Green';
@@ -102,6 +102,12 @@ $string['deletecomment'] = 'Delete Comment';
 $string['emptyquicklist'] = 'No items in Quicklist';
 $string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
 $string['opennewwindow'] = 'Open this page in a new window';
+
+$string['commenticon'] = "c - add comments\nHold Ctrl to draw a line";
+$string['freehandicon'] = 'f - freehand lines';
+$string['lineicon'] = 'l - lines';
+$string['ovalicon'] = 'o - ovals';
+$string['rectangleicon'] = 'r - rectangles';
 
 //Student upload
 $string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';
