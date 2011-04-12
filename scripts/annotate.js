@@ -168,15 +168,13 @@ var ServerComm = new Class({
 				allannotations.each(function(p) {p.remove()});
 				allannotations.empty();
 				resp.annotations.each(function(annotation) {
-					if (annotation.type == 'line') {
-					    var coords = {
-						sx: annotation.coords.startx.toInt(),
-						sy: annotation.coords.starty.toInt(),
-						ex: annotation.coords.endx.toInt(),
-						ey: annotation.coords.endy.toInt()
-					    };
-					    makeline(coords, annotation.id, annotation.colour);
-					}
+					var coords = {
+					    sx: annotation.coords.startx.toInt(),
+					    sy: annotation.coords.starty.toInt(),
+					    ex: annotation.coords.endx.toInt(),
+					    ey: annotation.coords.endy.toInt()
+					};
+					makeline(coords, annotation.type, annotation.id, annotation.colour);
 				    });
 			    }
 			} else {
@@ -771,6 +769,24 @@ function changelinecolour(e) {
     Cookie.write('uploadpdf_linecolour', getcurrentlinecolour());
 }
 
+function getcurrenttool() {
+    return choosedrawingtool.get("value").replace('icon','');
+}
+
+function setcurrenttool(toolname) {
+    toolname += 'icon';
+    var btns = choosedrawingtool.getButtons();
+    var count = choosedrawingtool.getCount();
+    var idx = 0;
+    for (var i=0; i<count; i++) {
+	if (btns[i].get("value") == toolname) {
+	    idx = i;
+	}
+    }
+    choosedrawingtool.check(idx);
+    choosedrawingtool.set('value',btns[idx].get('value'));
+}
+
 function startline(e) {
     unselectline();
 
@@ -778,8 +794,10 @@ function startline(e) {
 	return true; // If user clicks very quickly this can happen
     }
 
+    var tool = getcurrenttool();
+
     modifier = Browser.Platform.mac ? e.alt : e.control;
-    if (!modifier) {
+    if (tool == 'comment' && !modifier) {
 	return true;
     }
 
@@ -807,7 +825,22 @@ function updateline(e) {
 	// Doing this earlier catches the starting mouse click by mistake
 	$(document).addEvent('mouseup',finishline);
     }
-    currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+" L"+ex+" "+ey);
+
+    switch (getcurrenttool()) {
+    case 'rectangle':
+	ex -= linestartpos.x;
+	ey -= linestartpos.y;
+	currentline = currentpaper.rect(linestartpos.x, linestartpos.y, ex, ey);
+	break;
+    case 'oval':
+	ex = (ex - linestartpos.x) / 2;
+	ey = (ey - linestartpos.y) / 2;
+	currentline = currentpaper.ellipse(linestartpos.x+ex, linestartpos.y+ey, ex, ey);
+	break;
+    default: // Comment + Ctrl OR line
+	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+" L"+ex+" "+ey);
+	break;
+    }
     currentline.attr("stroke-width", 3);
     setlinecolour(getcurrentlinecolour(), currentline);
 }
@@ -827,10 +860,10 @@ function finishline(e) {
     currentpaper = null;
     currentline = null;
 
-    makeline(coords);
+    makeline(coords, getcurrenttool());
 }
 
-function makeline(coords, id, colour) {
+function makeline(coords, type, id, colour) {
     var linewidth = 3.0;
     var halflinewidth = linewidth * 0.5;
     var dims = $('pdfimg').getCoordinates();
@@ -839,7 +872,7 @@ function makeline(coords, id, colour) {
     if (!$defined(colour)) {
 	colour = getcurrentlinecolour();
     }
-    var details = {type: "line", coords: startcoords, colour: colour};
+    var details = {type: type, coords: startcoords, colour: colour};
 
     coords.sx += dims.left;   coords.ex += dims.left;
     coords.sy += dims.top;    coords.ey += dims.top;
@@ -857,7 +890,23 @@ function makeline(coords, id, colour) {
     }
     coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
     var paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
-    var line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
+    var line;
+    switch (type) {
+    case 'rectangle':
+	var dx = coords.ex - coords.sx;
+	var dy = coords.ey - coords.sy;
+	line = paper.rect(coords.sx, coords.sy, dx, dy);
+	break;
+    case 'oval':
+	var rx = (coords.ex - coords.sx) / 2;
+	var ry = (coords.ey - coords.sy) / 2;
+	line = paper.ellipse(coords.sx+rx, coords.sy+ry, rx, ry);
+	break;
+    default:
+	line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
+	details.type = 'line'; // Just in case ...
+	break;
+    }
     line.attr("stroke-width", linewidth);
     setlinecolour(colour, line);
 
@@ -976,6 +1025,7 @@ function startjs() {
     var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
     var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
     choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
+    setcurrenttool('commenticon');
 
     server.getcomments();
 
