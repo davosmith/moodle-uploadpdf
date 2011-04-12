@@ -2461,7 +2461,7 @@ class assignment_uploadpdf extends assignment_base {
             $dba->starty = backup_todb($annotation['#']['STARTY']['0']['#']);
             $dba->endx = backup_todb($annotation['#']['ENDX']['0']['#']);
             $dba->endy = backup_todb($annotation['#']['ENDY']['0']['#']);
-            $dba->path = $this->backup_todb_optional_field($annotation, 'PATH', null);
+            $dba->path = assignment_uploadpdf::backup_todb_optional_field($annotation, 'PATH', null);
             $dba->pageno = backup_todb($annotation['#']['PAGENO']['0']['#']);
             $dba->colour = backup_todb($annotation['#']['COLOUR']['0']['#']);
             $dba->type = backup_todb($annotation['#']['TYPE']['0']['#']);
