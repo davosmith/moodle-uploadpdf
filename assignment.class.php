@@ -1391,6 +1391,7 @@ class assignment_uploadpdf extends assignment_base {
         echo '</form>';
 		echo '</div>';
 
+        echo '<div id="toolbar-line2">';
         if (!$CFG->uploadpdf_js_navigation) {
             //UT
             $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px;" class="pageselector">';
@@ -1417,8 +1418,10 @@ class assignment_uploadpdf extends assignment_base {
             } else {
                 $pageselector .= get_string('next','assignment_uploadpdf').'--&gt;';
             }
+            $pageselector .= '</div>';
+
         } else {
-            $pageselector = '<div style="float: left; margin-top: 5px; margin-right: 10px; padding: 10px 0px;" class="pageselector">';
+            $pageselector = '';
             $disabled = ($pageno == 1) ? ' disabled = "disabled" ' : '';
             $pageselector .= '<button id="prevpage" '.$disabled.'onClick="gotoprevpage();" title="'.get_string('keyboardprev','assignment_uploadpdf').'" >&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
 
@@ -1435,7 +1438,6 @@ class assignment_uploadpdf extends assignment_base {
             $disabled = ($pageno == $pagecount) ? ' disabled = "disabled" ' : '';
             $pageselector .= '<button id="nextpage" '.$disabled.'onClick="gotonextpage();" title="'.get_string('keyboardnext','assignment_uploadpdf').'">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
         }
-		$pageselector .= '</div>';
 
         echo $pageselector;
         echo '<div id="colourselector">';
@@ -1467,7 +1469,7 @@ class assignment_uploadpdf extends assignment_base {
         $ps_sql .= 'ORDER BY sub.timemodified DESC;';
         $previoussubs = $DB->get_records_sql($ps_sql, array($this->course->id, $userid, $this->assignment->id) );
         if ($previoussubs) {
-            echo '<form style="display: inline-block;" name="showprevious" target="_top" action="editcomment.php" method="get">';
+            echo '<form style="display: inline-block;" id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
             echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
             echo '<input type="hidden" name="userid" value="'.$userid.'" />';

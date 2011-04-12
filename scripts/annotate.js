@@ -13,6 +13,8 @@ var pageunloading = false;
 
 var colourmenu = null;
 var linecolourmenu = null;
+var nextbutton = null;
+var prevbutton = null;
 
 var resendtimeout = 4000;
 
@@ -965,6 +967,10 @@ function startjs() {
 	type: "menu",
 	menu: "showpreviousselect",
 	lazyloadmenu: false });
+    prevbutton = new YAHOO.widget.Button("prevpage");
+    prevbutton.on("click", gotoprevpage);
+    nextbutton = new YAHOO.widget.Button("nextpage");
+    nextbutton.on("click", gotonextpage);
 
     server.getcomments();
 
@@ -1195,17 +1201,17 @@ function gotopage(pageno) {
 
 	//Update the next/previous buttons
 	if (pageno == pagecount) {
-	    $('nextpage').set('disabled', 'disabled');
+	    nextbutton.set('disabled', true);
 	    $('nextpage2').set('disabled', 'disabled');
 	} else {
-	    $('nextpage').erase('disabled');
+	    nextbutton.set('disabled', false);
 	    $('nextpage2').erase('disabled');
 	}
 	if (pageno == 1) {
-	    $('prevpage').set('disabled', 'disabled');
+	    prevbutton.set('disabled', true);
 	    $('prevpage2').set('disabled', 'disabled');
 	} else {
-	    $('prevpage').erase('disabled');
+	    prevbutton.set('disabled', false);
 	    $('prevpage2').erase('disabled');
 	}
 
