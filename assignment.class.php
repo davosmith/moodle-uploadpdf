@@ -1474,26 +1474,15 @@ class assignment_uploadpdf extends assignment_base {
             echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$OUTPUT->pix_url($colour,'assignment_uploadpdf').'"/></li>';
         }
         echo '</ul></div></div>';
-        /*
-        echo ' '.get_string('commentcolour','assignment_uploadpdf').': ';
-		echo '<select id="choosecolour" name="choosecolour">';
-		echo '<option value="red">'.get_string('colourred','assignment_uploadpdf').'</option>';
-		echo '<option value="yellow" selected="selected">'.get_string('colouryellow','assignment_uploadpdf').'</option>';
-		echo '<option value="green">'.get_string('colourgreen','assignment_uploadpdf').'</option>';
-		echo '<option value="blue">'.get_string('colourblue','assignment_uploadpdf').'</option>';
-		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
-		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
-        echo '</select>';
-         */
-        echo ' '.get_string('linecolour','assignment_uploadpdf').': ';
-		echo '<select id="chooselinecolour" name="chooselinecolour">';
-		echo '<option value="red" selected="selected">'.get_string('colourred','assignment_uploadpdf').'</option>';
-		echo '<option value="yellow">'.get_string('colouryellow','assignment_uploadpdf').'</option>';
-		echo '<option value="green">'.get_string('colourgreen','assignment_uploadpdf').'</option>';
-		echo '<option value="blue">'.get_string('colourblue','assignment_uploadpdf').'</option>';
-		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
-		echo '<option value="black">'.get_string('colourblack','assignment_uploadpdf').'</option>';
-		echo '</select></div>';
+
+        // Choose line colour
+        echo '<input type="submit" id="chooselinecolour" style="line-height:normal;" name="chooselinecolour" value="" title="'.get_string('linecolour','assignment_uploadpdf').'">';
+        echo '<div id="chooselinecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
+        $colours = array('red','yellow','green','blue','white','black');
+        foreach ($colours as $colour) {
+            echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$OUTPUT->pix_url('line'.$colour, 'assignment_uploadpdf').'"/></li>';
+        }
+        echo '</ul></div></div>';
 
         // Output the page image
         echo '<div id="pdfsize" style="clear: both; width:'.$imgwidth.'px; height:'.$imgheight.'px; ">';
