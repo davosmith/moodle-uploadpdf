@@ -45,7 +45,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $coversheet_filename = false;
         $coversheet_url = false;
-        
+
         $fs = get_file_storage();
         $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
 
@@ -57,7 +57,7 @@ class assignment_uploadpdf extends assignment_base {
         if (has_capability('mod/assignment:submit', $this->context)) {
             $submission = $this->get_submission($USER->id);
             $filecount = $submission ? $this->count_user_files($submission->id) : 0;
-            
+
             $this->view_feedback();
 
             $this->view_final_submission();
@@ -115,7 +115,7 @@ class assignment_uploadpdf extends assignment_base {
                 }
             }
         }
-        
+
         echo $OUTPUT->box_end();
     }
 
@@ -325,10 +325,10 @@ class assignment_uploadpdf extends assignment_base {
         if ($unfinalize) {
             $this->unfinalize('single');
         }
-  
+
         parent::submissions($mode);
     }
-    
+
     function custom_feedbackform($submission, $return=false) {
         global $OUTPUT;
 
@@ -495,7 +495,7 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $output .= $OUTPUT->box_end();
-        
+
         if ($return) {
             return $output;
         }
@@ -601,7 +601,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function upload_notes() {
         global $CFG, $USER, $DB, $OUTPUT;
-        
+
         $action = required_param('action', PARAM_ALPHA);
 
         $returnurl = 'view.php?id='.$this->cm->id;
@@ -742,7 +742,7 @@ class assignment_uploadpdf extends assignment_base {
             if ($USER->id != $submission->userid and !has_capability('mod/assignment:grade', $this->context)) {
                 return false;
             }
-            
+
         } else if ($filearea === 'image') { // Images generate from submitted PDF
             if (!has_capability('mod/assignment:grade', $this->context)) {
                 return false;
@@ -794,9 +794,9 @@ class assignment_uploadpdf extends assignment_base {
                 }
             }
         }
-        
+
         // Check that form for coversheet has been filled in
-        // (but don't complain about it until the PDF check has been done) 
+        // (but don't complain about it until the PDF check has been done)
         $templatedataOK = true;
         $templateitems = false;
         if ($extra &&  $extra->template > 0) {
@@ -1001,7 +1001,7 @@ class assignment_uploadpdf extends assignment_base {
             and $submission->userid == $USER->id                                // his/her own submission
             and $submission->grade == -1                                        // no reason to finalize already graded submission
             and $this->count_user_files($submission->id)) { // something must be submitted
-            
+
             return true;
         } else {
             return false;
@@ -1045,7 +1045,7 @@ class assignment_uploadpdf extends assignment_base {
                 return $file->get_filename();
             }
         }
-        
+
         return false;
     }
 
@@ -1070,7 +1070,7 @@ class assignment_uploadpdf extends assignment_base {
         $fs = get_file_storage();
 
         $mypdf = new MyPDFLib();
-      
+
         $temparea = $CFG->dataroot.'/temp/uploadpdf/';
         $destfile = $temparea.'/sub/submission.pdf';
 
@@ -1080,7 +1080,7 @@ class assignment_uploadpdf extends assignment_base {
                 die;
             }
         }
-        
+
         $combine_files = array();
         if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submissionid, 'timemodified', false)) {
             foreach ($files as $key=>$file) {
@@ -1107,7 +1107,7 @@ class assignment_uploadpdf extends assignment_base {
                         return 0;
                     }
                 }
-                    
+
                 if (!$pagecount = $mypdf->combine_pdfs($combine_files, $destfile, $coversheet_path, $template)) {
                     return 0;
                 }
@@ -1126,7 +1126,7 @@ class assignment_uploadpdf extends assignment_base {
                 }
 
                 return $pagecount;
-                
+
             } else {
                 return 0;
             }
@@ -1151,7 +1151,7 @@ class assignment_uploadpdf extends assignment_base {
         }
         $sourcefile = $temparea.'/submission.pdf';
         $destfile = $temparea.'/response.pdf';
-        
+
         $file->copy_content_to($sourcefile);
 
         $mypdf = new MyPDFLib();
@@ -1196,7 +1196,7 @@ class assignment_uploadpdf extends assignment_base {
             }
 
         }
-        
+
         $mypdf->copy_remaining_pages();
         $mypdf->save_pdf($destfile);
 
@@ -1215,7 +1215,7 @@ class assignment_uploadpdf extends assignment_base {
 
         unlink($sourcefile);
         unlink($destfile);
-        
+
         return true;
     }
 
@@ -1224,7 +1224,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $pagefilename = 'page'.$pageno.'.png';
         $pdf = new MyPDFLib();
-        
+
         $pagecount = $submission->numfiles >> 1; // Extract the pagecount from 'numfiles' (may be 0)
 
         $fs = get_file_storage();
@@ -1271,9 +1271,9 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         if (($submission->numfiles & 1) == 0) {
-            $submission->numfiles = ($pagecount << 1) | 1; // Use this as a flag that there are images to delete at some point 
+            $submission->numfiles = ($pagecount << 1) | 1; // Use this as a flag that there are images to delete at some point
             // Maybe switch to just searching the filestorage database to find old images?
-            
+
             $updated = new stdClass;
             $updated->id = $submission->id;
             $updated->numfiles = $submission->numfiles;
@@ -1288,7 +1288,7 @@ class assignment_uploadpdf extends assignment_base {
                          'filepath' => '/',
                          'filename' => $pagefilename
                          );
-        
+
         $file = $fs->create_file_from_pathname($imginfo, $imagefolder.'/'.$imgname); // Copy the image into the file storage
 
         //Delete the temporary files
@@ -1299,7 +1299,7 @@ class assignment_uploadpdf extends assignment_base {
             $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$submission->id.'/'.$pagefilename);
             return array($imgurl, $imageinfo['width'], $imageinfo['height'], $pagecount);
         }
-        
+
         return array(null, 0, 0, $pagecount);
     }
 
@@ -1317,7 +1317,7 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $showprevious = optional_param('showprevious', -1, PARAM_INT);
-        
+
         if (optional_param('topframe', false, PARAM_INT)) {
             if ($showprevious != -1) {
                 echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">';
@@ -1347,7 +1347,7 @@ class assignment_uploadpdf extends assignment_base {
         if ($generateresponse) {
             if ($this->create_response_pdf($submission->id)) {
                 $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
-                
+
                 $updated = new stdClass;
                 $updated->id = $submission->id;
                 $updated->data2 = $submission->data2;
@@ -1373,12 +1373,11 @@ class assignment_uploadpdf extends assignment_base {
         $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
         $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
         $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
-        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/annotate.js');
 
         $PAGE->set_pagelayout('popup');
         $PAGE->set_title(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
         $PAGE->set_heading('');
-        
+
         echo $OUTPUT->header();
 
         echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" >';
@@ -1412,7 +1411,7 @@ class assignment_uploadpdf extends assignment_base {
                     $pageselector .= '<br />';
                 }
             }
-       
+
             if ($pageno < $pagecount) {
                 $pageselector .= '<a href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. ($pageno+1) .'&amp;showprevious='.$showprevious.'" accesskey="n">'.get_string('next','assignment_uploadpdf').'--&gt;</a>';
             } else {
@@ -1432,12 +1431,12 @@ class assignment_uploadpdf extends assignment_base {
                 }
             }
             $pageselector .= '</select>';
-        
+
             $disabled = ($pageno == $pagecount) ? ' disabled = "disabled" ' : '';
             $pageselector .= '<button id="nextpage" '.$disabled.'onClick="gotonextpage();" title="'.get_string('keyboardnext','assignment_uploadpdf').'">'.get_string('next','assignment_uploadpdf').'--&gt;</button>';
         }
 		$pageselector .= '</div>';
-        
+
         echo $pageselector;
         echo '<div id="colourselector">';
         // Show previous assignment
@@ -1468,6 +1467,14 @@ class assignment_uploadpdf extends assignment_base {
             echo '</form>';
         }
         // Choose comment colour
+        echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
+        echo '<div id="choosecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
+        $colours = array('red','yellow','green','blue','white','clear');
+        foreach ($colours as $colour) {
+            echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$OUTPUT->pix_url($colour,'assignment_uploadpdf').'"/></li>';
+        }
+        echo '</ul></div></div>';
+        /*
         echo ' '.get_string('commentcolour','assignment_uploadpdf').': ';
 		echo '<select id="choosecolour" name="choosecolour">';
 		echo '<option value="red">'.get_string('colourred','assignment_uploadpdf').'</option>';
@@ -1477,6 +1484,7 @@ class assignment_uploadpdf extends assignment_base {
 		echo '<option value="white">'.get_string('colourwhite','assignment_uploadpdf').'</option>';
 		echo '<option value="clear">'.get_string('colourclear','assignment_uploadpdf').'</option>';
         echo '</select>';
+         */
         echo ' '.get_string('linecolour','assignment_uploadpdf').': ';
 		echo '<select id="chooselinecolour" name="chooselinecolour">';
 		echo '<option value="red" selected="selected">'.get_string('colourred','assignment_uploadpdf').'</option>';
@@ -1529,9 +1537,11 @@ class assignment_uploadpdf extends assignment_base {
                         'deleteicon' => $OUTPUT->pix_url('/t/delete'),
                         'pagecount' => $pagecount,
                         'js_navigation' => $CFG->uploadpdf_js_navigation,
-                        'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif'
+                        'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif',
+                        'image_path' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/pix/',
+                        'css_path' => $CFG->wwwroot.'/lib/yui/2.8.2/build/assets/skins/sam/'
                         );
-        
+
         echo '<script type="text/javascript">server_config = {';
         foreach ($server as $key => $value) {
             echo $key.": '$value', \n";
@@ -1539,20 +1549,26 @@ class assignment_uploadpdf extends assignment_base {
         echo "ignore: ''\n"; // Just there so IE does not complain
         echo '};</script>';
 
+        $jsmodule = array('name' => 'assignment_uploadpdf',
+                          'fullpath' => new moodle_url('/mod/assignment/type/uploadpdf/scripts/annotate.js'),
+                          'requires' => array('yui2-yahoo-dom-event', 'yui2-container', 'yui2-element',
+                                              'yui2-button', 'yui2-menu', 'yui2-utilities'));
+        $PAGE->requires->js_init_call('uploadpdf_init', null, true, $jsmodule);
+
         echo $OUTPUT->footer();
     }
 
     // Respond to AJAX requests whilst teacher is editing comments
     function update_comment_page($userid, $pageno) {
         global $USER, $DB;
-        
+
         $resp = array('error'=> ASSIGNMENT_UPLOADPDF_ERR_NONE);
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
             send_error('No such user!');
         }
-        
+
         if (!$submission = $this->get_submission($user->id)) {
             send_error('User has no submission to comment on!');
         }
@@ -1569,11 +1585,11 @@ class assignment_uploadpdf extends assignment_base {
 			$comment->colour = optional_param('comment_colour', 'yellow', PARAM_TEXT);
             $comment->pageno = $pageno;
             $comment->assignment_submission = $submission->id;
-            
+
             if (($comment->posx < 0) || ($comment->posy < 0) || ($comment->width < 0) || ($comment->rawtext === null)) {
                 send_error('Missing comment data');
             }
-            
+
             if ($comment->id === -1) {
                 unset($comment->id);
                 $oldsel = "assignment_submission = {$comment->assignment_submission} AND pageno = {$comment->pageno} ";
@@ -1597,7 +1613,7 @@ class assignment_uploadpdf extends assignment_base {
             }
 
             $resp['id'] = $comment->id;
-               
+
         } elseif ($action == 'getcomments') {
             $comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission' => $submission->id, 'pageno' => $pageno) );
             $respcomments = array();
@@ -1635,7 +1651,7 @@ class assignment_uploadpdf extends assignment_base {
             } else {
                 $DB->delete_records('assignment_uploadpdf_comment', array('id' => $commentid) );
             }
-            
+
         } elseif ($action == 'getquicklist') {
 
             $quicklist = $DB->get_records('assignment_uploadpdf_qcklist', array('userid' => $USER->id), 'id');
@@ -1692,7 +1708,7 @@ class assignment_uploadpdf extends assignment_base {
 
             if ($pageno > $pagecount) {
                 send_error('Requested page number is bigger than the page count ('.$pageno.' > '.$pagecount.')');
-            }   
+            }
 
             $resp['image'] = new Object();
             $resp['image']->url = $imageurl;
@@ -1753,7 +1769,7 @@ class assignment_uploadpdf extends assignment_base {
             } else {
                 $DB->delete_records('assignment_uploadpdf_annot', array('id' => $annotationid) );
             }
-            
+
         } else {
             send_error('Invalid action "'.$action.'"', ASSIGNMENT_UPLOADPDF_ERR_INVALID_ACTION);
         }
@@ -1773,7 +1789,7 @@ class assignment_uploadpdf extends assignment_base {
         if (!$submission = $this->get_submission($user->id)) {
             print_error('User has no previous submission to display!');
         }
-        
+
         $PAGE->set_pagelayout('popup');
         $PAGE->set_title(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
 
@@ -1793,7 +1809,7 @@ class assignment_uploadpdf extends assignment_base {
 
         if ($file) {
             $pdfurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/response/'.$submission->id.'/response.pdf');
-            echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a><br />';            
+            echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a><br />';
         }
 
         // Put all the comments in a table
@@ -1809,7 +1825,7 @@ class assignment_uploadpdf extends assignment_base {
                 $link = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php', array('a'=>$this->assignment->id, 'userid'=>$user->id, 'pageno'=>$comment->pageno, 'commentid'=> $comment->id, 'action'=>'showpreviouspage') );
                 $action = new popup_action('click', $link, 'showpage'.$userid, array('height'=>700, 'width'=>700));
                 echo '<tr><td'.$style2.'>'.$OUTPUT->action_link($link, $comment->pageno, $action);
-                
+
                 //                $link = link_to_popup_window($linkurl, 'showpage'.$userid, $comment->pageno,
                 //                           700, 700, fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno, null, true);
                 echo '<td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
@@ -1831,7 +1847,7 @@ class assignment_uploadpdf extends assignment_base {
         if (!$submission = $this->get_submission($user->id)) {
             echo $OUTPUT->error('User has no previous submission to display!');
         }
-        
+
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($pageno, $submission);
 
         $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-core-1.3.js', true);
@@ -1881,9 +1897,9 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         echo '</div></div></div>';
-        
+
         echo $OUTPUT->footer();
-        
+
         $annotations = $DB->get_records('assignment_uploadpdf_annot', array('assignment_submission'=>$submission->id, 'pageno'=>$pageno));
         if ($annotations) {
             echo '<script type="text/javascript">';
@@ -1922,7 +1938,7 @@ class assignment_uploadpdf extends assignment_base {
             $assignment_extra->checklist_percent = 0;
         }
 
-        $mform->addElement('filemanager', 'coversheet', get_string('coversheet','assignment_uploadpdf'), null, 
+        $mform->addElement('filemanager', 'coversheet', get_string('coversheet','assignment_uploadpdf'), null,
                            array('subdirs' => 0, 'maxbytes' => $COURSE->maxbytes, 'maxfiles' => 1, 'accepted_types' => array('*.pdf')) );
         $mform->setDefault('coversheet', $assignment_extra->coversheet);
         $mform->addHelpButton('coversheet', 'coversheet','assignment_uploadpdf');
@@ -1937,7 +1953,7 @@ class assignment_uploadpdf extends assignment_base {
         $mform->addElement('select', 'template', get_string('coversheettemplate','assignment_uploadpdf'), $templates);
         $mform->setDefault('template', $assignment_extra->template);
         $mform->addHelpButton('template', 'coversheettemplate','assignment_uploadpdf');
-        
+
         $edittemplate = $mform->addElement('button', 'edittemplate', get_string('edittemplate', 'assignment_uploadpdf').'...');
         $edittmpl_url = new moodle_url('/mod/assignment/type/uploadpdf/edittemplates.php',array('courseid'=>$courseid));
 
@@ -1979,7 +1995,7 @@ class assignment_uploadpdf extends assignment_base {
                     $checklists[$chk->id] = $chk->name;
                 }
             }
-            
+
             $mform->addElement('select', 'checklist', get_string('displaychecklist', 'assignment_uploadpdf'), $checklists);
             // $mform->addHelpButton('checklist', 'checklist', 'assignment_uploadpdf'); //FIXME - add some help text?
             $mform->setDefault('checklist', $assignment_extra->checklist);
@@ -1994,7 +2010,7 @@ class assignment_uploadpdf extends assignment_base {
             $mform->addElement('hidden', 'checklist_percent');
             $mform->setDefault('checklist_percent', $assignment_extra->checklist_percent);
         }
-            
+
         $mform->addElement('select', 'emailteachers', get_string("emailteachers", "assignment"), $ynoptions);
         $mform->addHelpButton('emailteachers', 'emailteachers', 'assignment');
         $mform->setDefault('emailteachers', 0);
@@ -2010,7 +2026,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function add_instance($assignment) {
         global $DB;
-        
+
         $assignment_extra = new stdClass();
         $assignment_extra->template = $assignment->template;
         $assignment_extra->onlypdf = $assignment->onlypdf;
@@ -2062,19 +2078,19 @@ class assignment_uploadpdf extends assignment_base {
                   )', array($assignment->id) )) {
             $result = false;
         }
-        
+
         if (! $DB->delete_records('assignment_uploadpdf', array('assignment' => $assignment->id) )) {
             $result = false;
         }
-        
+
         $retval = parent::delete_instance($assignment);
-        
+
         return $retval && $result;
     }
 
     function update_instance($assignment) {
         global $DB;
-        
+
         $draftitemid = $assignment->coversheet;
         $template = $assignment->template;
         $onlypdf = $assignment->onlypdf;
@@ -2087,7 +2103,7 @@ class assignment_uploadpdf extends assignment_base {
         unset($assignment->checklist_percent);
 
         $retval = parent::update_instance($assignment);
-        
+
         if ($retval) {
             $assignmentid = $assignment->id;
             $assignment_extra = $DB->get_record('assignment_uploadpdf', array('assignment' => $assignmentid) );
@@ -2158,7 +2174,7 @@ class assignment_uploadpdf extends assignment_base {
         global $DB;
 
         return;
-        
+
         if (!$extras = $DB->get_record('assignment_uploadpdf', array('assignment' => $assignment->id) )) {
             debugging("something wrong in assignment/uploadpdf backup_one_mod - couldn't find extra data");
             return false;
@@ -2201,7 +2217,7 @@ class assignment_uploadpdf extends assignment_base {
         global $DB;
 
         return;
-        
+
         if ($comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission' => $submission->id) )) {
             fwrite ($bf,start_tag("COMMENTS",4,true));
             foreach ($comments as $comment) {
@@ -2238,7 +2254,7 @@ class assignment_uploadpdf extends assignment_base {
         //UT
         //FIXME
         return;
-        
+
         // template first, since other things reference it.
         $templateid = 0;
         if (@isset($info['MOD']['#']['TEMPLATE']['0']['#'])) {
@@ -2331,7 +2347,7 @@ class assignment_uploadpdf extends assignment_base {
     function reset_userdata($data) {
         global $CFG, $DB;
         //UT
-        
+
         if (!empty($data->reset_assignment_submissions)) {
             $DB->delete_records_select('assignment_uploadpdf_comment',
                                   'assignment_submission IN (
@@ -2355,7 +2371,7 @@ class assignment_uploadpdf extends assignment_base {
 
     function import_checklist_plugin() {
         global $CFG, $DB;
-        
+
         $chk = $DB->get_record('modules', array('name' => 'checklist') );
         if (!$chk) {
             return false;

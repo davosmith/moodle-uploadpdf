@@ -11,6 +11,8 @@ var pagestopreload = 4; // How many pages ahead to load when you hit a non-prelo
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 var pageunloading = false;
 
+var colourMenu = null;
+
 var resendtimeout = 4000;
 
 // All to do with line drawing
@@ -32,7 +34,7 @@ var ServerComm = new Class({
 	url: null,
 	js_navigation: true,
 	retrycount: 0,
-	
+
 	initialize: function(settings) {
 	    this.id = settings.id;
 	    this.userid = settings.userid;
@@ -41,7 +43,7 @@ var ServerComm = new Class({
 	    this.url = settings.updatepage;
 	    this.js_navigation = settings.js_navigation;
 	},
-	
+
 	updatecomment: function(comment) {
 	    var waitel = new Element('div');
 	    waitel.set('class', 'wait');
@@ -50,7 +52,7 @@ var ServerComm = new Class({
 	    var request = new Request.JSON({
 		    url: this.url,
 		    timeout: resendtimeout,
-		    
+
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
@@ -69,7 +71,7 @@ var ServerComm = new Class({
 			    }
 			}
 		    },
-		    
+
 		    onFailure: function(req) {
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
@@ -100,7 +102,7 @@ var ServerComm = new Class({
 			    }
 		});
 	},
-	
+
 	removecomment: function(cid) {
 	    var request = new Request.JSON({
 		    url: this.url,
@@ -128,7 +130,7 @@ var ServerComm = new Class({
 			    }
 		});
 	},
-	
+
 	getcomments: function() {
 	    var waitel = new Element('div');
 	    waitel.set('class', 'pagewait');
@@ -239,7 +241,7 @@ var ServerComm = new Class({
 			    }
 			}
 		    },
-		    
+
 		    onFailure: function(resp) {
 			showsendfailed(function() { server.addtoquicklist(element); });
 		    }
@@ -303,7 +305,7 @@ var ServerComm = new Class({
 		    $('pdfimg').setProperty('src',server_config.blank_image);
 		}
 	    }
-	    
+
 	    var pagecount = server_config.pagecount.toInt();
 	    if (pageno > pagecount) {
 		pageno = 1;
@@ -324,7 +326,7 @@ var ServerComm = new Class({
 		    pageno++;
 		}
 	    }
-	    
+
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -347,7 +349,7 @@ var ServerComm = new Class({
 				var nextpage = pageno.toInt()+1;
 				server.getimageurl(nextpage, false);
 			    }
-			    
+
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.getimageurl(pageno, false);
@@ -404,7 +406,7 @@ var ServerComm = new Class({
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.addannotation(details, annotation);});
 		    }
-		    
+
 		});
 
 	    request.send({ data: {
@@ -450,7 +452,7 @@ var ServerComm = new Class({
 			    }
 		});
 	}
-	
+
     });
 
 function showsendfailed(resend) {
@@ -465,7 +467,7 @@ function showsendfailed(resend) {
 	resend();
 	return;
     }
-    
+
     var el = $('sendagain');
     el.addEvent('click', resend);
     el.addEvent('click', hidesendfailed);
@@ -531,7 +533,7 @@ function makeeditbox(comment, content) {
     if (!$defined(content)) {
 	content = '';
     }
-    
+
     editbox = new Element('textarea');
     editbox.set('rows', '5');
     editbox.set('wrap', 'soft');
@@ -563,7 +565,7 @@ function makecommentbox(position, content, colour) {
 	newcomment.set('style', 'position:absolute; top:'+position.y+'px; left:'+position.x+'px;');
     }
     newcomment.store('id', -1);
-    
+
     if (context_comment) {
 	context_comment.addmenu(newcomment);
     }
@@ -602,7 +604,7 @@ function makecommentbox(position, content, colour) {
 	    },
 	    onComplete: function(el) {
 		resizing = false;
-		if (!$defined(editbox)) { 
+		if (!$defined(editbox)) {
 		    server.updatecomment(el); // Do not update on resize when editing the text
 		}
 	    }
@@ -643,7 +645,7 @@ function addcomment(e) {
 
 function editcomment(el) {
     unselectline();
-    
+
     if (currentcomment == el) {
 	return;
     }
@@ -666,20 +668,12 @@ function typingcomment(e) {
 }
 
 function getcurrentcolour() {
-    var el = $('choosecolour');
-    var idx = el.selectedIndex;
-    return el[idx].value;
+    return colourMenu.get("value");
 }
 
 function setcurrentcolour(colour) {
-    var el = $('choosecolour');
-    var i;
-    for (i=0; i<el.length; i++) {
-	if (el[i].value == colour) {
-	    el.selectedIndex = i;
-	    return;
-	}
-    }
+    colourMenu.set("label", '<img src="'+server_config.image_path+colour+'.gif" />');
+    colourMenu.set("value", colour);
 }
 
 function updatecommentcolour(colour, comment) {
@@ -790,7 +784,7 @@ function startline(e) {
     var dims = $('pdfimg').getCoordinates();
     var sx = e.page.x - dims.left;
     var sy = e.page.y - dims.top;
-    
+
     currentpaper = Raphael(dims.left,dims.top,dims.width,dims.height);
     $(document).addEvent('mousemove', updateline);
     linestartpos = {x: sx, y: sy};
@@ -817,7 +811,7 @@ function updateline(e) {
 function finishline(e) {
     $(document).removeEvent('mousemove', updateline);
     $(document).removeEvent('mouseup', finishline);
-    
+
     if (!$defined(currentpaper)) {
 	return;
     }
@@ -862,7 +856,7 @@ function makeline(coords, id, colour) {
     var line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
     line.attr("stroke-width", linewidth);
     setlinecolour(colour, line);
-    
+
     var domcanvas = $(paper.canvas);
 
     domcanvas.store('paper',paper);
@@ -892,7 +886,7 @@ function selectline(e) {
 	colour = "#555";
     }
     lineselect = paper.rect(1,1,width-2,height-2).attr({stroke: colour, "stroke-dasharray": "- ", "stroke-width": 1, fill: null});
-    
+
     updatelastcomment(); // In case we were editing a comment at the time
     document.addEvent('keydown', checkdeleteline);
     var linecolour = this.retrieve('colour');
@@ -938,6 +932,22 @@ function keyboardnavigation(e) {
 
 function startjs() {
     new Asset.css('style/annotate.css');
+    new Asset.css(server_config.css_path+'menu.css');
+    new Asset.css(server_config.css_path+'button.css');
+
+    document.body.className += ' yui-skin-sam';
+    colourMenu = new YAHOO.widget.Button("choosecolour", {
+	type: "menu",
+	menu: "choosecolourmenu",
+	lazyloadmenu: false });
+    colourMenu.on("selectedMenuItemChange", function(e) {
+	var menuItem = e.newValue;
+	var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
+	this.set("label", '<img src="'+server_config.image_path+colour+'.gif" />');
+	this.set("value", colour);
+	changecolour();
+    });
+
     server = new ServerComm(server_config);
     server.getcomments();
 
@@ -952,7 +962,6 @@ function startjs() {
     if ($defined(linecolour)) {
 	setcurrentlinecolour(linecolour);
     }
-    $('choosecolour').addEvent('change', changecolour);
     $('chooselinecolour').addEvent('change', changelinecolour);
 
     // Start preloading pages if using js navigation method
@@ -1165,7 +1174,7 @@ function gotopage(pageno) {
 	var opennew = $('opennewwindow');
 	var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
 	opennew.set('href', on_link);
-    
+
 	//Update the next/previous buttons
 	if (pageno == pagecount) {
 	    $('nextpage').set('disabled', 'disabled');
@@ -1181,7 +1190,7 @@ function gotopage(pageno) {
 	    $('prevpage').erase('disabled');
 	    $('prevpage2').erase('disabled');
 	}
-	
+
 	server.pageno = ""+pageno;
 	server.getimageurl(pageno, true);
     }
@@ -1211,7 +1220,7 @@ function selectpage2() {
     gotopage(el[idx].value);
 }
 
-window.addEvent('domready', function() {
+function uploadpdf_init() {
 	startjs();
 	initcontextmenu();
-});
+}
