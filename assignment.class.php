@@ -476,7 +476,7 @@ class assignment_uploadpdf extends assignment_base {
                             } else {
                                 $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/submission/$file"; // download pdf
                                 if (mimeinfo('type', $file) == 'application/pdf') {
-                                    $file = get_string('completedsubmission', 'assignment_uploadpdf');
+                                    $file = get_string('yourcompletedsubmission', 'assignment_uploadpdf');
                                 }
                                 $output .= '<a href="'.$ffurl.'" ><img src="'.$CFG->pixpath.'/f/'.$icon.'" class="icon" alt="'.$icon.'" />'.$file.'</a>';
                             }
