@@ -935,7 +935,11 @@ function setcurrenttool(toolname) {
 
 function startline(e) {
     if (!server.editing) {
-	return;
+	return true;
+    }
+
+    if (e.rightClick) {
+	return true;
     }
 
     //unselectline();
@@ -956,8 +960,11 @@ function startline(e) {
 
     if ($defined(currentcomment)) {
 	updatelastcomment();
-	return;
+	return true;
     }
+
+    context_quicklist.hide();
+    context_comment.hide();
 
     e.preventDefault(); // Stop FF from dragging the image
 
