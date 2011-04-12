@@ -936,6 +936,8 @@ function startjs() {
     new Asset.css(server_config.css_path+'menu.css');
     new Asset.css(server_config.css_path+'button.css');
 
+    server = new ServerComm(server_config);
+
     document.body.className += ' yui-skin-sam';
     colourMenu = new YAHOO.widget.Button("choosecolour", {
 	    type: "menu",
@@ -959,8 +961,11 @@ function startjs() {
 	    this.set("value", colour);
 	    changelinecolour();
 	});
+    var showPreviousMenu = new YAHOO.widget.Button("showpreviousbutton", {
+	type: "menu",
+	menu: "showpreviousselect",
+	lazyloadmenu: false });
 
-    server = new ServerComm(server_config);
     server.getcomments();
 
     $('pdfimg').addEvent('click', addcomment);
