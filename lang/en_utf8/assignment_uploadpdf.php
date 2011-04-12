@@ -51,6 +51,7 @@ $string['uploadpreview'] = 'Upload';
 
 //Teacher marking
 $string['annotatesubmission'] = 'Annotate submission';
+$string['backtocommentlist'] = 'Back to comment list';
 $string['draftsaved'] = 'Draft saved';
 $string['responseok'] = 'Response generated OK';
 $string['responseproblem'] = 'There was a problem creating the response';
@@ -62,6 +63,8 @@ $string['downloadoriginal'] = 'Download original submission PDF';
 $string['isresubmission'] = 'This is a resubmission - ';
 $string['downloadfirstsubmission'] = 'download the first submission';
 $string['next'] = 'Next';
+$string['openfirstpage'] = 'Show the first page';
+$string['openlinknewwindow'] = 'Open links in new window';
 $string['previous'] = 'Prev';
 $string['keyboardnext'] = 'n - next page';
 $string['keyboardprev'] = 'p - previous page';

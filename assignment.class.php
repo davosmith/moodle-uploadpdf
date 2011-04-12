@@ -1514,7 +1514,12 @@ class assignment_uploadpdf extends assignment_base {
             echo '<button type="submit" id="generateresponse" name="generateresponse" value="generateresponse" title="'.get_string('generateresponse','assignment_uploadpdf').'"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/tostudent.png"/></button>';
         }
         // 'Download original' button
-		$pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
+		$pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid);
+        if ($enableedit) {
+            $pdfurl .= '/submission/submission.pdf';
+        } else {
+            $pdfurl .= '/responses/response.pdf';
+        }
         $downloadorig = get_string('downloadoriginal', 'assignment_uploadpdf');
 		echo '<a href="'.$pdfurl.'" target="_blank" id="downloadpdf" title="'.$downloadorig.'" alt="'.$downloadorig.'" ><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/download.png" alt="'.$downloadorig.'" title="'.$downloadorig.'" /></a>';
         if ($enableedit) {
@@ -1563,6 +1568,13 @@ class assignment_uploadpdf extends assignment_base {
             echo '>'.$comment->pageno.': '.s($text).'</option>';
         }
         echo '</select>';
+        if (!$enableedit) {
+            // If opening in same window - show 'back to comment list' link
+            if (array_key_exists('uploadpdf_commentnewwindow', $_COOKIE) && !$_COOKIE['uploadpdf_commentnewwindow']) {
+                $url = "editcomment.php?a={$this->assignment->id}&amp;userid={$userid}&amp;action=showprevious";
+                echo '<a href="'.$url.'">'.get_string('backtocommentlist','assignment_uploadpdf').'</a>';
+            }
+        }
 
 		echo '</div>';
 
@@ -1986,11 +1998,25 @@ class assignment_uploadpdf extends assignment_base {
         }
         echo '<a href="'.$pdfurl.'" target="_blank">'.get_string('downloadoriginal', 'assignment_uploadpdf').'</a><br />';
 
+        // 'Open in new window' check box
+        $checked = "checked='checked'";
+        if (array_key_exists('uploadpdf_commentnewwindow', $_COOKIE)) {
+            if (!$_COOKIE['uploadpdf_commentnewwindow']) {
+                $checked = '';
+            }
+        }
+        $onclick = "var checked = this.checked ? 1 : 0; document.cookie='uploadpdf_commentnewwindow='+checked; return true;";
+        echo '<br/><input type="checkbox" name="opennewwindow" id="opennewwindow" '.$checked.' onclick="'.$onclick.'" />';
+        echo '<label for="opennewwindow">'.get_string('openlinknewwindow','assignment_uploadpdf').'</label><br/>';
 
         // Put all the comments in a table
         $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id, 'pageno, posy');
         if (!$comments) {
             echo '<p>'.get_string('nocomments','assignment_uploadpdf').'</p>';
+            $linkurl = '/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno=1&amp;action=showpreviouspage';
+            $link = link_to_popup_window($linkurl, 'showpage'.$userid, get_string('openfirstpage','assignment_uploadpdf'),
+                                         700, 700, fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno, null, true);
+            echo '<p>'.$link.'</p>';
         } else {
             $style1 = ' style="border: black 1px solid;"';
             $style2 = ' style="border: black 1px solid; text-align: center;" ';
@@ -1998,8 +2024,13 @@ class assignment_uploadpdf extends assignment_base {
             echo '<th'.$style1.'>'.get_string('comment','assignment_uploadpdf').'</th></tr>';
             foreach ($comments as $comment) {
                 $linkurl = '/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno='.$comment->pageno.'&amp;commentid='.$comment->id.'&amp;action=showpreviouspage';
-                $link = link_to_popup_window($linkurl, 'showpage'.$userid, $comment->pageno,
-                                             700, 700, fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno, null, true);
+                $title = fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno;
+                $onclick = "var el = document.getElementById('opennewwindow'); if (el && !el.checked) { return true; } ";
+                $onclick .= "this.target='showpage{$userid}'; ";
+                $onclick .= "return openpopup('{$linkurl}', 'showpage{$userid}', ";
+                $onclick .= "'menubar=0,location=0,scrollbars,resizable,width=700,height=700', 0)";
+
+                $link = '<a title="'.$title.'" href="'.$CFG->wwwroot.$linkurl.'" onclick="'.$onclick.'">'.$comment->pageno.'</a>';
                 echo '<tr><td'.$style2.'>'.$link.'</td>';
                 echo '<td'.$style1.'>'.s($comment->rawtext).'</td></tr>';
             }
