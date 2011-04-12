@@ -177,7 +177,7 @@ var ServerComm = new Class({
 				    });
 
 				// Get annotations at the same time
-				allannotations.each(function(p) {p.remove()});
+				allannotations.each(function(p) {p.dispose()});
 				allannotations.empty();
 				resp.annotations.each(function(annotation) {
 				    var coords;
@@ -944,11 +944,6 @@ function startline(e) {
 	return true; // If user clicks very quickly this can happen
     }
 
-    if ($defined(currentcomment)) {
-	updatelastcomment();
-	return;
-    }
-
     var tool = getcurrenttool();
 
     modifier = Browser.Platform.mac ? e.alt : e.control;
@@ -957,6 +952,11 @@ function startline(e) {
     }
     if (tool == 'erase') {
 	return true;
+    }
+
+    if ($defined(currentcomment)) {
+	updatelastcomment();
+	return;
     }
 
     e.preventDefault(); // Stop FF from dragging the image
@@ -1103,6 +1103,7 @@ function makeline(coords, type, id, colour) {
     var line;
     var details;
     var boundary;
+    var container = new Element('span');
 
     if (!$defined(colour)) {
 	colour = getcurrentlinecolour();
@@ -1124,7 +1125,9 @@ function makeline(coords, type, id, colour) {
 	    maxy = Math.max(maxy, coords[i].y);
 	}
 	boundary = {x: (minx-(halflinewidth*0.5)), y: (miny-(halflinewidth*0.5)), w: (maxx+linewidth-minx), h: (maxy+linewidth-miny)};
-	var container = new Element('div');
+	if (boundary.h < 14) {
+	    boundary.h = 14;
+	}
 	if (Browser.ie) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: absolute });
@@ -1160,7 +1163,9 @@ function makeline(coords, type, id, colour) {
 	    coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
 	}
 	coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
-	var container = new Element('div');
+	if (boundary.h < 14) {
+	    boundary.h = 14;
+	}
 	if (Browser.ie) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: absolute });
@@ -1187,6 +1192,7 @@ function makeline(coords, type, id, colour) {
 	    break;
 	default:
 	    line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
+	    //line = paper.path("M 0 0L5 5");
 	    details.type = 'line';
 	    break;
 	}
@@ -1197,7 +1203,7 @@ function makeline(coords, type, id, colour) {
 
     var domcanvas = $(paper.canvas);
 
-    domcanvas.store('paper',paper);
+    domcanvas.store('container',container);
     domcanvas.store('width',boundary.w);
     domcanvas.store('height',boundary.h);
     domcanvas.store('line',line);
@@ -1214,12 +1220,12 @@ function makeline(coords, type, id, colour) {
 	domcanvas.store('id',id);
     }
 
-    allannotations.push(paper);
+    allannotations.push(container);
 }
 
 /*
 function selectline(e) {
-    var paper = this.retrieve('paper');
+    var paper = this.retrieve('paper'); // This now points at container
     var width = this.retrieve('width');
     var height = this.retrieve('height');
     lineselectid = this.retrieve('id');
@@ -1247,9 +1253,9 @@ function eraseline(e) {
 
     var id = this.retrieve('id');
     if (id) {
-	var paper = this.retrieve('paper');
-	allannotations.erase(paper);
-	paper.remove();
+	var container = this.retrieve('container');
+	allannotations.erase(container);
+	container.dispose();
 	server.removeannotation(id);
     }
 
@@ -1633,7 +1639,7 @@ function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
 	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
-	allannotations.each(function(p) { p.remove(); });
+	allannotations.each(function(p) { p.dispose(); });
 	allannotations.empty();
 	abortline(); // Abandon any lines currently being drawn
 	currentcomment = null; // Throw away any comments in progress
