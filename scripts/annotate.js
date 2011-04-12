@@ -90,16 +90,16 @@ var ServerComm = new Class({
 	    request.send({
 		    data: {
 		        action: 'update',
-			comment_position_x: comment.getStyle('left'),
-			comment_position_y: comment.getStyle('top'),
-			comment_width: comment.getStyle('width'),
-			comment_text: comment.retrieve('rawtext'),
-    		        comment_id: comment.retrieve('id'),
-			comment_colour: comment.retrieve('colour'),
-			id: this.id,
-			userid: this.userid,
-			pageno: this.pageno,
-			sesskey: this.sesskey
+			    comment_position_x: comment.getStyle('left'),
+			    comment_position_y: comment.getStyle('top'),
+			    comment_width: comment.getStyle('width'),
+			    comment_text: comment.retrieve('rawtext'),
+			    comment_id: comment.retrieve('id'),
+			    comment_colour: comment.retrieve('colour'),
+			    id: this.id,
+			    userid: this.userid,
+			    pageno: this.pageno,
+			    sesskey: this.sesskey
 			    }
 		});
 	},
@@ -122,7 +122,7 @@ var ServerComm = new Class({
 
 	    request.send({
 		    data: {
-  			    action: 'delete',
+			action: 'delete',
 			    commentid: cid,
 			    id: this.id,
 			    userid: this.userid,
@@ -191,7 +191,7 @@ var ServerComm = new Class({
 		});
 
 	    request.send({ data: {
-			    action: 'getcomments',
+			action: 'getcomments',
 			    id: this.id,
 			    userid: this.userid,
 			    pageno: this.pageno,
@@ -220,7 +220,7 @@ var ServerComm = new Class({
 		});
 
 	    request.send({ data: {
-		            action: 'getquicklist',
+			action: 'getquicklist',
 			    id: this.id,
 			    userid: this.userid, // This and pageno are not strictly needed, but are checked for on the server
 			    pageno: this.pageno,
@@ -249,7 +249,7 @@ var ServerComm = new Class({
 		});
 
 	    request.send({ data: {
-			    action: 'addtoquicklist',
+			action: 'addtoquicklist',
 			    colour: element.retrieve('colour'),
 			    text: element.retrieve('rawtext'),
 			    width: element.getStyle('width').toInt(),
@@ -444,7 +444,7 @@ var ServerComm = new Class({
 
 	    request.send({
 		    data: {
-  			    action: 'removeannotation',
+			action: 'removeannotation',
 			    annotationid: aid,
 			    id: this.id,
 			    userid: this.userid,
@@ -673,6 +673,9 @@ function getcurrentcolour() {
 }
 
 function setcurrentcolour(colour) {
+    if (colour != 'red' && colour != 'green' && colour != 'blue' && colour != 'white' && colour != 'clear') {
+	colour = 'yellow';
+    }
     colourMenu.set("label", '<img src="'+server_config.image_path+colour+'.gif" />');
     colourMenu.set("value", colour);
     changecolour();
@@ -724,6 +727,9 @@ function getcurrentlinecolour() {
 }
 
 function setcurrentlinecolour(colour) {
+    if (colour != 'yellow' && colour != 'green' && colour != 'blue' && colour != 'white' && colour != 'black') {
+	colour = 'red';
+    }
     linecolourmenu.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
     linecolourmenu.set("value", colour);
     changelinecolour();
