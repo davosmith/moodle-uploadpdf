@@ -1423,7 +1423,7 @@ class assignment_uploadpdf extends assignment_base {
         return array($imageurl, $imgwidth, $imgheight, $pagecount);
     }
 
-    function edit_comment_page($userid, $pageno) {
+    function edit_comment_page($userid, $pageno, $enableedit = true) {
         global $CFG;
 
         require_capability('mod/assignment:grade', $this->context);
@@ -1438,7 +1438,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $showprevious = optional_param('showprevious', -1, PARAM_INT);
 
-        if (optional_param('topframe', false, PARAM_INT)) {
+        if ($enableedit && optional_param('topframe', false, PARAM_INT)) {
             if ($showprevious != -1) {
                 echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">';
                 echo '<html><head><title>'.get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name).'</title></head>';
@@ -1457,14 +1457,14 @@ class assignment_uploadpdf extends assignment_base {
         $savedraft = optional_param('savedraft', null, PARAM_TEXT);
         $generateresponse = optional_param('generateresponse', null, PARAM_TEXT);
 
-        if ($savedraft) {
+        if ($enableedit && $savedraft) {
             print_header(get_string('feedback', 'assignment').':'.format_string($this->assignment->name));
             print_heading(get_string('draftsaved', 'assignment_uploadpdf'));
             close_window();
             die;
         }
 
-        if ($generateresponse) {
+        if ($enableedit && $generateresponse) {
             if ($this->create_response_pdf($userid, $submission->id)) {
                 $submission->data2 = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
 
@@ -1502,45 +1502,54 @@ class assignment_uploadpdf extends assignment_base {
 
         print_header(get_string('feedback', 'assignment').':'.fullname($user, true).':'.format_string($this->assignment->name));
 
-        echo '<div id="saveoptions"><form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" style="display: inline-block;" >';
-        echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-        echo '<input type="hidden" name="userid" value="'.$userid.'" />';
-        echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-        echo '<button type="submit" id="savedraft" name="savedraft" value="savedraft" title="'.get_string('savedraft', 'assignment_uploadpdf').'"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/savequit.png"/></button>';
-        echo '<button type="submit" id="generateresponse" name="generateresponse" value="generateresponse" title="'.get_string('generateresponse','assignment_uploadpdf').'"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/tostudent.png"/></button>';
-		$pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
-        $downloadorig = get_string('downloadoriginal', 'assignment_uploadpdf');
-		echo '<a href="'.$pdfurl.'" target="_blank" id="downloadpdf" title="'.$downloadorig.'" alt="'.$downloadorig.'" ><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/download.png" alt="'.$downloadorig.'" title="'.$downloadorig.'" /></a>';
-        echo '</form>';
-
-        // Show previous assignment
-        $ps_sql = 'SELECT asn.id, asn.name FROM `'.$CFG->prefix.'assignment` asn ';
-        $ps_sql .= 'INNER JOIN `'.$CFG->prefix.'assignment_submissions` sub ON sub.assignment = asn.id ';
-        $ps_sql .= 'WHERE course = '.$this->course->id;
-        $ps_sql .= ' AND asn.assignmenttype = "uploadpdf" ';
-        $ps_sql .= ' AND userid = '.$userid;
-        $ps_sql .= ' AND asn.id != '.$this->assignment->id;
-        $ps_sql .= ' ORDER BY sub.timemodified DESC;';
-        $previoussubs = get_records_sql($ps_sql);
-        if ($previoussubs) {
-            echo '<form style="display: inline-block;" id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
-            echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
+        echo '<div id="saveoptions">';
+        if ($enableedit) {
+            echo '<form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" style="display: inline-block;" >';
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
             echo '<input type="hidden" name="userid" value="'.$userid.'" />';
             echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-            echo '<input type="hidden" name="topframe" value="1" />';
-            echo '<select id="showpreviousselect" name="showprevious" onChange="this.form.submit();">';
-            echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
-            foreach ($previoussubs as $prevsub) {
-                echo '<option value="'.$prevsub->id.'"';
-                if ($showprevious == $prevsub->id) echo ' selected="selected" ';
-                echo '>'.s($prevsub->name).'</option>';
-            }
-            echo '</select>';
-            echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
+            // 'Save draft' button
+            echo '<button type="submit" id="savedraft" name="savedraft" value="savedraft" title="'.get_string('savedraft', 'assignment_uploadpdf').'"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/savequit.png"/></button>';
+            // 'Generate response' button
+            echo '<button type="submit" id="generateresponse" name="generateresponse" value="generateresponse" title="'.get_string('generateresponse','assignment_uploadpdf').'"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/tostudent.png"/></button>';
+        }
+        // 'Download original' button
+		$pdfurl = $CFG->wwwroot.'/file.php?file=/'.$this->file_area_name($userid).'/submission/submission.pdf';
+        $downloadorig = get_string('downloadoriginal', 'assignment_uploadpdf');
+		echo '<a href="'.$pdfurl.'" target="_blank" id="downloadpdf" title="'.$downloadorig.'" alt="'.$downloadorig.'" ><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/download.png" alt="'.$downloadorig.'" title="'.$downloadorig.'" /></a>';
+        if ($enableedit) {
             echo '</form>';
         }
 
+        // Show previous assignment
+        if ($enableedit) {
+            $ps_sql = 'SELECT asn.id, asn.name FROM `'.$CFG->prefix.'assignment` asn ';
+            $ps_sql .= 'INNER JOIN `'.$CFG->prefix.'assignment_submissions` sub ON sub.assignment = asn.id ';
+            $ps_sql .= 'WHERE course = '.$this->course->id;
+            $ps_sql .= ' AND asn.assignmenttype = "uploadpdf" ';
+            $ps_sql .= ' AND userid = '.$userid;
+            $ps_sql .= ' AND asn.id != '.$this->assignment->id;
+            $ps_sql .= ' ORDER BY sub.timemodified DESC;';
+            $previoussubs = get_records_sql($ps_sql);
+            if ($previoussubs) {
+                echo '<form style="display: inline-block;" id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
+                echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
+                echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
+                echo '<input type="hidden" name="userid" value="'.$userid.'" />';
+                echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
+                echo '<input type="hidden" name="topframe" value="1" />';
+                echo '<select id="showpreviousselect" name="showprevious" onChange="this.form.submit();">';
+                echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
+                foreach ($previoussubs as $prevsub) {
+                    echo '<option value="'.$prevsub->id.'"';
+                    if ($showprevious == $prevsub->id) echo ' selected="selected" ';
+                    echo '>'.s($prevsub->name).'</option>';
+                }
+                echo '</select>';
+                echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
+                echo '</form>';
+            }
+        }
 
         $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id, 'pageno, posy');
         echo '<button id="findcommentsbutton">'.get_string('findcomments','assignment_uploadpdf').'</button>';
@@ -1607,39 +1616,41 @@ class assignment_uploadpdf extends assignment_base {
 
         echo $pageselector;
 
-        // Choose comment colour
-        echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
-        echo '<div id="choosecolourmenu" class="yuimenu" title="'.get_string('commentcolour', 'assignment_uploadpdf').'"><div class="bd"><ul class="first-of-type">';
-        $colours = array('red','yellow','green','blue','white','clear');
-        foreach ($colours as $colour) {
-            echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/'.$colour.'.gif"/></li>';
-        }
-        echo '</ul></div></div>';
-        // Choose line colour
-        echo '<input type="submit" id="chooselinecolour" style="line-height:normal;" name="chooselinecolour" value="" title="'.get_string('linecolour','assignment_uploadpdf').'">';
-        echo '<div id="chooselinecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
-        $colours = array('red','yellow','green','blue','white','black');
-        foreach ($colours as $colour) {
-            echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/line'.$colour.'.gif"/></li>';
-        }
-        echo '</ul></div></div>';
+        if ($enableedit) {
+            // Choose comment colour
+            echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
+            echo '<div id="choosecolourmenu" class="yuimenu" title="'.get_string('commentcolour', 'assignment_uploadpdf').'"><div class="bd"><ul class="first-of-type">';
+            $colours = array('red','yellow','green','blue','white','clear');
+            foreach ($colours as $colour) {
+                echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/'.$colour.'.gif"/></li>';
+            }
+            echo '</ul></div></div>';
+            // Choose line colour
+            echo '<input type="submit" id="chooselinecolour" style="line-height:normal;" name="chooselinecolour" value="" title="'.get_string('linecolour','assignment_uploadpdf').'">';
+            echo '<div id="chooselinecolourmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
+            $colours = array('red','yellow','green','blue','white','black');
+            foreach ($colours as $colour) {
+                echo '<li class="yuimenuitem choosecolour-'.$colour.'-"><img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/line'.$colour.'.gif"/></li>';
+            }
+            echo '</ul></div></div>';
 
-        // Choose annotation type
-        $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon','eraseicon');
-        $checked = ' yui-button-checked';
-        echo '<div id="choosetoolgroup" class="yui-buttongroup">';
+            // Choose annotation type
+            $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon','eraseicon');
+            $checked = ' yui-button-checked';
+            echo '<div id="choosetoolgroup" class="yui-buttongroup">';
 
-        foreach ($drawingtools as $drawingtool) {
-            echo '<span id="'.$drawingtool.'" class="yui-button yui-radio-button'.$checked.'">';
-            echo ' <span class="first-child">';
-            echo '  <button type="button" name="choosetoolradio" value="'.$drawingtool.'" title="'.get_string($drawingtool,'assignment_uploadpdf').'">';
-            echo '   <img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/'.$drawingtool.'.png" />';
-            echo '  </button>';
-            echo ' </span>';
-            echo '</span>';
-            $checked = '';
+            foreach ($drawingtools as $drawingtool) {
+                echo '<span id="'.$drawingtool.'" class="yui-button yui-radio-button'.$checked.'">';
+                echo ' <span class="first-child">';
+                echo '  <button type="button" name="choosetoolradio" value="'.$drawingtool.'" title="'.get_string($drawingtool,'assignment_uploadpdf').'">';
+                echo '   <img src="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/'.$drawingtool.'.png" />';
+                echo '  </button>';
+                echo ' </span>';
+                echo '</span>';
+                $checked = '';
+            }
+            echo '</div>';
         }
-        echo '</div>';
         echo '</div>'; // toolbar-line-2
 
         // Output the page image
@@ -1652,22 +1663,24 @@ class assignment_uploadpdf extends assignment_base {
         }
         echo '<br/>';
         echo $pageselector;
-        if ($CFG->uploadpdf_js_navigation) {
+        if ($enableedit && $CFG->uploadpdf_js_navigation) {
             echo '<p><a id="opennewwindow" target="_blank" href="editcomment.php?id='.$this->cm->id.'&amp;userid='.$userid.'&amp;pageno='. $pageno .'&amp;showprevious='.$showprevious.'">'.get_string('opennewwindow','assignment_uploadpdf').'</a></p>';
         }
         echo '<br style="clear:both;" />';
 
-        // Definitions for the right-click menus
-        echo '<ul class="contextmenu" style="display: none;" id="context-quicklist"><li class="separator">'.get_string('quicklist','assignment_uploadpdf').'</li></ul>';
-        echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">'.get_string('addquicklist','assignment_uploadpdf').'</a></li>';
-        echo '<li class="separator"><a href="#red">'.get_string('colourred','assignment_uploadpdf').'</a></li>';
-        echo '<li><a href="#yellow">'.get_string('colouryellow','assignment_uploadpdf').'</a></li>';
-        echo '<li><a href="#green">'.get_string('colourgreen','assignment_uploadpdf').'</a></li>';
-        echo '<li><a href="#blue">'.get_string('colourblue','assignment_uploadpdf').'</a></li>';
-        echo '<li><a href="#white">'.get_string('colourwhite','assignment_uploadpdf').'</a></li>';
-        echo '<li><a href="#clear">'.get_string('colourclear','assignment_uploadpdf').'</a></li>';
-        echo '<li class="separator"><a href="#deletecomment">'.get_string('deletecomment','assignment_uploadpdf').'</a></li>';
-        echo '</ul>';
+        if ($enableedit) {
+            // Definitions for the right-click menus
+            echo '<ul class="contextmenu" style="display: none;" id="context-quicklist"><li class="separator">'.get_string('quicklist','assignment_uploadpdf').'</li></ul>';
+            echo '<ul class="contextmenu" style="display: none;" id="context-comment"><li><a href="#addtoquicklist">'.get_string('addquicklist','assignment_uploadpdf').'</a></li>';
+            echo '<li class="separator"><a href="#red">'.get_string('colourred','assignment_uploadpdf').'</a></li>';
+            echo '<li><a href="#yellow">'.get_string('colouryellow','assignment_uploadpdf').'</a></li>';
+            echo '<li><a href="#green">'.get_string('colourgreen','assignment_uploadpdf').'</a></li>';
+            echo '<li><a href="#blue">'.get_string('colourblue','assignment_uploadpdf').'</a></li>';
+            echo '<li><a href="#white">'.get_string('colourwhite','assignment_uploadpdf').'</a></li>';
+            echo '<li><a href="#clear">'.get_string('colourclear','assignment_uploadpdf').'</a></li>';
+            echo '<li class="separator"><a href="#deletecomment">'.get_string('deletecomment','assignment_uploadpdf').'</a></li>';
+            echo '</ul>';
+        }
         // Definition for 'resend' box
         echo '<div id="sendfailed" style="display: none;"><p>'.get_string('servercommfailed','assignment_uploadpdf').'</p><button id="sendagain">'.get_string('resend','assignment_uploadpdf').'</button><button onClick="hidesendfailed();">'.get_string('cancel','assignment_uploadpdf').'</button></div>';
 
@@ -1687,7 +1700,8 @@ class assignment_uploadpdf extends assignment_base {
                         'js_navigation' => $CFG->uploadpdf_js_navigation,
                         'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif',
                         'image_path' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/',
-                        'css_path' => $CFG->wwwroot.'/lib/yui/assets/skins/sam/'
+                        'css_path' => $CFG->wwwroot.'/lib/yui/assets/skins/sam/',
+                        'editing' => ($enableedit ? 1 : 0)
                         );
 
         //        print_js_config($server, 'server_config'); // Not in Moodle 1.8
@@ -1949,6 +1963,8 @@ class assignment_uploadpdf extends assignment_base {
     function show_previous_comments($userid) {
         global $CFG;
 
+        // FIXME - add 'open in new window check-box'
+
         require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = get_record('user', 'id', $userid)) {
@@ -1992,6 +2008,7 @@ class assignment_uploadpdf extends assignment_base {
         print_footer('none');
     }
 
+    /*
     function show_previous_page($userid, $pageno, $commentid) {
         global $CFG;
 
@@ -2065,6 +2082,7 @@ class assignment_uploadpdf extends assignment_base {
             echo '</script>';
         }
     }
+    */
 
     function setup_elements(&$mform) {
         global $CFG, $COURSE;
