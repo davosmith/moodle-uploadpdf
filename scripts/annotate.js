@@ -32,14 +32,15 @@ var allannotations = new Array();
 var $defined = function(obj) { return (obj != undefined); };
 
 var ServerComm = new Class({
-	Implements: [Events],
-	id: null,
-	userid: null,
-	pageno: null,
-	sesskey: null,
-	url: null,
-	js_navigation: true,
-	retrycount: 0,
+    Implements: [Events],
+    id: null,
+    userid: null,
+    pageno: null,
+    sesskey: null,
+    url: null,
+    js_navigation: true,
+    retrycount: 0,
+    editing: true,
 
 	initialize: function(settings) {
 	    this.id = settings.id;
@@ -48,9 +49,13 @@ var ServerComm = new Class({
 	    this.sesskey = settings.sesskey;
 	    this.url = settings.updatepage;
 	    this.js_navigation = settings.js_navigation;
+	    this.editing = settings.editing.toInt();
 	},
 
 	updatecomment: function(comment) {
+	    if (!this.editing) {
+		return;
+	    }
 	    var waitel = new Element('div');
 	    waitel.set('class', 'wait');
 	    comment.adopt(waitel);
@@ -111,6 +116,9 @@ var ServerComm = new Class({
 	},
 
 	removecomment: function(cid) {
+	    if (!this.editing) {
+		return;
+	    }
 	    var request = new Request.JSON({
 		    url: this.url,
 		    onSuccess: function(resp) {
@@ -214,6 +222,9 @@ var ServerComm = new Class({
 	},
 
 	getquicklist: function() {
+	    if (!this.editing) {
+		return;
+	    }
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -243,6 +254,9 @@ var ServerComm = new Class({
 	},
 
 	addtoquicklist: function(element) {
+	    if (!this.editing) {
+		return;
+	    }
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -275,6 +289,9 @@ var ServerComm = new Class({
 	},
 
 	removefromquicklist: function(itemid) {
+	    if (!this.editing) {
+		return;
+	    }
 	    var request = new Request.JSON({
 		    url: this.url,
 		    onSuccess: function(resp) {
@@ -387,6 +404,9 @@ var ServerComm = new Class({
 	},
 
 	addannotation: function(details, annotation) {
+	    if (!this.editing) {
+		return;
+	    }
 	    var waitel = new Element('div');
 	    waitel.set('class', 'pagewait');
 	    $('pdfholder').adopt(waitel);
@@ -447,6 +467,9 @@ var ServerComm = new Class({
 	},
 
 	removeannotation: function(aid) {
+	    if (!this.editing) {
+		return;
+	    }
 	    var request = new Request.JSON({
 		    url: this.url,
 		    onSuccess: function(resp) {
@@ -513,6 +536,9 @@ function setcommentcontent(el, content) {
 }
 
 function updatelastcomment() {
+    if (!server.editing) {
+	return;
+    }
     // Stop trapping 'escape'
     document.removeEvent('keydown', typingcomment);
 
@@ -551,6 +577,10 @@ function updatelastcomment() {
 }
 
 function makeeditbox(comment, content) {
+    if (!server.editing) {
+	return;
+    }
+
     if (!$defined(content)) {
 	content = '';
     }
@@ -587,11 +617,12 @@ function makecommentbox(position, content, colour) {
     }
     newcomment.store('id', -1);
 
-    if (context_comment) {
-	context_comment.addmenu(newcomment);
-    }
+    if (server.editing) {
+	if (context_comment) {
+	    context_comment.addmenu(newcomment);
+	}
 
-    var drag = newcomment.makeDraggable({
+	var drag = newcomment.makeDraggable({
 	    container: 'pdfholder',
 	    onCancel: editcomment, // Click without drag = edit
 	    onStart: function(el) {
@@ -603,12 +634,12 @@ function makecommentbox(position, content, colour) {
 	    },
 	    onComplete: function(el) { server.updatecomment(el); }
 	});
-    newcomment.store('drag', drag); // Remember the drag object so  we can switch it on later
+	newcomment.store('drag', drag); // Remember the drag object so  we can switch it on later
 
-    var resizehandle = new Element('div');
-    resizehandle.set('class','resizehandle');
-    newcomment.adopt(resizehandle);
-    var resize = newcomment.makeResizable({
+	var resizehandle = new Element('div');
+	resizehandle.set('class','resizehandle');
+	newcomment.adopt(resizehandle);
+	var resize = newcomment.makeResizable({
 	    container: 'pdfholder',
 	    handle: resizehandle,
 	    modifiers: {'x': 'width', 'y': null},
@@ -630,20 +661,28 @@ function makecommentbox(position, content, colour) {
 		}
 	    }
 	});
-    newcomment.store('resize', resize);
-    newcomment.store('resizehandle', resizehandle);
+	newcomment.store('resize', resize);
+	newcomment.store('resizehandle', resizehandle);
 
-    // Add the edit box to it
-    if ($defined(content)) {
-	setcommentcontent(newcomment, content);
-    } else {
-	makeeditbox(newcomment);
+	// Add the edit box to it
+	if ($defined(content)) {
+	    setcommentcontent(newcomment, content);
+	} else {
+	    makeeditbox(newcomment);
+	}
+    } else {  // !server.editing
+	if ($defined(content)) { // Really should always be the case
+	    setcommentcontent(newcomment, content);
+	}
     }
 
     return newcomment;
 }
 
 function addcomment(e) {
+    if (!server.editing) {
+	return;
+    }
     if (updatelastcomment()) {
 	return;
     }
@@ -669,6 +708,9 @@ function addcomment(e) {
 }
 
 function editcomment(el) {
+    if (!server.editing) {
+	return;
+    }
     //unselectline();
 
     if (currentcomment == el) {
@@ -686,6 +728,9 @@ function editcomment(el) {
 }
 
 function typingcomment(e) {
+    if (!server.editing) {
+	return;
+    }
     if (e.key == 'esc') {
 	updatelastcomment();
 	e.stop();
@@ -693,10 +738,16 @@ function typingcomment(e) {
 }
 
 function getcurrentcolour() {
+    if (!server.editing) {
+	return 'yellow';
+    }
     return colourMenu.get("value");
 }
 
 function setcurrentcolour(colour) {
+    if (!server.editing) {
+	return;
+    }
     if (colour != 'red' && colour != 'green' && colour != 'blue' && colour != 'white' && colour != 'clear') {
 	colour = 'yellow';
     }
@@ -706,6 +757,9 @@ function setcurrentcolour(colour) {
 }
 
 function updatecommentcolour(colour, comment) {
+    if (!server.editing) {
+	return;
+    }
     if (colour != comment.retrieve('colour')) {
 	setcolourclass(colour, comment);
 	setcurrentcolour(colour);
@@ -737,6 +791,9 @@ function setcolourclass(colour, comment) {
 }
 
 function changecolour(e) {
+    if (!server.editing) {
+	return;
+    }
     if (currentcomment) {
 	var col = getcurrentcolour();
 	if (col != currentcomment.retrieve('colour')) {
@@ -747,10 +804,16 @@ function changecolour(e) {
 }
 
 function getcurrentlinecolour() {
+    if (!server.editing) {
+	return 'red';
+    }
     return linecolourmenu.get("value");
 }
 
 function setcurrentlinecolour(colour) {
+    if (!server.editing) {
+	return;
+    }
     if (colour != 'yellow' && colour != 'green' && colour != 'blue' && colour != 'white' && colour != 'black') {
 	colour = 'red';
     }
@@ -791,14 +854,23 @@ function changelinecolour(e) {
 	}
     }
     */
+    if (!server.editing) {
+	return;
+    }
     Cookie.write('uploadpdf_linecolour', getcurrentlinecolour());
 }
 
 function getcurrenttool() {
+    if (!server.editing) {
+	return 'comment';
+    }
     return choosedrawingtool.get("value").replace('icon','');
 }
 
 function setcurrenttool(toolname) {
+    if (!server.editing) {
+	return;
+    }
     abortline(); // Just in case we are in the middle of drawing, when we change tools
     toolname += 'icon';
     var btns = choosedrawingtool.getButtons();
@@ -814,6 +886,9 @@ function setcurrenttool(toolname) {
 }
 
 function startline(e) {
+    if (!server.editing) {
+	return;
+    }
     //unselectline();
 
     if (currentpaper) {
@@ -847,6 +922,10 @@ function startline(e) {
 }
 
 function updateline(e) {
+    if (!server.editing) {
+	return;
+    }
+
     var dims = $('pdfimg').getCoordinates();
     var ex = e.page.x - dims.left;
     var ey = e.page.y - dims.top;
@@ -908,6 +987,9 @@ function updateline(e) {
 }
 
 function finishline(e) {
+    if (!server.editing) {
+	return;
+    }
     $(document).removeEvent('mousemove', updateline);
     $(document).removeEvent('mouseup', finishline);
 
@@ -944,6 +1026,9 @@ function finishline(e) {
 }
 
 function abortline() {
+    if (!server.editing) {
+	return;
+    }
     if (currentline) {
 	$(document).removeEvent('mousemove', updateline);
 	$(document).removeEvent('mouseup', finishline);
@@ -983,8 +1068,17 @@ function makeline(coords, type, id, colour) {
 	    miny = Math.min(miny, coords[i].y);
 	    maxy = Math.max(maxy, coords[i].y);
 	}
-	boundary = {x: (minx-(halflinewidth*0.5)+dims.left), y: (miny-(halflinewidth*0.5)+dims.top), w: (maxx+linewidth-minx), h: (maxy+linewidth-miny)};
-	paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
+	boundary = {x: (minx-(halflinewidth*0.5)), y: (miny-(halflinewidth*0.5)), w: (maxx+linewidth-minx), h: (maxy+linewidth-miny)};
+	var container = new Element('div');
+	if (Browser.ie) {
+	    // Does not work with FF & Moodle
+	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
+	} else {
+	    // Does not work with IE
+	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+';');
+	}
+	$('pdfholder').adopt(container);
+	paper = Raphael(container);
 	minx -= halflinewidth;
 	miny -= halflinewidth;
 
@@ -995,9 +1089,6 @@ function makeline(coords, type, id, colour) {
 	line = paper.path(pathstr);
     } else {
 	details.coords = { sx: coords.sx, sy: coords.sy, ex: coords.ex, ey: coords.ey };
-
-	coords.sx += dims.left;   coords.ex += dims.left;
-	coords.sy += dims.top;    coords.ey += dims.top;
 
 	if (coords.sx > coords.ex) { // Always go left->right
 	    var temp = coords.sx; coords.sx = coords.ex; coords.ex = temp;
@@ -1011,7 +1102,16 @@ function makeline(coords, type, id, colour) {
 	    coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
 	}
 	coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
-	paper = Raphael(boundary.x, boundary.y, boundary.w+2, boundary.h+2);
+	var container = new Element('div');
+	if (Browser.ie) {
+	    // Does not work with FF & Moodle
+	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
+	} else {
+	    // Does not work with IE
+	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+';');
+	}
+	$('pdfholder').adopt(container);
+	paper = Raphael(container);
 	switch (type) {
 	case 'rectangle':
 	    var w = Math.abs(coords.ex - coords.sx);
@@ -1043,12 +1143,16 @@ function makeline(coords, type, id, colour) {
     domcanvas.store('height',boundary.h);
     domcanvas.store('line',line);
     domcanvas.store('colour',colour);
-    domcanvas.addEvent('mousedown',startline);
-    domcanvas.addEvent('click', eraseline);
-    if ($defined(id)) {
-	domcanvas.store('id',id);
+    if (server.editing) {
+	domcanvas.addEvent('mousedown',startline);
+	domcanvas.addEvent('click', eraseline);
+	if ($defined(id)) {
+	    domcanvas.store('id',id);
+	} else {
+	    server.addannotation(details, domcanvas);
+	}
     } else {
-	server.addannotation(details, domcanvas);
+	domcanvas.store('id',id);
     }
 
     allannotations.push(paper);
@@ -1100,6 +1204,9 @@ function checkdeleteline(e) {
 */
 
 function eraseline(e) {
+    if (!server.editing) {
+	return;
+    }
     if (getcurrenttool() != 'erase') {
 	return false;
     }
@@ -1124,22 +1231,28 @@ function keyboardnavigation(e) {
 	gotonextpage();
     } else if (e.key == 'p') {
 	gotoprevpage();
-    } else if (e.key == 'c') {
-	setcurrenttool('comment');
-    } else if (e.key == 'l') {
-	setcurrenttool('line');
-    } else if (e.key == 'r') {
-	setcurrenttool('rectangle');
-    } else if (e.key == 'o') {
-	setcurrenttool('oval');
-    } else if (e.key == 'f') {
-	setcurrenttool('freehand');
-    } else if (e.key == 'e') {
-	setcurrenttool('erase');
+    }
+    if (server.editing) {
+	if (e.key == 'c') {
+	    setcurrenttool('comment');
+	} else if (e.key == 'l') {
+	    setcurrenttool('line');
+	} else if (e.key == 'r') {
+	    setcurrenttool('rectangle');
+	} else if (e.key == 'o') {
+	    setcurrenttool('oval');
+	} else if (e.key == 'f') {
+	    setcurrenttool('freehand');
+	} else if (e.key == 'e') {
+	    setcurrenttool('erase');
+	}
     }
 }
 
 function updatefindcomments(page, id, text) {
+    if (!server.editing) {
+	return;
+    }
     if (text.length > 40) {
 	text = page+': '+text.substring(0, 39) + '&hellip;';
     } else {
@@ -1165,6 +1278,9 @@ function updatefindcomments(page, id, text) {
 }
 
 function removefromfindcomments(id) {
+    if (!server.editing) {
+	return;
+    }
     var menu = findcommentsmenu.getMenu();
     var items = menu.getItems();
     for (var i in items) {
@@ -1184,41 +1300,44 @@ function startjs() {
     server = new ServerComm(server_config);
 
     document.body.className += ' yui-skin-sam';
-    colourMenu = new YAHOO.widget.Button("choosecolour", {
+
+    if (server.editing) {
+	colourMenu = new YAHOO.widget.Button("choosecolour", {
 	    type: "menu",
 	    menu: "choosecolourmenu",
 	    lazyloadmenu: false });
-    colourMenu.on("selectedMenuItemChange", function(e) {
+	colourMenu.on("selectedMenuItemChange", function(e) {
 	    var menuItem = e.newValue;
 	    var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
 	    this.set("label", '<img src="'+server_config.image_path+colour+'.gif" />');
 	    this.set("value", colour);
 	    changecolour();
 	});
-    linecolourmenu = new YAHOO.widget.Button("chooselinecolour", {
+	linecolourmenu = new YAHOO.widget.Button("chooselinecolour", {
 	    type: "menu",
 	    menu: "chooselinecolourmenu",
 	    lazyloadmenu: false });
-    linecolourmenu.on("selectedMenuItemChange", function(e) {
+	linecolourmenu.on("selectedMenuItemChange", function(e) {
 	    var menuItem = e.newValue;
 	    var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
 	    this.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
 	    this.set("value", colour);
 	    changelinecolour();
 	});
-    var showPreviousMenu = new YAHOO.widget.Button("showpreviousbutton", {
-	type: "menu",
-	menu: "showpreviousselect",
-	lazyloadmenu: false });
+	var showPreviousMenu = new YAHOO.widget.Button("showpreviousbutton", {
+	    type: "menu",
+	    menu: "showpreviousselect",
+	    lazyloadmenu: false });
+	var savedraftbutton = new YAHOO.widget.Button("savedraft");
+	var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
+	var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
+	choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
+	setcurrenttool('commenticon');
+    }
     prevbutton = new YAHOO.widget.Button("prevpage");
     prevbutton.on("click", gotoprevpage);
     nextbutton = new YAHOO.widget.Button("nextpage");
     nextbutton.on("click", gotonextpage);
-    var savedraftbutton = new YAHOO.widget.Button("savedraft");
-    var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
-    var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
-    choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
-    setcurrenttool('commenticon');
     findcommentsmenu = new YAHOO.widget.Button("findcommentsbutton", {
 	type: "menu",
 	menu: "findcommentsselect",
@@ -1233,19 +1352,21 @@ function startjs() {
 
     server.getcomments();
 
-    $('pdfimg').addEvent('click', addcomment);
-    $('pdfimg').addEvent('mousedown', startline);
-    $('pdfimg').ondragstart = function() { return false; }; // To stop ie trying to drag the image
-    var colour = Cookie.read('uploadpdf_colour');
-    if (!$defined(colour)) {
-	colour = 'yellow';
+    if (server.editing) {
+	$('pdfimg').addEvent('click', addcomment);
+	$('pdfimg').addEvent('mousedown', startline);
+	$('pdfimg').ondragstart = function() { return false; }; // To stop ie trying to drag the image
+	var colour = Cookie.read('uploadpdf_colour');
+	if (!$defined(colour)) {
+	    colour = 'yellow';
+	}
+	setcurrentcolour(colour);
+	var linecolour = Cookie.read('uploadpdf_linecolour');
+	if (!$defined(linecolour)) {
+	    linecolour = 'red';
+	}
+	setcurrentlinecolour(linecolour);
     }
-    setcurrentcolour(colour);
-    var linecolour = Cookie.read('uploadpdf_linecolour');
-    if (!$defined(linecolour)) {
-	linecolour = 'red';
-    }
-    setcurrentlinecolour(linecolour);
 
     // Start preloading pages if using js navigation method
     if (server_config.js_navigation) {
@@ -1269,6 +1390,10 @@ function startjs() {
 }
 
 function context_quicklistnoitems() {
+    if (!server.editing) {
+	return;
+    }
+
     if (context_quicklist.quickcount == 0) {
 	if (!context_quicklist.menu.getElement('a[href$=noitems]')) {
 	    context_quicklist.addItem('noitems', server_config.lang_emptyquicklist+' &#0133;', null, function() { alert(server_config.lang_emptyquicklist_instructions); });
@@ -1279,6 +1404,9 @@ function context_quicklistnoitems() {
 }
 
 function addtoquicklist(item) {
+    if (!server.editing) {
+	return;
+    }
     var itemid = item.id;
     var itemtext = item.text.trim().replace('\n','');
     var itemfulltext = false;
@@ -1322,12 +1450,18 @@ function addtoquicklist(item) {
 }
 
 function removefromquicklist(itemid) {
+    if (!server.editing) {
+	return;
+    }
     context_quicklist.removeItem(itemid);
     context_quicklist.quickcount--;
     context_quicklistnoitems();
 }
 
 function initcontextmenu() {
+    if (!server.editing) {
+	return;
+    }
     var content = $('region-main');
     offs = content.getPosition();
     offs.x = -offs.x;
@@ -1449,14 +1583,16 @@ function gotopage(pageno) {
 	    }
 	}
 
-	// Update the 'showprevious' form
-	if ($defined($('showprevious'))) {
-	    document.showprevious.pageno.value = pageno;
+	if (server.editing) {
+	    // Update the 'showprevious' form
+	    if ($defined($('showprevious'))) {
+		document.showprevious.pageno.value = pageno;
+	    }
+	    // Update the 'open in new window' link
+	    var opennew = $('opennewwindow');
+	    var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
+	    opennew.set('href', on_link);
 	}
-	// Update the 'open in new window' link
-	var opennew = $('opennewwindow');
-	var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
-	opennew.set('href', on_link);
 
 	//Update the next/previous buttons
 	if (pageno == pagecount) {
