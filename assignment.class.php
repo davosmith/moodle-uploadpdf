@@ -385,8 +385,8 @@ class assignment_uploadpdf extends assignment_base {
                     $mimetype = $file->get_mimetype();
                     if ($mimetype == 'application/pdf') {
                         $editurl = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php',array('id'=>$this->cm->id, 'userid'=>$userid));
-                        $img = '<img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />';
-                        $output .= $OUTPUT->action_link($editurl, $img.s($filename), new popup_action('click', $editurl, 'editcomment'.$submission->id, array('width'=>1000, 'height'=>700))).'&nbsp;';
+                        $img = '<img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" /> ';
+                        $output .= $OUTPUT->action_link($editurl, $img.get_string('annotatesubmission','assignment_uploadpdf', new popup_action('click', $editurl, 'editcomment'.$submission->id, array('width'=>1000, 'height'=>700))).'&nbsp;';
 
                     } else {
                         $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submission/'.$submission->id.'/'.$filename);
@@ -397,7 +397,7 @@ class assignment_uploadpdf extends assignment_base {
                     $respmime = $file->get_mimetype();
                     $respicon = $OUTPUT->pix_url(file_mimetype_icon($respmime));
                     $respurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/response/'.$submission->id.'/response.pdf');
-                    $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$respicon.'" alt="'.$respmime.'" />response.pdf</a>&nbsp;';
+                    $output .= '<br />=&gt; <a href="'.$respurl.'" ><img class="icon" src="'.$respicon.'" alt="'.$respmime.'" />'.get_string('viewresponse','assignment_uploadpdf').'</a>&nbsp;';
 
                     // To tidy up flags from older versions of this assignment
                     if ($submission->data2 != ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED) {
@@ -471,6 +471,7 @@ class assignment_uploadpdf extends assignment_base {
                     if ($mimetype == 'application/pdf' && has_capability('mod/assignment:grade', $this->context)) {
                         $editurl = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php',array('id'=>$this->cm->id, 'userid'=>$userid));
                         $img = '<img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" />';
+                        $filename = get_string('annotatesubmission', 'assignment_uploadpdf');
                         $output .= $OUTPUT->action_link($editurl, $img.s($filename), new popup_action('click', $editurl, 'editcomment'.$userid, array('width'=>1000, 'height'=>700))).'&nbsp;';
                     } else {
                         $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submissionfinal/'.$submission->id.'/'.$filename);

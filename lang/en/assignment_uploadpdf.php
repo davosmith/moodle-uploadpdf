@@ -14,8 +14,8 @@ $string['coversheettemplate_help'] = 'If you select a template, then, before a s
 You can create/delete/modify templates by clicking on the \'Edit Templates...\' button.<br/>
 <em>Note:</em> Selecting a template, without specifying a coversheet will have no effect.';
 $string['displaychecklist'] = 'Display checklist';
-$string['edittemplate'] = 'Edit Templates';
-$string['edittemplatetip'] = 'Edit Templates';
+$string['edittemplate'] = 'Edit templates';
+$string['edittemplatetip'] = 'Edit templates';
 $string['newtemplate'] = 'New Template...';
 $string['mustcompletechecklist'] = 'Checklist complete before submission';$string['notemplate'] = 'None';
 $string['onlypdf'] = 'All files must be PDFs';
@@ -42,7 +42,7 @@ $string['newitem'] = 'New Item...';
 $string['itemtype'] = 'Item type';
 $string['itemdate'] = 'Date';
 $string['itemtext'] = 'Text';
-$string['itemshorttext'] = 'Short Text';
+$string['itemshorttext'] = 'Short text';
 $string['enterformtext'] = 'Enter form text';
 $string['clicktosetposition'] = 'Click on the image below to set this position';
 $string['itemx'] = 'X Position (pixels)';
@@ -51,15 +51,15 @@ $string['itemwidth'] = 'Width (pixels)';
 $string['textonly'] = "(only 'Text' items)";
 $string['itemsetting'] = 'Value';
 $string['itemsettingmore'] = 'name of the field (for text fields) or date format (e.g. d/m/Y)';
-$string['dateformatlink'] = 'Date Format help';
+$string['dateformatlink'] = 'Date format help';
 $string['saveitem'] = 'Save item';
 $string['deleteitem'] = 'Delete item';
 $string['previewinstructions'] = 'Please upload a coversheet (PDF) to help preview this template';
 $string['uploadpreview'] = 'Upload';
 
 //Teacher marking
-$string['annotatesubmission'] = 'Annotate Submission';
-$string['draftsaved'] = 'Draft Saved';
+$string['annotatesubmission'] = 'Annotate submission';
+$string['draftsaved'] = 'Draft saved';
 $string['responseok'] = 'Response generated OK';
 $string['responseproblem'] = 'There was a problem creating the response';
 $string['errorloadingpdf'] = 'Error loading submitted PDF';
@@ -86,6 +86,10 @@ $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
 $string['colourblack'] = 'Black';
 
+$string['completedsubmission'] = 'Completed submission';
+$string['viewresponse'] = 'Download response';
+$string['yourcompletedsubmission'] = 'Download your complete submission';
+
 $string['findcomments'] = 'Find comments';
 $string['nocomments'] = 'There are currently no comments on this student\'s submission.';
 $string['pagenumber'] = 'Page';
@@ -98,10 +102,10 @@ $string['errormessage'] = 'Error message: ';
 $string['okagain'] = 'Click OK to try again';
 
 $string['quicklist'] = 'Comment Quicklist';
-$string['addquicklist'] = 'Add to Comment Quicklist';
-$string['deletecomment'] = 'Delete Comment';
+$string['addquicklist'] = 'Add to comment Quicklist';
+$string['deletecomment'] = 'Delete comment';
 $string['emptyquicklist'] = 'No items in Quicklist';
-$string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
+$string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the Quicklist';
 $string['opennewwindow'] = 'Open this page in a new window';
 
 $string['commenticon'] = "c - add comments\nHold Ctrl to draw a line";
