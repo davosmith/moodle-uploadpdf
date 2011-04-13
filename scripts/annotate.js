@@ -799,6 +799,7 @@ function getcurrenttool() {
 }
 
 function setcurrenttool(toolname) {
+    abortline(); // Just in case we are in the middle of drawing, when we change tools
     toolname += 'icon';
     var btns = choosedrawingtool.getButtons();
     var count = choosedrawingtool.getCount();
@@ -849,6 +850,19 @@ function updateline(e) {
     var dims = $('pdfimg').getCoordinates();
     var ex = e.page.x - dims.left;
     var ey = e.page.y - dims.top;
+
+    if (ex > dims.width) {
+	ex = dims.width;
+    }
+    if (ex < 0) {
+	ex = 0;
+    }
+    if (ey > dims.height) {
+	ey = dims.height;
+    }
+    if (ey < 0) {
+	ey = 0;
+    }
 
     var currenttool = getcurrenttool();
 
@@ -908,6 +922,18 @@ function finishline(e) {
 	coords = freehandpoints;
     } else {
 	coords = {sx:linestartpos.x, sy:linestartpos.y, ex: (e.page.x-dims.left), ey: (e.page.y-dims.top)};
+	if (coords.ex > dims.width) {
+	    coords.ex = dims.width;
+	}
+	if (coords.ex < 0) {
+	    coords.ex = 0;
+	}
+	if (coords.ey > dims.height) {
+	    coords.ey = dims.height;
+	}
+	if (coords.ey < 0) {
+	    coords.ey = 0;
+	}
     }
 
     currentpaper.remove();
@@ -915,6 +941,18 @@ function finishline(e) {
     currentline = null;
 
     makeline(coords, tool);
+}
+
+function abortline() {
+    if (currentline) {
+	$(document).removeEvent('mousemove', updateline);
+	$(document).removeEvent('mouseup', finishline);
+	if ($defined(currentpaper)) {
+	    currentpaper.remove();
+	    currentpaper = null;
+	}
+	currentline = null;
+    }
 }
 
 function makeline(coords, type, id, colour) {
@@ -1378,7 +1416,7 @@ function gotopage(pageno) {
 	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
 	allannotations.each(function(p) { p.remove(); });
 	allannotations.empty();
-	currentpaper = currentline /*= lineselect*/ = null;
+	abortline(); // Abandon any lines currently being drawn
 	currentcomment = null; // Throw away any comments in progress
 	editbox = null;
 
