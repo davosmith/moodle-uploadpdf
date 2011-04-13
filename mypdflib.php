@@ -51,7 +51,7 @@ class MyPDFLib extends FPDI {
                     $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 1, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
                 }
             }
-            
+
             for ($i=2; $i<=$pagecount; $i++) {
                 $template = $this->ImportPage($i);
                 $size = $this->getTemplateSize($template);
@@ -104,7 +104,7 @@ class MyPDFLib extends FPDI {
             return $pagecount;
         }
     }
-    
+
     function copy_page() {		/* Copy next page from source file and set as current page */
         if (!$this->filename) {
             return false;
@@ -120,11 +120,11 @@ class MyPDFLib extends FPDI {
         $this->useTemplate($template);
         return true;
     }
-  
+
     function copy_remaining_pages() {	/* Copy all the rest of the pages in the file */
         while ($this->copy_page());
     }
-  
+
     function add_comment($text, $x, $y, $width, $colour='yellow') { /* Add a comment to the current page */
         if (!$this->filename) {
             return false;
@@ -146,7 +146,7 @@ class MyPDFLib extends FPDI {
             $this->SetFillColor(255, 255, 176);
             break;
         }
-        
+
         $x *= $this->scale;
         $y *= $this->scale;
         $width *= $this->scale;
@@ -163,8 +163,8 @@ class MyPDFLib extends FPDI {
         }
         return true;
     }
-  
-    function add_annotation($sx, $sy, $ex, $ey, $colour='red') { /* Add an annotation to the current page */
+
+    function add_annotation($sx, $sy, $ex, $ey, $colour='red', $type='line') { /* Add an annotation to the current page */
         if (!$this->filename) {
             return false;
         }
@@ -188,18 +188,36 @@ class MyPDFLib extends FPDI {
             $this->SetDrawColor(255, 0, 0);
             break;
         }
-        
+
         $sx *= $this->scale;
         $sy *= $this->scale;
         $ex *= $this->scale;
         $ey *= $this->scale;
 
         $this->SetLineWidth(3.0 * $this->scale);
-        $this->Line($sx, $sy, $ex, $ey);
-
+        switch($type) {
+        case 'oval':
+            $rx = abs($sx - $ex)/2;
+            $ry = abs($sy - $ey)/2;
+            $sx = min($sx, $ex) + $rx;
+            $sy = min($sy, $ey) + $ry;
+            $this->Ellipse($sx, $sy, $rx, $ry);
+            break;
+        case 'rectangle':
+            $w = abs($sx - $ex);
+            $h = abs($sy - $ey);
+            $sx = min($sx, $ex);
+            $sy = min($sx, $ex);
+            $this->Rect($sx, $sy, $w, $h);
+            break;
+        case 'freehand':
+        default: // Line
+            $this->Line($sx, $sy, $ex, $ey);
+            break;
+        }
         $this->SetDrawColor(0,0,0);
         $this->SetLineWidth(1.0 * $this->scale);
-        
+
         return true;
     }
 
@@ -237,7 +255,7 @@ class MyPDFLib extends FPDI {
                 $generate = false;
             }
         }
-        
+
         if ($generate) {
             $gsexec = $CFG->gs_path;
             $imageres = 100;
@@ -250,7 +268,7 @@ class MyPDFLib extends FPDI {
                 return false;
             }
         }
-        
+
         return 'image_page'.$pageno.'.png';
     }
 }

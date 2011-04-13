@@ -1191,7 +1191,8 @@ class assignment_uploadpdf extends assignment_base {
             }
 
             while (($annotation) && ($annotation->pageno == $mypdf->current_page())) {
-                $mypdf->add_annotation($annotation->startx, $annotation->starty, $annotation->endx, $annotation->endy, $annotation->colour);
+                $mypdf->add_annotation($annotation->startx, $annotation->starty, $annotation->endx,
+                                       $annotation->endy, $annotation->colour, $annotation->type);
                 $annotation = next($annotations);
             }
 

@@ -920,7 +920,7 @@ function makeline(coords, type, id, colour) {
 	var sy = Math.min(coords.sy, coords.ey)+ry;
 	line = paper.ellipse(sx, sy, rx, ry);
 	break;
-    case freehand:
+    case 'freehand':
     default:
 	line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
 	details.type = 'line';
