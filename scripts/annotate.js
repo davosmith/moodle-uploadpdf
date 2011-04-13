@@ -1389,10 +1389,10 @@ function startjs() {
 	    lazyloadmenu: false });
 	var savedraftbutton = new YAHOO.widget.Button("savedraft");
 	var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
-	var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
 	choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
 	setcurrenttool('commenticon');
     }
+    var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
     prevbutton = new YAHOO.widget.Button("prevpage");
     prevbutton.on("click", gotoprevpage);
     nextbutton = new YAHOO.widget.Button("nextpage");
