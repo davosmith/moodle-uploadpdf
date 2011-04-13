@@ -756,6 +756,26 @@ function setcurrentcolour(colour) {
     changecolour();
 }
 
+function nextcommentcolour() {
+    switch (getcurrentcolour()) {
+    case 'red': setcurrentcolour('yellow'); break;
+    case 'yellow': setcurrentcolour('green'); break;
+    case 'green': setcurrentcolour('blue'); break;
+    case 'blue': setcurrentcolour('white'); break;
+    case 'white': setcurrentcolour('clear'); break;
+    }
+}
+
+function prevcommentcolour() {
+    switch (getcurrentcolour()) {
+    case 'yellow': setcurrentcolour('red'); break;
+    case 'green': setcurrentcolour('yellow'); break;
+    case 'blue': setcurrentcolour('green'); break;
+    case 'white': setcurrentcolour('blue'); break;
+    case 'clear': setcurrentcolour('white'); break;
+    }
+}
+
 function updatecommentcolour(colour, comment) {
     if (!server.editing) {
 	return;
@@ -820,6 +840,26 @@ function setcurrentlinecolour(colour) {
     linecolourmenu.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
     linecolourmenu.set("value", colour);
     changelinecolour();
+}
+
+function nextlinecolour() {
+    switch (getcurrentlinecolour()) {
+    case 'red': setcurrentlinecolour('yellow'); break;
+    case 'yellow': setcurrentlinecolour('green'); break;
+    case 'green': setcurrentlinecolour('blue'); break;
+    case 'blue': setcurrentlinecolour('white'); break;
+    case 'white': setcurrentlinecolour('black'); break;
+    }
+}
+
+function prevlinecolour() {
+    switch (getcurrentlinecolour()) {
+    case 'yellow': setcurrentlinecolour('red'); break;
+    case 'green': setcurrentlinecolour('yellow'); break;
+    case 'blue': setcurrentlinecolour('green'); break;
+    case 'white': setcurrentlinecolour('blue'); break;
+    case 'black': setcurrentlinecolour('white'); break;
+    }
 }
 
 function setlinecolour(colour, line) {
@@ -1250,6 +1290,18 @@ function keyboardnavigation(e) {
 	    setcurrenttool('freehand');
 	} else if (e.key == 'e') {
 	    setcurrenttool('erase');
+	} else if (e.code == 219) {  // { or [
+	    if (e.shift) {
+		prevlinecolour();
+	    } else {
+		prevcommentcolour();
+	    }
+	} else if (e.code == 221) {  // } or ]
+	    if (e.shift) {
+		nextlinecolour();
+	    } else {
+		nextcommentcolour();
+	    }
 	}
     }
 }
