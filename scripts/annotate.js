@@ -16,6 +16,7 @@ var linecolourmenu = null;
 var nextbutton = null;
 var prevbutton = null;
 var choosedrawingtool = null;
+var findcommentsmenu = null;
 
 var resendtimeout = 4000;
 
@@ -67,6 +68,7 @@ var ServerComm = new Class({
 			    //setcommentcontent(comment, resp.text);
 			    // Re-attach drag and resize ability
 			    comment.retrieve('drag').attach();
+			    updatefindcomments(server.pageno.toInt(), resp.id, comment.retrieve('rawtext'));
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.updatecomment(comment);
@@ -113,6 +115,7 @@ var ServerComm = new Class({
 		    url: this.url,
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
+			removefromfindcomments(cid);
 			if (resp.error != 0) {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.removecomment(cid);
@@ -1086,6 +1089,43 @@ function keyboardnavigation(e) {
     }
 }
 
+function updatefindcomments(page, id, text) {
+    if (text.length > 40) {
+	text = page+': '+text.substring(0, 39) + '&hellip;';
+    } else {
+	text = page+': '+text;
+    }
+    var value = page+':'+id;
+    var menu = findcommentsmenu.getMenu();
+    var items = menu.getItems();
+    for (var i in items) {
+	var details = items[i].value.split(':');
+	var itempage = details[0].toInt();
+	var itemid = details[1];
+	if (itemid == id) {
+	    items[i].cfg.setProperty('text', text);
+	    return;
+	}
+	if (itempage > page) {
+	    menu.insertItem({text: text, value: value}, i.toInt());
+	    return;
+	}
+    }
+    menu.addItem({text: text, value: value});
+}
+
+function removefromfindcomments(id) {
+    var menu = findcommentsmenu.getMenu();
+    var items = menu.getItems();
+    for (var i in items) {
+	var itemid = items[i].value.split(':')[1];
+	if (itemid == id) {
+	    menu.removeItem(items[i]);
+	    return;
+	}
+    }
+}
+
 function startjs() {
     new Asset.css('style/annotate.css');
     new Asset.css(server_config.css_path+'menu.css');
@@ -1129,6 +1169,17 @@ function startjs() {
     var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
     choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
     setcurrenttool('commenticon');
+    findcommentsmenu = new YAHOO.widget.Button("findcommentsbutton", {
+	type: "menu",
+	menu: "findcommentsselect",
+	lazyloadmenu: false });
+    findcommentsmenu.on("selectedMenuItemChange", function(e) {
+	var pageno = e.newValue.value;
+	pageno = pageno.split(':')[0].toInt();
+	if (server.pageno.toInt() != pageno) {
+	    gotopage(pageno);
+	}
+    });
 
     server.getcomments();
 

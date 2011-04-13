@@ -86,6 +86,7 @@ $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
 $string['colourblack'] = 'Black';
 
+$string['findcomments'] = 'Find comments';
 $string['nocomments'] = 'There are currently no comments on this student\'s submission.';
 $string['pagenumber'] = 'Page';
 $string['comment'] = 'Comment';
