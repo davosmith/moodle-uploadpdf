@@ -1475,7 +1475,6 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         echo $pageselector;
-        echo '<div id="colourselector">';
         // Choose comment colour
         echo '<input type="submit" id="choosecolour" style="line-height:normal;" name="choosecolour" value="" title="'.get_string('commentcolour','assignment_uploadpdf').'">';
         echo '<div id="choosecolourmenu" class="yuimenu" title="'.get_string('commentcolour', 'assignment_uploadpdf').'"><div class="bd"><ul class="first-of-type">';
@@ -1654,6 +1653,10 @@ class assignment_uploadpdf extends assignment_base {
                 $respannotation['type'] = $annotation->type;
                 if ($annotation->type == 'freehand') {
                     $respannotation['path'] = $annotation->path;
+                    if (is_null($annotation->path)) {
+                        $DB->delete_records('assignment_uploadpdf_annot', array('id'=>$annotation->id));
+                        continue;
+                    }
                 } else {
                     $respannotation['coords'] = array('startx'=> $annotation->startx, 'starty'=> $annotation->starty,
                                                       'endx'=> $annotation->endx, 'endy'=> $annotation->endy );
