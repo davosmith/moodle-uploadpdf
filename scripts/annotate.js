@@ -1160,7 +1160,7 @@ function makeline(coords, type, id, colour) {
 	domcanvas.store('id',id);
     }
 
-    allannotations.push(paper);
+    allannotations.push(container);
 }
 
 /*
@@ -1567,7 +1567,7 @@ function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
 	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
-	allannotations.each(function(p) { p.remove(); });
+	allannotations.each(function(p) { p.destroy(); });
 	allannotations.empty();
 	abortline(); // Abandon any lines currently being drawn
 	currentcomment = null; // Throw away any comments in progress

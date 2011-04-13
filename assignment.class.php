@@ -1640,9 +1640,11 @@ class assignment_uploadpdf extends assignment_base {
 
             if ($comment->id === -1) {
                 unset($comment->id);
-                $oldsel = "assignment_submission = {$comment->assignment_submission} AND pageno = {$comment->pageno} ";
-                $oldsel .= "AND posx = {$comment->posx} AND posy = {$comment->posy} AND rawtext = '{$comment->rawtext}'";
-                $oldcomments = $DB->get_records_select('assignment_uploadpdf_comment', $oldsel);
+                $oldcomments = $DB->get_records_select('assignment_uploadpdf_comment',
+                                                       'assignment_submission = ? AND pageno = ? '.
+                                                       'AND posx = ? AND posy = ? AND rawtext = ?',
+                                                       array($comment->assignment_submission, $comment->pageno,
+                                                             $comment->posx, $comment->posy, $comment->rawtext));
                 if ($oldcomments && !empty($oldcomments)) {
                     $comment->id = reset(array_keys($oldcomments));
                 } else {
