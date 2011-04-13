@@ -1116,6 +1116,9 @@ function makeline(coords, type, id, colour) {
 	    maxy = Math.max(maxy, coords[i].y);
 	}
 	boundary = {x: (minx-(halflinewidth*0.5)), y: (miny-(halflinewidth*0.5)), w: (maxx+linewidth-minx), h: (maxy+linewidth-miny)};
+	if (boundary.h < 14) {
+	    boundary.h = 14;
+	}
 	if (Browser.ie) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
@@ -1148,6 +1151,9 @@ function makeline(coords, type, id, colour) {
 	    coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
 	}
 	coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
+	if (boundary.h < 14) {
+	    boundary.h = 14;
+	}
 	if (Browser.ie) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
