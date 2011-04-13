@@ -837,15 +837,20 @@ function updateline(e) {
 
     switch (getcurrenttool()) {
     case 'rectangle':
-	ex -= linestartpos.x;
-	ey -= linestartpos.y;
-	currentline = currentpaper.rect(linestartpos.x, linestartpos.y, ex, ey);
+	var w = Math.abs(ex-linestartpos.x);
+	var h = Math.abs(ey-linestartpos.y);
+	var sx = Math.min(linestartpos.x, ex);
+	var sy = Math.min(linestartpos.y, ey);
+	currentline = currentpaper.rect(sx, sy, w, h);
 	break;
     case 'oval':
-	ex = (ex - linestartpos.x) / 2;
-	ey = (ey - linestartpos.y) / 2;
-	currentline = currentpaper.ellipse(linestartpos.x+ex, linestartpos.y+ey, ex, ey);
+	var rx = Math.abs(ex - linestartpos.x) / 2;
+	var ry = Math.abs(ey - linestartpos.y) / 2;
+	var sx = Math.min(linestartpos.x, ex) + rx; // Add 'rx'/'ry' to get to the middle
+	var sy = Math.min(linestartpos.y, ey) + ry;
+	currentline = currentpaper.ellipse(sx, sy, rx, ry);
 	break;
+    case 'freehand':
     default: // Comment + Ctrl OR line
 	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+" L"+ex+" "+ey);
 	break;
@@ -902,18 +907,23 @@ function makeline(coords, type, id, colour) {
     var line;
     switch (type) {
     case 'rectangle':
-	var dx = coords.ex - coords.sx;
-	var dy = coords.ey - coords.sy;
-	line = paper.rect(coords.sx, coords.sy, dx, dy);
+	var w = Math.abs(coords.ex - coords.sx);
+	var h = Math.abs(coords.ey - coords.sy);
+	var sx = Math.min(coords.sx, coords.ex);
+	var sy = Math.min(coords.sy, coords.ey);
+	line = paper.rect(sx, sy, w, h);
 	break;
     case 'oval':
-	var rx = (coords.ex - coords.sx) / 2;
-	var ry = (coords.ey - coords.sy) / 2;
-	line = paper.ellipse(coords.sx+rx, coords.sy+ry, rx, ry);
+	var rx = Math.abs(coords.ex - coords.sx) / 2;
+	var ry = Math.abs(coords.ey - coords.sy) / 2;
+	var sx = Math.min(coords.sx, coords.ex)+rx;
+	var sy = Math.min(coords.sy, coords.ey)+ry;
+	line = paper.ellipse(sx, sy, rx, ry);
 	break;
+    case freehand:
     default:
 	line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
-	details.type = 'line'; // Just in case ...
+	details.type = 'line';
 	break;
     }
     line.attr("stroke-width", linewidth);
