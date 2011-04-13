@@ -475,6 +475,9 @@ class assignment_uploadpdf extends assignment_base {
                         $output .= $OUTPUT->action_link($editurl, $img.s($filename), new popup_action('click', $editurl, 'editcomment'.$userid, array('width'=>1000, 'height'=>700))).'&nbsp;';
                     } else {
                         $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submissionfinal/'.$submission->id.'/'.$filename);
+                        if ($mimetype == 'application/pdf') {
+                            $filename = get_string('yourcompletedsubmission', 'assignment_uploadpdf');
+                        }
                         $output .= '<a href="'.$path.'" ><img src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" class="icon" alt="'.$mimetype.'" />'.s($filename).'</a>';
                         $output .= '<br />';
                     }
