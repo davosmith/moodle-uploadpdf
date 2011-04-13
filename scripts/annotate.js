@@ -177,7 +177,7 @@ var ServerComm = new Class({
 				    });
 
 				// Get annotations at the same time
-				allannotations.each(function(p) {p.remove()});
+				allannotations.each(function(p) {p.destroy()});
 				allannotations.empty();
 				resp.annotations.each(function(annotation) {
 					var coords;
@@ -905,6 +905,11 @@ function startline(e) {
 	return true;
     }
 
+    if ($defined(currentcomment)) {
+	updatelastcomment();
+	return;
+    }
+
     e.preventDefault(); // Stop FF from dragging the image
 
     var dims = $('pdfimg').getCoordinates();
@@ -971,12 +976,13 @@ function updateline(e) {
 	var dx = linestartpos.x-ex;
 	var dy = linestartpos.y-ey;
 	var dist = Math.sqrt(dx*dx+dy*dy);
-	if (dist > 2) { // Trying to reduce the number of points a bit
-	    currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
-	    freehandpoints.push({x:ex, y:ey});
-	    linestartpos.x = ex;
-	    linestartpos.y = ey;
+	if (dist < 2) { // Trying to reduce the number of points a bit
+	    return;
 	}
+	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
+	freehandpoints.push({x:ex, y:ey});
+	linestartpos.x = ex;
+	linestartpos.y = ey;
 	break;
     default: // Comment + Ctrl OR line
 	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
@@ -1048,6 +1054,7 @@ function makeline(coords, type, id, colour) {
     var line;
     var details;
     var boundary;
+    var container = new Element('span');
 
     if (!$defined(colour)) {
 	colour = getcurrentlinecolour();
@@ -1069,13 +1076,12 @@ function makeline(coords, type, id, colour) {
 	    maxy = Math.max(maxy, coords[i].y);
 	}
 	boundary = {x: (minx-(halflinewidth*0.5)), y: (miny-(halflinewidth*0.5)), w: (maxx+linewidth-minx), h: (maxy+linewidth-miny)};
-	var container = new Element('div');
 	if (Browser.ie) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
 	} else {
 	    // Does not work with IE
-	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+';');
+	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+'px;');
 	}
 	$('pdfholder').adopt(container);
 	paper = Raphael(container);
@@ -1102,13 +1108,12 @@ function makeline(coords, type, id, colour) {
 	    coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
 	}
 	coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
-	var container = new Element('div');
 	if (Browser.ie) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
 	} else {
 	    // Does not work with IE
-	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+';');
+	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+'px;');
 	}
 	$('pdfholder').adopt(container);
 	paper = Raphael(container);
@@ -1138,7 +1143,7 @@ function makeline(coords, type, id, colour) {
 
     var domcanvas = $(paper.canvas);
 
-    domcanvas.store('paper',paper);
+    domcanvas.store('container',container);
     domcanvas.store('width',boundary.w);
     domcanvas.store('height',boundary.h);
     domcanvas.store('line',line);
@@ -1160,7 +1165,7 @@ function makeline(coords, type, id, colour) {
 
 /*
 function selectline(e) {
-    var paper = this.retrieve('paper');
+    var paper = this.retrieve('paper'); // Note this will not work
     var width = this.retrieve('width');
     var height = this.retrieve('height');
     lineselectid = this.retrieve('id');
@@ -1213,9 +1218,9 @@ function eraseline(e) {
 
     var id = this.retrieve('id');
     if (id) {
-	var paper = this.retrieve('paper');
-	allannotations.erase(paper);
-	paper.remove();
+	var container = this.retrieve('container');
+	allannotations.erase(container);
+	container.destroy();
 	server.removeannotation(id);
     }
 
@@ -1262,16 +1267,18 @@ function updatefindcomments(page, id, text) {
     var menu = findcommentsmenu.getMenu();
     var items = menu.getItems();
     for (var i in items) {
-	var details = items[i].value.split(':');
-	var itempage = details[0].toInt();
-	var itemid = details[1];
-	if (itemid == id) {
-	    items[i].cfg.setProperty('text', text);
-	    return;
-	}
-	if (itempage > page) {
-	    menu.insertItem({text: text, value: value}, i.toInt());
-	    return;
+	if ($defined(items[i].value)) {
+	    var details = items[i].value.split(':');
+	    var itempage = details[0].toInt();
+	    var itemid = details[1];
+	    if (itemid == id) {
+		items[i].cfg.setProperty('text', text);
+		return;
+	    }
+	    if (itempage > page) {
+		menu.insertItem({text: text, value: value}, i.toInt());
+		return;
+	    }
 	}
     }
     menu.addItem({text: text, value: value});

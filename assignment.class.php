@@ -386,7 +386,7 @@ class assignment_uploadpdf extends assignment_base {
                     if ($mimetype == 'application/pdf') {
                         $editurl = new moodle_url('/mod/assignment/type/uploadpdf/editcomment.php',array('id'=>$this->cm->id, 'userid'=>$userid));
                         $img = '<img class="icon" src="'.$OUTPUT->pix_url(file_mimetype_icon($mimetype)).'" alt="'.$mimetype.'" /> ';
-                        $output .= $OUTPUT->action_link($editurl, $img.get_string('annotatesubmission','assignment_uploadpdf', new popup_action('click', $editurl, 'editcomment'.$submission->id, array('width'=>1000, 'height'=>700))).'&nbsp;';
+                        $output .= $OUTPUT->action_link($editurl, $img.get_string('annotatesubmission','assignment_uploadpdf'), new popup_action('click', $editurl, 'editcomment'.$submission->id, array('width'=>1000, 'height'=>700))).'&nbsp;';
 
                     } else {
                         $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/submission/'.$submission->id.'/'.$filename);
@@ -1435,7 +1435,7 @@ class assignment_uploadpdf extends assignment_base {
             }
         }
 
-        $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id, 'pageno, posy');
+        $comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission'=>$submission->id), 'pageno, posy');
         echo '<button id="findcommentsbutton">'.get_string('findcomments','assignment_uploadpdf').'</button>';
         echo '<select id="findcommentsselect" name="findcomments" >';
         foreach ($comments as $comment) {
