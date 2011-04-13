@@ -132,9 +132,10 @@ function xmldb_assignment_uploadpdf_upgrade($oldversion=0) {
 
     if ($result && $oldversion < 2011040400) {
         $table = new xmldb_table('assignment_uploadpdf_annot');
-        $field = new xmldb_field('path');
-        $field->set_attributes(XMLDB_TYPE_TEXT. 'medium', null, null, null, '', 'endy');
-        $dbman->add_field($table, $field);
+        $field = new xmldb_field('path', XMLDB_TYPE_TEXT, 'medium', null, null, null, null, 'endy');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
         upgrade_plugin_savepoint($result, 2011040400, 'assignment', 'uploadpdf');
     }

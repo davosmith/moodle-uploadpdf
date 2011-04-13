@@ -95,7 +95,7 @@
         <FIELD NAME="endx" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="x-position of the end of the annotation" PREVIOUS="starty" NEXT="endy"/>
         <FIELD NAME="endy" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="y-position of the end of the annotation" PREVIOUS="endx" NEXT="path"/>
         <FIELD NAME="path" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" COMMENT="SVG path describing the freehand line" PREVIOUS="endy" NEXT="pageno"/>
-        <FIELD NAME="pageno" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="The page in the PDF that this annotation appears on" PREVIOUS="path" NEXT="colour"/>
+	<FIELD NAME="pageno" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="The page in the PDF that this annotation appears on" PREVIOUS="path" NEXT="colour"/>
         <FIELD NAME="colour" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="red" SEQUENCE="false" COMMENT="Can be red, yellow, green, blue, white, black" PREVIOUS="pageno" NEXT="type"/>
         <FIELD NAME="type" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="line" SEQUENCE="false" COMMENT="Currently can only be 'line' - present to allow for future development" PREVIOUS="colour"/>
       </FIELDS>
