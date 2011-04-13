@@ -1,6 +1,6 @@
 <?php
 
-function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
+function xmldb_assignment_uploadpdf_upgrade($oldversion=0) {
     global $CFG, $THEME, $DB;
 
     $dbman = $DB->get_manager();
@@ -43,7 +43,7 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $field->set_attributes(XMLDB_TYPE_CHAR, '10', null, null, null, 'yellow', null);
         $dbman->add_field($table, $field);
 
-        upgrade_mod_savepoint($result, 2009041700, 'assignment_uploadpdf');
+        upgrade_plugin_savepoint($result, 2009041700, 'assignment', 'uploadpdf');
     }
 
     if ($result && $oldversion < 2009111800) {
@@ -57,7 +57,7 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
         $dbman->create_table($table);
 
-        upgrade_mod_savepoint($result, 2009111800, 'assignment_uploadpdf');
+        upgrade_plugin_savepoint($result, 2009111800, 'uploadpdf');
     }
 
     if ($result && $oldversion < 2009112800) {
@@ -77,7 +77,7 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $table->add_index('assignment_submission_pageno', XMLDB_INDEX_NOTUNIQUE, array('assignment_submission','pageno'));
         $dbman->create_table($table);
 
-        upgrade_mod_savepoint($result, 2009112800, 'assignment_uploadpdf');
+        upgrade_plugin_savepoint($result, 2009112800, 'assignment', 'uploadpdf');
     }
 
     if ($result && $oldversion < 2009120100) {
@@ -94,7 +94,7 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $table = new xmldb_table('assignment_uploadpdf_annotation');
         $dbman->rename_table($table, 'assignment_uploadpdf_annot');
 
-        
+
         // Change the data type of the text field from 'char' to 'text' (removing 255 char limit)
         $table = new xmldb_table('assignment_uploadpdf_qcklist');
         $field = new xmldb_field('text');
@@ -113,7 +113,7 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $field->set_attributes(XMLDB_TYPE_TEXT. 'medium', null, null, null, '');
         $dbman->change_field_type($table, $field);
 
-        upgrade_mod_savepoint($result, 2009120100, 'assignment_uploadpdf');
+        upgrade_plugin_savepoint($result, 2009120100, 'assignment', 'uploadpdf');
     }
 
     if ($result && $oldversion < 2010031300) {
@@ -122,12 +122,21 @@ function xmldb_assignment_type_uploadpdf_upgrade($oldversion=0) {
         $field = new xmldb_field('checklist');
         $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0', 'onlypdf');
         $dbman->add_field($table, $field);
-        
+
         $field = new xmldb_field('checklist_percent');
         $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0', 'checklist');
         $dbman->add_field($table, $field);
 
-        upgrade_mod_savepoint($result, 2010031300, 'assignment_uploadpdf');
+        upgrade_plugin_savepoint($result, 2010031300, 'assignment', 'uploadpdf');
+    }
+
+    if ($result && $oldversion < 2011040400) {
+        $table = new xmldb_table('assignment_uploadpdf_annot');
+        $field = new xmldb_field('path');
+        $field->set_attributes(XMLDB_TYPE_TEXT. 'medium', null, null, null, '', 'endy');
+        $dbman->add_field($table, $field);
+
+        upgrade_plugin_savepoint($result, 2011040400, 'assignment', 'uploadpdf');
     }
 
     return $result;

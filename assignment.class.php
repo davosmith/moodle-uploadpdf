@@ -1191,8 +1191,13 @@ class assignment_uploadpdf extends assignment_base {
             }
 
             while (($annotation) && ($annotation->pageno == $mypdf->current_page())) {
-                $mypdf->add_annotation($annotation->startx, $annotation->starty, $annotation->endx,
-                                       $annotation->endy, $annotation->colour, $annotation->type);
+                if ($annotation->type == 'freehand') {
+                    $path = explode(',',$annotation->path);
+                    $mypdf->add_annotation(0,0,0,0, $annotation->colour, 'freehand', $path);
+                } else {
+                    $mypdf->add_annotation($annotation->startx, $annotation->starty, $annotation->endx,
+                                           $annotation->endy, $annotation->colour, $annotation->type);
+                }
                 $annotation = next($annotations);
             }
 
@@ -1647,7 +1652,12 @@ class assignment_uploadpdf extends assignment_base {
                 $respannotation = array();
                 $respannotation['id'] = ''.$annotation->id;
                 $respannotation['type'] = $annotation->type;
-                $respannotation['coords'] = array('startx'=> $annotation->startx, 'starty'=> $annotation->starty, 'endx'=> $annotation->endx, 'endy'=> $annotation->endy );
+                if ($annotation->type == 'freehand') {
+                    $respannotation['path'] = $annotation->path;
+                } else {
+                    $respannotation['coords'] = array('startx'=> $annotation->startx, 'starty'=> $annotation->starty,
+                                                      'endx'=> $annotation->endx, 'endy'=> $annotation->endy );
+                }
                 $respannotation['colour'] = $annotation->colour;
                 $respannotations[] = $respannotation;
             }
@@ -1735,21 +1745,39 @@ class assignment_uploadpdf extends assignment_base {
             $annotation->starty = optional_param('annotation_starty', -1, PARAM_INT);
             $annotation->endx = optional_param('annotation_endx', -1, PARAM_INT);
             $annotation->endy = optional_param('annotation_endy', -1, PARAM_INT);
+            $annotation->path = optional_param('annotation_path', null, PARAM_TEXT);
             $annotation->colour = optional_param('annotation_colour', 'red', PARAM_TEXT);
             $annotation->type = optional_param('annotation_type', 'line', PARAM_TEXT);
             $annotation->id = optional_param('annotation_id', -1, PARAM_INT);
             $annotation->pageno = $pageno;
             $annotation->assignment_submission = $submission->id;
 
-            if (($annotation->startx < 0) || ($annotation->starty < 0) || ($annotation->endx < 0) || ($annotation->endy < 0)) {
-                if ($annotation->id < 0) {
+            if ($annotation->type == 'freehand') {
+                if (!$annotation->path) {
                     send_error('Missing annotation data');
-                } else {
-                    // OK not to send these when updating a line
-                    unset($annotation->startx);
-                    unset($annotation->starty);
-                    unset($annotation->endx);
-                    unset($annotation->endy);
+                }
+                // Double-check path is valid list of points
+                $points = explode(',', $annotation->path);
+                if (count($points)%2 != 0) {
+                    send_error('Odd number of coordinates in line - should be 2 coordinates per point');
+                }
+                foreach ($points as $point) {
+                    if (!preg_match('/^\d+$/', $point)) {
+                        send_error('Path point is invalid');
+                    }
+                }
+            } else {
+                $annotation->path = null;
+                if (($annotation->startx < 0) || ($annotation->starty < 0) || ($annotation->endx < 0) || ($annotation->endy < 0)) {
+                    if ($annotation->id < 0) {
+                        send_error('Missing annotation data');
+                    } else {
+                        // OK not to send these when updating a line
+                        unset($annotation->startx);
+                        unset($annotation->starty);
+                        unset($annotation->endx);
+                        unset($annotation->endy);
+                    }
                 }
             }
 

@@ -164,7 +164,7 @@ class MyPDFLib extends FPDI {
         return true;
     }
 
-    function add_annotation($sx, $sy, $ex, $ey, $colour='red', $type='line') { /* Add an annotation to the current page */
+    function add_annotation($sx, $sy, $ex, $ey, $colour='red', $type='line', $path=null) { /* Add an annotation to the current page */
         if (!$this->filename) {
             return false;
         }
@@ -207,10 +207,18 @@ class MyPDFLib extends FPDI {
             $w = abs($sx - $ex);
             $h = abs($sy - $ey);
             $sx = min($sx, $ex);
-            $sy = min($sx, $ex);
+            $sy = min($sy, $ey);
             $this->Rect($sx, $sy, $w, $h);
             break;
         case 'freehand':
+            if ($path) {
+                $scalepath = array();
+                foreach ($path as $point) {
+                    $scalepath[] = intval($point) * $this->scale;
+                }
+                $this->PolyLine($scalepath, 'S');
+            }
+            break;
         default: // Line
             $this->Line($sx, $sy, $ex, $ey);
             break;
