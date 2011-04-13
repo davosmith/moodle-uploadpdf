@@ -86,9 +86,9 @@ $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
 $string['colourblack'] = 'Black';
 
-$string['completedsubmission'] = 'Completed submission';
+$string['completedsubmission'] = 'Download completed submission';
 $string['viewresponse'] = 'Download response';
-$string['yourcompletedsubmission'] = 'Download your complete submission';
+$string['yourcompletedsubmission'] = 'Download your completed submission';
 
 $string['findcomments'] = 'Find comments';
 $string['nocomments'] = 'There are currently no comments on this student\'s submission.';
