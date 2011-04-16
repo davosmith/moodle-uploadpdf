@@ -197,7 +197,7 @@ The user interface has just had some major changes to it (Apr 2011).
 It is possible, despite exentensive testing, that there are some bugs
 in it. If you need to, you can get the old version of the user interface
 here (install it over the current version):
-https://github.com/davosmith/moodle-uploadpdf/zipball/moodle20-originalui
+https://github.com/davosmith/moodle-uploadpdf/zipball/moodle19-originalui
 
 ==Thanks==
 This is heavily based on the 'Advanced Uploading of Files' Assignment
