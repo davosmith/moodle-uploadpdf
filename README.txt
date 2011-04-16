@@ -1,19 +1,21 @@
 This plugin for the assignment module allows a teacher to annotate and
 return PDF files that have been submitted by students.
 
-This is heavily based on the 'Advanced Uploading of Files' Assignment
-module and makes use of GhostScript and the FPDI and TCPDF libraries
-for PDF manipulation; Mootools is used to help with the JavaScript (I
-now know Moodle uses YUI as it's JavaScript framework, but I wrote
-most of this before I read that, will possibly update to use that in
-the future).
+Teachers can add and position comments and draw lines, ovals and rectangles
+onto the student's work, from within the browser, before returning the
+work to the student.
+
+This plugin is available in Moodle 2.0 and Moodle 1.9 versions.
+This is the **Moodle 2.0** version - you can download the Moodle 1.9 version
+from here:
+https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 
 !! THERE ARE A FEW IMPORTANT ITEMS TO NOTE IN THE INSTALLATION, PLEASE
    READ CAREFULLY !!
 
 ==Installation==
 
-* Download and install GhostScript ( http://pages.cs.wisc.edu/~ghost )
+1. Download and install GhostScript ( http://pages.cs.wisc.edu/~ghost )
   - or install from standard respositories, if using Linux.
   Under Windows, do not install to a path with a space in it - that
   means you should install to something like 'c:\gs'
@@ -21,15 +23,15 @@ the future).
   'gswin32c.exe' and the dll file from the 'bin' folder, all other
   files are unnecessary for this to work).
 
-* Unzip the Uploadpdf plugin files to a folder on your local machine
+2. Unzip the Uploadpdf plugin files to a folder on your local machine
 
-* (Windows server only): Edit the file 'uploadpdf_config.php'  to
-  include the path to where you installed GhostScript (see instructions 
+(3.) (Windows server only): Edit the file 'uploadpdf_config.php'  to
+  include the path to where you installed GhostScript (see instructions
   in that file for more information)
 
-* Upload the plugin files to <siteroot>/mod/assignment/type/uploadpdf
+4. Upload the plugin files to <siteroot>/mod/assignment/type/uploadpdf
 
-* Log in to Moodle as administrator, then click on 'Notifications'.
+5. Log in to Moodle as administrator, then click on 'Notifications'.
 
 All being well, you should now be able to add assignments of type
 'uploadpdf' to your courses.
@@ -40,7 +42,7 @@ All being well, you should now be able to add assignments of type
   well show up as '[[typeuploadpdf]]' see 'Known Issues', below).
 
 * Configure all the usual settings - you should be aware of the
-  following additions: 
+  following additions:
 
   Coversheet - this is a PDF that will be automatically prepended to
   the start of any files submitted by your students
@@ -49,21 +51,21 @@ All being well, you should now be able to add assignments of type
   to fill in some text fields, the template is used to add these
   entries to the coversheet
 
-  Edit Templates... - see section below 
+  Edit Templates... - see section below
 
   All files must be PDFs - set to 'No', if you want to collect in some
   supporting documents, which could not be marked as PDFs (e.g. a
   spreadsheet, with formulas you want to check)
-  
-  Display checklist (only if the 'checklist' plugin is installed) - you 
+
+  Display checklist (only if the 'checklist' plugin is installed) - you
   can choose to dispaly the progress bar for a checklist after the
   introduction text
-  
+
   Checklist complete before submission (only if the 'checklist' plugin
   is installed) - you can prevent students from submitting work when
   they have not yet ticked all the items on the checklist
 
-  
+
 * When a student uploads their files and clicks 'Submit' they will be
   checked to see if they are all PDFs (depending on the setting
   above), before combining them together into a single
@@ -76,30 +78,32 @@ http://sourceforge.net/projects/pdfcreator
 Hint2: A copy of PDFTK
 Builder - http://angusj.com/pdftk - will help students to combine
 their PDF files together in the order they want; my 'uploadpdf' plugin
-will just join them in the order they are uploaded).  
+will just join them in the order they are uploaded).
 
 * The teacher can then log in, go to the usual marking screen (I
   particualarly recommend 'Allow quick grading') and click on
-  'submission.pdf', which will bring up the first page of the PDF on
-  screen.  
+  'Annotate submission', which will bring up the first page of the
+  student's work on screen.
 
 * Click anywhere on the image of the PDF to add a comment. Use the
   resize handle in the bottom-right corner of a comment to resize it,
   click & drag on a comment to move it. Click (without dragging) on a
   comment to edit it, delete all the text in a comment to remove it.
-  
-* Right-click on a comment to add it to a 'Comment Quicklist'. You can 
+
+* Right-click on a comment to add it to a 'Comment Quicklist'. You can
   then right-click anywhere on a page to insert comments from this
-  'Comment Quicklist' (with the same text, width and background as the 
+  'Comment Quicklist' (with the same text, width and background as the
   original). Comments can be delete from the 'Comment Quicklist' by
   clicking on the 'X' to the right of the comment.
-  
+
 * You can add lines to the PDF by holding 'Ctrl' ('Alt' on Apple Macs)
   whilst you click and drag with the mouse (or alternatively hold 'Ctrl'
-  then click once for the start and once for the end of the line). 
-  Delete lines by clicking on them and pressing 'Delete' on the
-  keyboard. Change colour, by using the drop-down selection at the top
-  of the screen.
+  then click once for the start and once for the end of the line).
+
+* You can also choose different drawing tools by clicking on the icons
+  or by using the keys c (comments), l (lines), r (rectangles),
+  o (ovals), f (freehand lines), e (erase lines), [ & ] (change comment
+  colour), { & } (change line colour)
 
 * Navigate between the pages by clicking on the 'Next' and 'Prev'
   buttons or by pressing 'n' and 'p' on the keyboard.
@@ -107,26 +111,30 @@ will just join them in the order they are uploaded).
 * Click on 'Save Draft and Close' (or just click on the Window's usual
   'close' button) to save the work in progress.
 
-* Click on 'Generate Response' to create a new PDF with all your
+* Click on the 'Generate Response' icon to create a new PDF with all your
   annotations present (that the student will be able to access).
-  
+
 * You can view the comments you have made on a student's previous
-  submission by chosing that assignment from the drop-down list on the
-  page.
+  submissions by choosing that submission from the 'compare to' list
+
+* You can quickly find comments you have previously made by clicking
+  on the 'find comment' list.
 
 * Add any feedback / grades to the usual form and save them.
 
-* Note: If you have a problem with the new javascript based page navigation
+* Note: If you have a problem with the javascript based page navigation
   (added on 22 Nov 2009) or prefer having the list of pages to view,
   then change the setting in 'uploadpdf_config.php'. The  javascript
   method preloads pages to reduce the delay when changing from one page
-  to the next (and probably reduces server load if you do a lot of 
-  switching back and forth between pages).
-  
-* Note2: The 'View XX submitted assignments' link has been updated to 
+  to the next (and probably reduces server load if you do a lot of
+  switching back and forth between pages). The old navigation is not
+  tested regularly and may well break when I make further changes to
+  the code.
+
+* Note2: The 'View XX submitted assignments' link has been updated to
   show both the total number of assignments submitted for marking and
   the number still awaiting responses (in brackets). The second number
-  is only shown if there are unmarked assignments. 
+  is only shown if there are unmarked assignments.
 
 ==Edit Templates==
 
@@ -153,10 +161,10 @@ will just join them in the order they are uploaded).
   date - fills in the date that the assignment was submitted
       'value' is the format to record the date
 
-* To position the items on the template, upload an example PDF 
+* To position the items on the template, upload an example PDF
   coversheet (using the bottom form) then type in the position
   you want to place the PDF (x position, y position, in pixels).
-  Alternatively, click on the coversheet image to set the position of 
+  Alternatively, click on the coversheet image to set the position of
   that template item.
 
 * When you are finished, save any items you have changed, then
@@ -173,39 +181,35 @@ will just join them in the order they are uploaded).
   'assignment_uploadpdf', 'assignment_uploadpdf_comment',
   'assignment_uploadpdf_tmpl', 'assignment_uploadpdf_tmplitm',
   'assignment_uploadpdf_qcklist' and 'assignment_uploadpdf_annot'
-  (if someone can tell me a better way of doing this, which works with
-  Moodle 1.8 and above, then please do so!).
 
 ==Known issues==
 
-The plugin name is currently displayed as '[[typeuploadpdf]]', not
-'Upload PDF'. This is a known Moodle bug (
-http://tracker.moodle.org/browse/MDL-16796 ), that is now fixed in
-Moodle version 1.9 and above - please update your version of Moodle
-to avoid this problem.
-
 There is no way of configuring the GhostScript path via the
-Administration menu (again this is a Moodle limitation that I have not
+Administration menu (this is a Moodle limitation that I have not
 yet found a solution to).
 
 There is no way of deleting this from the Administration menu (Moodle
 limitiation, again).
 
-There is no way to annotate the PDFs without JavaScript (I may add
-this in the future, but it would be *very* fiddly to operate).
+There is no way to annotate the PDFs without JavaScript.
 
-The 'View N submitted assignments' message now shows the number of 
-unmarked assignments in brackets, but this will only work for newly
-marked assignments (assignments marked before updating to the latest
-version of UploadPDF will be counted in the 'unmarked' count). The
-simplest fix for this, if it is a problem, is to open each submission
-and click 'Generate Response' on it. The difficulty of fixing this for
-old assignments is out of proportion to the minor improvement it will
-give.
+The user interface has just had some major changes to it (Apr 2011).
+It is possible, despite exentensive testing, that there are some bugs
+in it. If you need to, you can get the old version of the user interface
+here (install it over the current version):
+https://github.com/davosmith/moodle-uploadpdf/zipball/moodle20-originalui
+
+==Thanks==
+This is heavily based on the 'Advanced Uploading of Files' Assignment
+module and makes use of GhostScript and the FPDI and TCPDF libraries
+for PDF manipulation; Mootools is used to help with the JavaScript.
+
+Thanks to the creators of all those libraries, as this wouldn't have
+been possible without their hard work (and their free software licensing)
 
 ==Contact==
 moodle AT davosmith DOT co DOT uk
-or find me in the developer list on the main moodle.org site 
+or find me in the developer list on the main moodle.org site
 (David Smith).
 
 Davo
