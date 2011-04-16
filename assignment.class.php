@@ -552,6 +552,11 @@ class assignment_uploadpdf extends assignment_base {
                     $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
                     if ($file == 'response.pdf') {
                         $file = get_string('viewresponse', 'assignment_uploadpdf');
+                        $viewurl = '/mod/assignment/type/uploadpdf/viewcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
+                        $output .= link_to_popup_window($viewurl, 'viewcomment'.$userid,
+                                                        get_string('viewfeedback', 'assignment_uploadpdf'), 700, 1000,
+                                                        get_string('viewfeedback', 'assignment_uploadpdf'), 'none', true, 'viewcommentbutton'.$userid);
+                        $output .= '<br/>';
                     }
                     $output .= '<a href="'.$ffurl.'" ><img class="align" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>';
                     if ($candelete) {
@@ -1424,9 +1429,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function edit_comment_page($userid, $pageno, $enableedit = true) {
-        global $CFG;
-
-        require_capability('mod/assignment:grade', $this->context);
+        global $CFG, $USER;
 
         if (!$user = get_record('user', 'id', $userid)) {
             error('No such user!');
@@ -1434,6 +1437,14 @@ class assignment_uploadpdf extends assignment_base {
 
         if (!$submission = $this->get_submission($user->id)) {
             error('User has no submission to comment on!');
+        }
+
+        if (!has_capability('mod/assignment:grade', $this->context)) {
+            if (has_capability('mod/assignment:submit', $this->context) && $USER->id == $userid) {
+                $enableedit = false;
+            } else {
+                error('No permission to view or edit this assignment');
+            }
         }
 
         $showprevious = optional_param('showprevious', -1, PARAM_INT);
@@ -1732,7 +1743,6 @@ class assignment_uploadpdf extends assignment_base {
         global $USER;
 
         $resp = array('error'=> ASSIGNMENT_UPLOADPDF_ERR_NONE);
-        require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = get_record('user', 'id', $userid)) {
             send_error('No such user!');
@@ -1743,6 +1753,20 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $action = optional_param('action','', PARAM_ALPHA);
+        if ($action == 'getcomments' || $action == 'getimageurl') {
+            if (!has_capability('mod/assignment:grade', $this->context)) {
+                if ($userid != $USER->id || !has_capability('mod/assignment:submit', $this->context)) {
+                    // Students can view comments / images for their own assignment
+                    send_error('You do not have permission to do this');
+                }
+            }
+        } else {
+            // All annotation requests need to have 'grade' capability
+            if (!has_capability('mod/assignment:grade', $this->context)) {
+                    send_error('You do not have permission to do this');
+            }
+        }
+
 
         if ($action == 'update') {
             $comment = new Object();
@@ -2013,10 +2037,12 @@ class assignment_uploadpdf extends assignment_base {
         $comments = get_records('assignment_uploadpdf_comment', 'assignment_submission', $submission->id, 'pageno, posy');
         if (!$comments) {
             echo '<p>'.get_string('nocomments','assignment_uploadpdf').'</p>';
-            $linkurl = '/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno=1&amp;action=showpreviouspage';
-            $link = link_to_popup_window($linkurl, 'showpage'.$userid, get_string('openfirstpage','assignment_uploadpdf'),
-                                         700, 700, fullname($user, true).':'.format_string($this->assignment->name).':'.$comment->pageno, null, true);
-            echo '<p>'.$link.'</p>';
+            /*  Will worry about this bit some other time - breaks too often
+              $linkurl = '/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno=1&amp;action=showpreviouspage';
+              $link = link_to_popup_window($linkurl, 'showpage'.$userid, get_string('openfirstpage','assignment_uploadpdf'),
+              700, 700, fullname($user, true).':'.format_string($this->assignment->name), null, true);
+              echo '<p>'.$link.'</p>';
+            */
         } else {
             $style1 = ' style="border: black 1px solid;"';
             $style2 = ' style="border: black 1px solid; text-align: center;" ';
@@ -2266,7 +2292,7 @@ class assignment_uploadpdf extends assignment_base {
                             foreach ($files as $key=>$fl) {
                                 if ((substr($fl,0,10) == 'image_page') && (substr($fl,-4) == '.png')) {
                                     $age = time() - filemtime($imagefolder.'/'.$fl);
-                                    if ($age > 86400) { /* only clear images more than 24 hours old */
+                                    if ($age > 21 * 86400) { /* only clear images more than 3 weeks old */
                                         unlink($imagefolder.'/'.$fl);
                                     } else {
                                         $filescleared = false;

@@ -82,6 +82,7 @@ $string['colourclear'] = 'Clear';
 $string['colourblack'] = 'Black';
 
 $string['completedsubmission'] = 'Download completed submission';
+$string['viewfeedback'] = 'View feedback in new window';
 $string['viewresponse'] = 'Download response';
 $string['yourcompletedsubmission'] = 'Download your submission';
 

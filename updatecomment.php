@@ -47,12 +47,13 @@ if ($id) {
 }
 
 require_login($course->id, false, $cm);
-require_capability('mod/assignment:grade', get_context_instance(CONTEXT_MODULE, $cm->id));
+// Students are allowed to view comments on their own assignments, so capabilities now checked later
+//require_capability('mod/assignment:grade', get_context_instance(CONTEXT_MODULE, $cm->id));
 if (!confirm_sesskey()) {
     send_error('You must be logged in to do this', ASSIGNMENT_UPLOADPDF_ERR_NO_LOGIN);
 }
 
-require_once('assignment.class.php');
+require_once(dirname(__FILE__).'/assignment.class.php');
 $assignmentinstance = new assignment_uploadpdf($cm->id, $assignment, $cm, $course);
 $assignmentinstance->update_comment_page($userid, $pageno);
 
