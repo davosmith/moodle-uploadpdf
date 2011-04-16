@@ -23,7 +23,7 @@ if ($id) {
         error("Course is misconfigured");
     }
     $url->param('id', $id);
-    
+
 } else {
     if (!$assignment = $DB->get_record('assignment', array('id' => $a) )) {
         error("Course module is incorrect");
@@ -50,7 +50,7 @@ $action = optional_param('action',null,PARAM_TEXT);
 if ($action == 'showprevious') {
     $assignmentinstance->show_previous_comments($userid);
 } elseif ($action == 'showpreviouspage') {
-    $assignmentinstance->show_previous_page($userid, $pageno, $commentid);
+    $assignmentinstance->edit_comment_page($userid, $pageno, false);
 } else {
     $assignmentinstance->edit_comment_page($userid, $pageno);
 }

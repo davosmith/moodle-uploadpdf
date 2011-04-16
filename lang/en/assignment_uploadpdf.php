@@ -14,8 +14,8 @@ $string['coversheettemplate_help'] = 'If you select a template, then, before a s
 You can create/delete/modify templates by clicking on the \'Edit Templates...\' button.<br/>
 <em>Note:</em> Selecting a template, without specifying a coversheet will have no effect.';
 $string['displaychecklist'] = 'Display checklist';
-$string['edittemplate'] = 'Edit Templates';
-$string['edittemplatetip'] = 'Edit Templates';
+$string['edittemplate'] = 'Edit templates';
+$string['edittemplatetip'] = 'Edit templates';
 $string['newtemplate'] = 'New Template...';
 $string['mustcompletechecklist'] = 'Checklist complete before submission';$string['notemplate'] = 'None';
 $string['onlypdf'] = 'All files must be PDFs';
@@ -42,7 +42,7 @@ $string['newitem'] = 'New Item...';
 $string['itemtype'] = 'Item type';
 $string['itemdate'] = 'Date';
 $string['itemtext'] = 'Text';
-$string['itemshorttext'] = 'Short Text';
+$string['itemshorttext'] = 'Short text';
 $string['enterformtext'] = 'Enter form text';
 $string['clicktosetposition'] = 'Click on the image below to set this position';
 $string['itemx'] = 'X Position (pixels)';
@@ -51,15 +51,16 @@ $string['itemwidth'] = 'Width (pixels)';
 $string['textonly'] = "(only 'Text' items)";
 $string['itemsetting'] = 'Value';
 $string['itemsettingmore'] = 'name of the field (for text fields) or date format (e.g. d/m/Y)';
-$string['dateformatlink'] = 'Date Format help';
+$string['dateformatlink'] = 'Date format help';
 $string['saveitem'] = 'Save item';
 $string['deleteitem'] = 'Delete item';
 $string['previewinstructions'] = 'Please upload a coversheet (PDF) to help preview this template';
 $string['uploadpreview'] = 'Upload';
 
 //Teacher marking
-$string['annotatesubmission'] = 'Annotate Submission';
-$string['draftsaved'] = 'Draft Saved';
+$string['annotatesubmission'] = 'Annotate submission';
+$string['backtocommentlist'] = 'Back to comment list';
+$string['draftsaved'] = 'Draft saved';
 $string['responseok'] = 'Response generated OK';
 $string['responseproblem'] = 'There was a problem creating the response';
 $string['errorloadingpdf'] = 'Error loading submitted PDF';
@@ -67,17 +68,19 @@ $string['errorgenerateimage'] = 'Unable to generate image from PDF - check ghost
 $string['savedraft'] = 'Save Draft and Close';
 $string['generateresponse'] = 'Generate Response';
 $string['downloadoriginal'] = 'Download original submission PDF';
+$string['openfirstpage'] = 'Show the first page';
+$string['openlinknewwindow'] = 'Open links in new window';
 $string['isresubmission'] = 'This is a resubmission - ';
 $string['downloadfirstsubmission'] = 'download the first submission';
 $string['next'] = 'Next';
 $string['previous'] = 'Prev';
-$string['keyboardnext'] = 'Press \'n\' for next page';
-$string['keyboardprev'] = 'Press \'p\' for previous page';
-$string['showpreviousassignment'] = 'Display a previous assignment';
+$string['keyboardnext'] = 'n - next page';
+$string['keyboardprev'] = 'p - previous page';
+$string['showpreviousassignment'] = 'Compare to';
 $string['previousnone'] = 'None';
 $string['showprevious'] = 'Show';
-$string['commentcolour'] = 'Background';
-$string['linecolour'] = 'Line';
+$string['commentcolour'] = '[,] - comment background colour';
+$string['linecolour'] = '{,} - line colour';
 $string['colourred'] = 'Red';
 $string['colouryellow'] = 'Yellow';
 $string['colourgreen'] = 'Green';
@@ -86,6 +89,11 @@ $string['colourwhite'] = 'White';
 $string['colourclear'] = 'Clear';
 $string['colourblack'] = 'Black';
 
+$string['completedsubmission'] = 'Download completed submission';
+$string['viewresponse'] = 'Download response';
+$string['yourcompletedsubmission'] = 'Download your submission';
+
+$string['findcomments'] = 'Find comments';
 $string['nocomments'] = 'There are currently no comments on this student\'s submission.';
 $string['pagenumber'] = 'Page';
 $string['comment'] = 'Comment';
@@ -97,11 +105,18 @@ $string['errormessage'] = 'Error message: ';
 $string['okagain'] = 'Click OK to try again';
 
 $string['quicklist'] = 'Comment Quicklist';
-$string['addquicklist'] = 'Add to Comment Quicklist';
-$string['deletecomment'] = 'Delete Comment';
+$string['addquicklist'] = 'Add to comment Quicklist';
+$string['deletecomment'] = 'Delete comment';
 $string['emptyquicklist'] = 'No items in Quicklist';
-$string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the quicklist';
+$string['emptyquicklist_instructions'] = 'Right-click on a comment to copy it to the Quicklist';
 $string['opennewwindow'] = 'Open this page in a new window';
+
+$string['commenticon'] = "c - add comments\nHold Ctrl to draw a line";
+$string['eraseicon'] = 'e - erase lines and shapes';
+$string['freehandicon'] = 'f - freehand lines';
+$string['lineicon'] = 'l - lines';
+$string['ovalicon'] = 'o - ovals';
+$string['rectangleicon'] = 'r - rectangles';
 
 //Student upload
 $string['coversheetnotice'] = 'The following coversheet will be automatically added to your submission';
