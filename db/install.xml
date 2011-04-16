@@ -29,8 +29,8 @@
         <FIELD NAME="assignment" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="coversheet"/>
         <FIELD NAME="coversheet" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" COMMENT="Filename of the coversheet to attach" PREVIOUS="assignment" NEXT="template"/>
         <FIELD NAME="template" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="ID of the template to use when a student submits work with this coversheet" PREVIOUS="coversheet" NEXT="onlypdf"/>
-        <FIELD NAME="onlypdf" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" COMMENT="Only allow PDF files to be uploaded" PREVIOUS="template" NEXT="checklist"/> 
-        <FIELD NAME="checklist" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The checklist that you want to link this assignment to" PREVIOUS="onlypdf" NEXT="checklist_percent"/> 
+        <FIELD NAME="onlypdf" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" COMMENT="Only allow PDF files to be uploaded" PREVIOUS="template" NEXT="checklist"/>
+        <FIELD NAME="checklist" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The checklist that you want to link this assignment to" PREVIOUS="onlypdf" NEXT="checklist_percent"/>
         <FIELD NAME="checklist_percent" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="What percentage complete the checklist must be to allow a student to submit their assignment" PREVIOUS="checklist"/>
       </FIELDS>
       <KEYS>
@@ -93,8 +93,9 @@
         <FIELD NAME="startx" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="x-position of the start of the annotation (in pixels - image resolution is set to 100 pixels per inch)" PREVIOUS="assignment_submission" NEXT="starty"/>
         <FIELD NAME="starty" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="y-position of the start of the annotation (in pixels - image resolution is set to 100 pixels per inch)" PREVIOUS="startx" NEXT="endx"/>
         <FIELD NAME="endx" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="x-position of the end of the annotation" PREVIOUS="starty" NEXT="endy"/>
-        <FIELD NAME="endy" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="y-position of the end of the annotation" PREVIOUS="endx" NEXT="pageno"/>
-        <FIELD NAME="pageno" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="The page in the PDF that this annotation appears on" PREVIOUS="endy" NEXT="colour"/>
+        <FIELD NAME="endy" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="y-position of the end of the annotation" PREVIOUS="endx" NEXT="path"/>
+        <FIELD NAME="path" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" COMMENT="SVG path describing the freehand line" PREVIOUS="endy" NEXT="pageno"/>
+	<FIELD NAME="pageno" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="The page in the PDF that this annotation appears on" PREVIOUS="path" NEXT="colour"/>
         <FIELD NAME="colour" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="red" SEQUENCE="false" COMMENT="Can be red, yellow, green, blue, white, black" PREVIOUS="pageno" NEXT="type"/>
         <FIELD NAME="type" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="line" SEQUENCE="false" COMMENT="Currently can only be 'line' - present to allow for future development" PREVIOUS="colour"/>
       </FIELDS>
