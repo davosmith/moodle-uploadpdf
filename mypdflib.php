@@ -164,7 +164,7 @@ class MyPDFLib extends FPDI {
         return true;
     }
   
-    function add_annotation($sx, $sy, $ex, $ey, $colour='red') { /* Add an annotation to the current page */
+    function add_annotation($sx, $sy, $ex, $ey, $colour='red', $type='line', $path=null) { /* Add an annotation to the current page */
         if (!$this->filename) {
             return false;
         }
@@ -195,7 +195,34 @@ class MyPDFLib extends FPDI {
         $ey *= $this->scale;
 
         $this->SetLineWidth(3.0 * $this->scale);
-        $this->Line($sx, $sy, $ex, $ey);
+        switch($type) {
+        case 'oval':
+            $rx = abs($sx - $ex)/2;
+            $ry = abs($sy - $ey)/2;
+            $sx = min($sx, $ex) + $rx;
+            $sy = min($sy, $ey) + $ry;
+            $this->Ellipse($sx, $sy, $rx, $ry);
+            break;
+        case 'rectangle':
+            $w = abs($sx - $ex);
+            $h = abs($sy - $ey);
+            $sx = min($sx, $ex);
+            $sy = min($sy, $ey);
+            $this->Rect($sx, $sy, $w, $h);
+            break;
+        case 'freehand':
+            if ($path) {
+                $scalepath = array();
+                foreach ($path as $point) {
+                    $scalepath[] = intval($point) * $this->scale;
+                }
+                $this->PolyLine($scalepath, 'S');
+            }
+            break;
+        default: // Line
+            $this->Line($sx, $sy, $ex, $ey);
+            break;
+        }
 
         $this->SetDrawColor(0,0,0);
         $this->SetLineWidth(1.0 * $this->scale);
