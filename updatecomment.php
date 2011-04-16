@@ -39,7 +39,8 @@ if ($id) {
 
 $PAGE->set_url($url);
 require_login($course->id, false, $cm);
-require_capability('mod/assignment:grade', get_context_instance(CONTEXT_MODULE, $cm->id));
+// Students are allowed to view comments on their own assignments, so capabilities now checked later
+//require_capability('mod/assignment:grade', get_context_instance(CONTEXT_MODULE, $cm->id));
 if (!confirm_sesskey()) {
     send_error('You must be logged in to do this', ASSIGNMENT_UPLOADPDF_ERR_NO_LOGIN);
 }

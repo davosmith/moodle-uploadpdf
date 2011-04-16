@@ -191,6 +191,9 @@ class assignment_uploadpdf extends assignment_base {
         echo '<tr>';
         echo '<td class="left side">&nbsp;</td>';
         echo '<td class="content">';
+        $viewurl = new moodle_url('/mod/assignment/type/uploadpdf/viewcomment.php',array('id'=>$this->cm->id));
+        echo $OUTPUT->action_link($viewurl, get_string('viewfeedback','assignment_uploadpdf'), new popup_action('click', $viewurl, 'viewcomment'.$submission->id, array('width'=>1000, 'height'=>700))).'<br/>';
+
         echo $this->print_responsefiles($USER->id, true);
         echo '</tr>';
 
@@ -749,7 +752,10 @@ class assignment_uploadpdf extends assignment_base {
 
         } else if ($filearea === 'image') { // Images generate from submitted PDF
             if (!has_capability('mod/assignment:grade', $this->context)) {
-                return false;
+                $submission = $DB->get_record('assignment_submissions', array('assignment'=>$this->assignment->id, 'id' => $submissionid));
+                if ($USER->id != $submission->userid || !has_capability('mod/assignment:submit', $this->context)) {
+                    return false;
+                }
             }
 
             send_stored_file($file);
@@ -1314,9 +1320,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function edit_comment_page($userid, $pageno, $enableedit = true) {
-        global $CFG, $DB, $OUTPUT, $PAGE;
-
-        require_capability('mod/assignment:grade', $this->context);
+        global $CFG, $DB, $OUTPUT, $PAGE, $USER;
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
             print_error('No such user!');
@@ -1324,6 +1328,14 @@ class assignment_uploadpdf extends assignment_base {
 
         if (!$submission = $this->get_submission($user->id)) {
             print_error('User has no submission to comment on!');
+        }
+
+        if (!has_capability('mod/assignment:grade', $this->context)) {
+            if (has_capability('mod/assignment:submit', $this->context) && $USER->id == $userid) {
+                $enableedit = false;
+            } else {
+                print_error('No permission to view or edit this assignment');
+            }
         }
 
         $showprevious = optional_param('showprevious', -1, PARAM_INT);
@@ -1624,7 +1636,6 @@ class assignment_uploadpdf extends assignment_base {
         global $USER, $DB;
 
         $resp = array('error'=> ASSIGNMENT_UPLOADPDF_ERR_NONE);
-        require_capability('mod/assignment:grade', $this->context);
 
         if (!$user = $DB->get_record('user', array('id' => $userid) )) {
             send_error('No such user!');
@@ -1635,6 +1646,20 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $action = optional_param('action','', PARAM_ALPHA);
+
+        if ($action == 'getcomments' || $action == 'getimageurl') {
+            if (!has_capability('mod/assignment:grade', $this->context)) {
+                if ($userid != $USER->id || !has_capability('mod/assignment:submit', $this->context)) {
+                    // Students can view comments / images for their own assignment
+                    send_error('You do not have permission to do this');
+                }
+            }
+        } else {
+            // All annotation requests need to have 'grade' capability
+            if (!has_capability('mod/assignment:grade', $this->context)) {
+                    send_error('You do not have permission to do this');
+            }
+        }
 
         if ($action == 'update') {
             $comment = new stdClass;
@@ -1917,6 +1942,8 @@ class assignment_uploadpdf extends assignment_base {
         $comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission' => $submission->id), 'pageno, posy');
         if (!$comments) {
             echo '<p>'.get_string('nocomments','assignment_uploadpdf').'</p>';
+
+            /* This does not work well when the student has not submitted anything
             $linkurl = '/mod/assignment/type/uploadpdf/editcomment.php?a='.$this->assignment->id.'&amp;userid='.$user->id.'&amp;pageno=1&amp;action=showpreviouspage';
 
             $title = fullname($user, true).':'.format_string($this->assignment->name);
@@ -1928,6 +1955,7 @@ class assignment_uploadpdf extends assignment_base {
             $link = '<a title="'.$title.'" href="'.$CFG->wwwroot.$linkurl.'" onclick="'.$onclick.'">'.get_string('openfirstpage','assignment_uploadpdf').'</a>';
 
             echo '<p>'.$link.'</p>';
+            */
         } else {
             $style1 = ' style="border: black 1px solid;"';
             $style2 = ' style="border: black 1px solid; text-align: center;" ';
@@ -2190,7 +2218,7 @@ class assignment_uploadpdf extends assignment_base {
 
         $fs = get_file_storage();
 
-        $deletetime = time() - 86400; // 24 hours ago
+        $deletetime = time() - (21 * 86400); // 3 weeks ago - as students can now view feedback online, we need to keep images around for longer
         //FIXME $fs->get_area_files('mod_assignment', 'image');
         $to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "image" AND timemodified < ?', array($deletetime));
         $tmpl_to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "previewimage" AND timemodified < ?', array($deletetime));
