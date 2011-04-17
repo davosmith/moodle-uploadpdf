@@ -41,6 +41,9 @@
     font-family: arial, sans;
     font-size: 12px;
     width: 100%;
+    resize: none;
+    padding: 0px;
+    border: 0px;
 }
 
 .comment .resizehandle {
