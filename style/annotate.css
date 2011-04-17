@@ -6,6 +6,7 @@
     cursor: move;
     width: 120px;
     line-height: normal;
+    white-space: pre-wrap;
 }
 
 .comment p {
