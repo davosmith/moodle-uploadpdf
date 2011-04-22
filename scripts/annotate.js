@@ -1354,6 +1354,11 @@ function updatefindcomments(page, id, text) {
 	    var details = items[i].value.split(':');
 	    var itempage = details[0].toInt();
 	    var itemid = details[1];
+	    if (itemid == 0) { // 'No comments'
+		items[i].value = page+':'+id;
+		items[i].cfg.setProperty('text', text);
+		return;
+	    }
 	    if (itemid == id) {
 		items[i].cfg.setProperty('text', text);
 		return;
@@ -1377,7 +1382,13 @@ function removefromfindcomments(id) {
     for (var i in items) {
 	var itemid = items[i].value.split(':')[1];
 	if (itemid == id) {
-	    menu.removeItem(items[i]);
+	    if (items.length == 1) {
+		// Only item in list - set it to 'no comments'
+		items[i].cfg.setProperty('text', server_config.lang_nocomments);
+		items[i].value = '0:0';
+	    } else {
+		menu.removeItem(items[i]);
+	    }
 	    return;
 	}
     }
@@ -1436,7 +1447,7 @@ function startjs() {
     findcommentsmenu.on("selectedMenuItemChange", function(e) {
 	    var pageno = e.newValue.value;
 	    pageno = pageno.split(':')[0].toInt();
-	    if (server.pageno.toInt() != pageno) {
+	    if (pageno > 0 && server.pageno.toInt() != pageno) {
 		gotopage(pageno);
 	    }
 	});
