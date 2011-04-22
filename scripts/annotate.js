@@ -529,7 +529,6 @@ function setcommentcontent(el, content) {
     // Replace special characters with html entities
     content = content.replace(/</gi,'&lt;');
     content = content.replace(/>/gi,'&gt;');
-    content = content.replace(/\n/gi, '<br />');
     var resizehandle = el.retrieve('resizehandle');
     el.set('html',content);
     el.adopt(resizehandle);
