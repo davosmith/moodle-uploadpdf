@@ -1456,13 +1456,17 @@ class assignment_uploadpdf extends assignment_base {
         $comments = $DB->get_records('assignment_uploadpdf_comment', array('assignment_submission'=>$submission->id), 'pageno, posy');
         echo '<button id="findcommentsbutton">'.get_string('findcomments','assignment_uploadpdf').'</button>';
         echo '<select id="findcommentsselect" name="findcomments" >';
-        foreach ($comments as $comment) {
-            $text = $comment->rawtext;
-            if (strlen($text) > 40) {
-                $text = substr($text, 0, 39).'&hellip;';
+        if (empty($comments)) {
+            echo '<option value="0:0">'.get_string('findcommentsempty', 'assignment_uploadpdf').'</option>';
+        } else {
+            foreach ($comments as $comment) {
+                $text = $comment->rawtext;
+                if (strlen($text) > 40) {
+                    $text = substr($text, 0, 39).'&hellip;';
+                }
+                echo '<option value="'.$comment->pageno.':'.$comment->id.'"';
+                echo '>'.$comment->pageno.': '.s($text).'</option>';
             }
-            echo '<option value="'.$comment->pageno.':'.$comment->id.'"';
-            echo '>'.$comment->pageno.': '.s($text).'</option>';
         }
         echo '</select>';
         if (!$enableedit) {
@@ -1612,7 +1616,8 @@ class assignment_uploadpdf extends assignment_base {
                         'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif',
                         'image_path' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/pix/',
                         'css_path' => $CFG->wwwroot.'/lib/yui/2.8.2/build/assets/skins/sam/',
-                        'editing' => ($enableedit ? 1 : 0)
+                        'editing' => ($enableedit ? 1 : 0),
+                        'lang_nocomments' => get_string('findcommentsempty', 'assignment_uploadpdf')
                         );
 
         echo '<script type="text/javascript">server_config = {';

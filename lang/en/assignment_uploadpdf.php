@@ -95,6 +95,7 @@ $string['viewresponse'] = 'Download response';
 $string['yourcompletedsubmission'] = 'Download your submission';
 
 $string['findcomments'] = 'Find comments';
+$string['findcommentsempty'] = 'No comments';
 $string['nocomments'] = 'There are currently no comments on this student\'s submission.';
 $string['pagenumber'] = 'Page';
 $string['comment'] = 'Comment';
