@@ -1883,6 +1883,7 @@ class assignment_uploadpdf extends assignment_base {
 
             $item->id = insert_record('assignment_uploadpdf_qcklist', $item);
 
+            $item->text = stripslashes($item->text);
             $resp['item'] = $item;
 
         } elseif ($action == 'removefromquicklist') {
