@@ -1515,7 +1515,7 @@ class assignment_uploadpdf extends assignment_base {
 
         echo '<div id="saveoptions">';
         if ($enableedit) {
-            echo '<form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" style="display: inline-block;" >';
+            echo '<form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" >';
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
             echo '<input type="hidden" name="userid" value="'.$userid.'" />';
             echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
@@ -1548,7 +1548,7 @@ class assignment_uploadpdf extends assignment_base {
             $ps_sql .= ' ORDER BY sub.timemodified DESC;';
             $previoussubs = get_records_sql($ps_sql);
             if ($previoussubs) {
-                echo '<form style="display: inline-block;" id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
+                echo '<form id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
                 echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
                 echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
                 echo '<input type="hidden" name="userid" value="'.$userid.'" />';
@@ -1627,7 +1627,7 @@ class assignment_uploadpdf extends assignment_base {
             $disabled = ($pageno == 1) ? ' disabled = "disabled" ' : '';
             $pageselector .= '<button id="prevpage" '.$disabled.'onClick="gotoprevpage();" title="'.get_string('keyboardprev','assignment_uploadpdf').'" >&lt;--'.get_string('previous','assignment_uploadpdf').'</button>';
 
-            $pageselector .= '<span style="position:relative; width:50px; display:inline-block; height:34px"><select name="selectpage" id="selectpage" onChange="selectpage();">';
+            $pageselector .= '<span style="position:relative; width:50px; display: inline-block; height:34px"><select name="selectpage" id="selectpage" onChange="selectpage();">';
             for ($i=1; $i<=$pagecount; $i++) {
                 if ($i == $pageno) {
                     $pageselector .= "<option value='$i' selected='selected'>$i</option>";
