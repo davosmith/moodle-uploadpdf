@@ -1434,12 +1434,7 @@ class assignment_uploadpdf extends assignment_base {
             $ps_sql .= 'ORDER BY sub.timemodified DESC;';
             $previoussubs = $DB->get_records_sql($ps_sql, array($this->course->id, $userid, $this->assignment->id) );
             if ($previoussubs) {
-                echo '<form id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
                 echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
-                echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
-                echo '<input type="hidden" name="userid" value="'.$userid.'" />';
-                echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
-                echo '<input type="hidden" name="topframe" value="1" />';
                 echo '<select id="showpreviousselect" name="showprevious" onChange="this.form.submit();">';
                 echo '<option value="-1">'.get_string('previousnone','assignment_uploadpdf').'</option>';
                 foreach ($previoussubs as $prevsub) {
@@ -1448,8 +1443,6 @@ class assignment_uploadpdf extends assignment_base {
                     echo '>'.s($prevsub->name).'</option>';
                 }
                 echo '</select>';
-                echo '<noscript><input type="submit" name="showpreviouspress" value="'.get_string('showprevious','assignment_uploadpdf').'" /></noscript>';
-                echo '</form>';
             }
         }
 
