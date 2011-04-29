@@ -139,9 +139,15 @@
     margin-right: 0;
 }
 
+#saveoptions form {
+    display: inline;
+}
+
 #choosetoolgroup {
-    display: inline-block;
+    display: inline;
     margin-left: 5px;
 }
 
-
+#toolbar-line2 select {
+    display: inline;
+}

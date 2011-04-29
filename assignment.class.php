@@ -1404,7 +1404,7 @@ class assignment_uploadpdf extends assignment_base {
 
         echo '<div id="saveoptions">';
         if ($enableedit) {
-            echo '<form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" style="display: inline-block;" >';
+            echo '<form action="'.$CFG->wwwroot.'/mod/assignment/type/uploadpdf/editcomment.php" method="post" target="_top" >';
             echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
             echo '<input type="hidden" name="userid" value="'.$userid.'" />';
             echo '<input type="hidden" name="pageno" value="'.$pageno.'" />';
@@ -1434,7 +1434,7 @@ class assignment_uploadpdf extends assignment_base {
             $ps_sql .= 'ORDER BY sub.timemodified DESC;';
             $previoussubs = $DB->get_records_sql($ps_sql, array($this->course->id, $userid, $this->assignment->id) );
             if ($previoussubs) {
-                echo '<form style="display: inline-block;" id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
+                echo '<form id="showprevious" name="showprevious" target="_top" action="editcomment.php" method="get">';
                 echo '<input type="submit" id="showpreviousbutton" name="showpreviousbutton" value="'.get_string('showpreviousassignment','assignment_uploadpdf').'" />';
                 echo '<input type="hidden" name="id" value="'.$this->cm->id.'" />';
                 echo '<input type="hidden" name="userid" value="'.$userid.'" />';
