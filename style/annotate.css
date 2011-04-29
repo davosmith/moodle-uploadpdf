@@ -151,3 +151,8 @@
 #toolbar-line2 select {
     display: inline;
 }
+
+/* Fix to allow scrolling to view pages if window is too small */
+#page-content, #page-content #region-main, #page-content .region-content {
+    overflow: visible;
+}
