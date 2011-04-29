@@ -1430,6 +1430,14 @@ function startjs() {
 		type: "menu",
 		menu: "showpreviousselect",
 		lazyloadmenu: false });
+	showPreviousMenu.on("selectedMenuItemChange", function(e) {
+	    var compareid = e.newValue.value;
+	    var url = 'editcomment.php?id='+server.id+'&userid='+server.userid+'&pageno='+server.pageno;
+	    if (compareid > -1) {
+		url += '&topframe=1&showprevious='+compareid;
+	    }
+	    top.location = url;
+	});
 	var savedraftbutton = new YAHOO.widget.Button("savedraft");
 	var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
 	choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
@@ -1682,10 +1690,6 @@ function gotopage(pageno) {
 	}
 
 	if (server.editing) {
-	    // Update the 'showprevious' form
-	    if ($defined($('showprevious'))) {
-		document.showprevious.pageno.value = pageno;
-	    }
 	    // Update the 'open in new window' link
 	    var opennew = $('opennewwindow');
 	    var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
