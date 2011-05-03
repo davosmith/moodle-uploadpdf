@@ -528,6 +528,10 @@ function setcommentcontent(el, content) {
     // Replace special characters with html entities
     content = content.replace(/</gi,'&lt;');
     content = content.replace(/>/gi,'&gt;');
+    if (Browser.ie7) { // Grrr... no 'pre-wrap'
+	content = content.replace(/\n/gi,'<br/>');
+	content = content.replace(/  /gi,' &nbsp;');
+    }
     var resizehandle = el.retrieve('resizehandle');
     content = '<p>'+content+'</p>';
     el.set('html',content);
