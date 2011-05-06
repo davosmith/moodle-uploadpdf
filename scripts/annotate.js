@@ -1288,6 +1288,8 @@ function keyboardnavigation(e) {
 	return; // No keyboard navigation when editing comments
     }
 
+    var modifier = Browser.Platform.mac ? e.alt : e.control;
+
     if (e.key == 'n') {
 	gotonextpage();
     } else if (e.key == 'p') {
@@ -1306,6 +1308,11 @@ function keyboardnavigation(e) {
 	    setcurrenttool('freehand');
 	} else if (e.key == 'e') {
 	    setcurrenttool('erase');
+	} else if (e.key == 'g' && modifier) {
+	    // TODO - get this working (at some point)
+	    //var btn = $('generateresponse');
+	    //var frm = btn.parentNode;
+	    //frm.submit();
 	} else if (e.code == 219) {  // { or [
 	    if (e.shift) {
 		prevlinecolour();
@@ -1334,24 +1341,25 @@ function updatefindcomments(page, id, text) {
     var value = page+':'+id;
     var menu = findcommentsmenu.getMenu();
     var items = menu.getItems();
-    for (var i in items) {
-	if ($defined(items[i].value)) {
-	    var details = items[i].value.split(':');
-	    var itempage = details[0].toInt();
-	    var itemid = details[1];
-	    if (itemid == 0) { // 'No comments'
-		items[i].value = page+':'+id;
-		items[i].cfg.setProperty('text', text);
-		return;
-	    }
-	    if (itemid == id) {
-		items[i].cfg.setProperty('text', text);
-		return;
-	    }
-	    if (itempage > page) {
-		menu.insertItem({text: text, value: value}, i.toInt());
-		return;
-	    }
+    for (var i=0; i<items.length; i++) {
+	if (!$defined(items[i].value)) {
+	    continue;
+	}
+	var details = items[i].value.split(':');
+	var itempage = details[0].toInt();
+	var itemid = details[1];
+	if (itemid == 0) { // 'No comments'
+	    items[i].value = page+':'+id;
+	    items[i].cfg.setProperty('text', text);
+	    return;
+	}
+	if (itemid == id) {
+	    items[i].cfg.setProperty('text', text);
+	    return;
+	}
+	if (itempage > page) {
+	    menu.insertItem({text: text, value: value}, i.toInt());
+	    return;
 	}
     }
     menu.addItem({text: text, value: value});
@@ -1363,7 +1371,10 @@ function removefromfindcomments(id) {
     }
     var menu = findcommentsmenu.getMenu();
     var items = menu.getItems();
-    for (var i in items) {
+    for (var i=0; i<items.length; i++) {
+	if (!$defined(items[i].value)) {
+	    continue;
+	}
 	var itemid = items[i].value.split(':')[1];
 	if (itemid == id) {
 	    if (items.length == 1) {
