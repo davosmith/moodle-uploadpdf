@@ -268,7 +268,7 @@ class assignment_uploadpdf extends assignment_base {
             if ($extra->checklist && $extra->checklist_percent) {
                 if ($this->import_checklist_plugin()) {
                     list($ticked, $total) = checklist_class::get_user_progress($extra->checklist, $USER->id);
-                    if (($ticked * 100 / $total) < $extra->checklist_percent) {
+                    if ($total && (($ticked * 100 / $total) < $extra->checklist_percent)) {
                         $disabled = ' disabled="disabled" ';
                         $checklistmessage = '<p class="error">'.get_string('checklistunfinished', 'assignment_uploadpdf').'</p>';
                     }
@@ -794,7 +794,7 @@ class assignment_uploadpdf extends assignment_base {
         if ($extra->checklist && $extra->checklist_percent) {
             if ($this->import_checklist_plugin()) {
                 list($ticked, $total) = checklist_class::get_user_progress($extra->checklist, $USER->id);
-                if (($ticked * 100 / $total) < $extra->checklist_percent) {
+                if ($total && (($ticked * 100 / $total) < $extra->checklist_percent)) {
                     $this->view_header();
                     echo $OUTPUT->heading(get_string('checklistunfinishedheading', 'assignment_uploadpdf'));
                     echo $OUTPUT->notification(get_string('checklistunfinished', 'assignment_uploadpdf'));
