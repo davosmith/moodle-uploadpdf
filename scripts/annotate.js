@@ -1399,44 +1399,56 @@ function startjs() {
     document.body.className += ' yui-skin-sam';
 
     if (server.editing) {
-	colourMenu = new YAHOO.widget.Button("choosecolour", {
-	    type: "menu",
-	    menu: "choosecolourmenu",
-	    lazyloadmenu: false });
-	colourMenu.on("selectedMenuItemChange", function(e) {
-	    var menuItem = e.newValue;
-	    var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
-	    this.set("label", '<img src="'+server_config.image_path+colour+'.gif" />');
-	    this.set("value", colour);
-	    changecolour();
-	});
-	linecolourmenu = new YAHOO.widget.Button("chooselinecolour", {
-	    type: "menu",
-	    menu: "chooselinecolourmenu",
-	    lazyloadmenu: false });
-	linecolourmenu.on("selectedMenuItemChange", function(e) {
-	    var menuItem = e.newValue;
-	    var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
-	    this.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
-	    this.set("value", colour);
-	    changelinecolour();
-	});
-	var showPreviousMenu = new YAHOO.widget.Button("showpreviousbutton", {
-	    type: "menu",
-	    menu: "showpreviousselect",
-	    lazyloadmenu: false });
-	showPreviousMenu.on("selectedMenuItemChange", function(e) {
-	    var compareid = e.newValue.value;
-	    var url = 'editcomment.php?id='+server.id+'&userid='+server.userid+'&pageno='+server.pageno;
-	    if (compareid > -1) {
-		url += '&topframe=1&showprevious='+compareid;
-	    }
-	    top.location = url;
-	});
-	var savedraftbutton = new YAHOO.widget.Button("savedraft");
-	var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
-	choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
-	setcurrenttool('commenticon');
+	if (document.getElementById('choosecolour')) {
+	    colourMenu = new YAHOO.widget.Button("choosecolour", {
+		type: "menu",
+		menu: "choosecolourmenu",
+		lazyloadmenu: false });
+	    colourMenu.on("selectedMenuItemChange", function(e) {
+		var menuItem = e.newValue;
+		var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
+		this.set("label", '<img src="'+server_config.image_path+colour+'.gif" />');
+		this.set("value", colour);
+		changecolour();
+	    });
+	}
+	if (document.getElementById('chooselinecolour')) {
+	    linecolourmenu = new YAHOO.widget.Button("chooselinecolour", {
+		type: "menu",
+		menu: "chooselinecolourmenu",
+		lazyloadmenu: false });
+	    linecolourmenu.on("selectedMenuItemChange", function(e) {
+		var menuItem = e.newValue;
+		var colour = (/choosecolour-([a-z]*)-/i.exec(menuItem.element.className))[1];
+		this.set("label", '<img src="'+server_config.image_path+'line'+colour+'.gif" />');
+		this.set("value", colour);
+		changelinecolour();
+	    });
+	}
+	if (document.getElementById('showpreviousbutton')) {
+	    var showPreviousMenu = new YAHOO.widget.Button("showpreviousbutton", {
+		type: "menu",
+		menu: "showpreviousselect",
+		lazyloadmenu: false });
+	    showPreviousMenu.on("selectedMenuItemChange", function(e) {
+		var compareid = e.newValue.value;
+		var url = 'editcomment.php?id='+server.id+'&userid='+server.userid+'&pageno='+server.pageno;
+		if (compareid > -1) {
+		    url += '&topframe=1&showprevious='+compareid;
+		}
+		top.location = url;
+	    });
+	}
+	if (document.getElementById('savedraft')) {
+	    var savedraftbutton = new YAHOO.widget.Button("savedraft");
+	}
+	if (document.getElementById('generateresponse')) {
+	    var generateresponsebutton = new YAHOO.widget.Button("generateresponse");
+	}
+	if (document.getElementById('choosetoolgroup')) {
+	    choosedrawingtool = new YAHOO.widget.ButtonGroup("choosetoolgroup");
+	    setcurrenttool('commenticon');
+	}
     }
     var downloadpdfbutton = new YAHOO.widget.Button("downloadpdf");
     prevbutton = new YAHOO.widget.Button("prevpage");
