@@ -40,7 +40,10 @@ var ServerComm = new Class({
 	url: null,
 	js_navigation: true,
 	retrycount: 0,
-	editing: true,
+        editing: true,
+        waitel: null,
+        pageloadcount: 0,  // Store how many page loads there have been
+        // (to allow ignoring of messages from server that arrive after page has changed)
 
 	initialize: function(settings) {
 	    this.id = settings.id;
@@ -50,6 +53,10 @@ var ServerComm = new Class({
 	    this.url = settings.updatepage;
 	    this.js_navigation = settings.js_navigation;
 	    this.editing = settings.editing.toInt();
+
+	    this.waitel = new Element('div');
+	    this.waitel.set('class', 'pagewait hidden');
+	    $('pdfholder').adopt(this.waitel);
 	},
 
 	updatecomment: function(comment) {
@@ -60,11 +67,13 @@ var ServerComm = new Class({
 	    waitel.set('class', 'wait');
 	    comment.adopt(waitel);
 	    comment.store('oldcolour', comment.retrieve('colour'));
+	    var pageloadcount = this.pageloadcount;
 	    var request = new Request.JSON({
 		    url: this.url,
 		    timeout: resendtimeout,
 
 		    onSuccess: function(resp) {
+			if (pageloadcount != this.pageloadcount) { return; }
 			server.retrycount = 0;
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 
@@ -85,6 +94,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(req) {
+			if (pageloadcount != this.pageloadcount) { return; }
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 			// TODO The following should really be on the 'cancel' (but probably unimportant)
@@ -92,6 +102,7 @@ var ServerComm = new Class({
 		    },
 
 		    onTimeout: function() {
+			if (pageloadcount != this.pageloadcount) { return; }
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 		    }
@@ -119,11 +130,11 @@ var ServerComm = new Class({
 	    if (!this.editing) {
 		return;
 	    }
+	    removefromfindcomments(cid);
 	    var request = new Request.JSON({
 		    url: this.url,
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			removefromfindcomments(cid);
 			if (resp.error != 0) {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
 				server.removecomment(cid);
@@ -148,17 +159,14 @@ var ServerComm = new Class({
 	},
 
 	getcomments: function() {
-	    var waitel = new Element('div');
-	    waitel.set('class', 'pagewait');
-	    $('pdfholder').adopt(waitel);
-
+	    this.waitel.removeClass('hidden');
 	    var pageno = this.pageno;
 	    var request = new Request.JSON({
 		    url: this.url,
 
 		    onSuccess: function(resp) {
 			server.retrycount = 0;
-			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
+			server.waitel.addClass('hidden');
 			if (resp.error == 0) {
 			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
 				//$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
@@ -208,7 +216,7 @@ var ServerComm = new Class({
 		    onFailure: function(resp) {
 			showsendfailed(function() {server.getcomments();});
 			// TODO The following should be on the 'cancel' button (but only a minor visual bug, rarely seen)
-			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
+			server.waitel.addClass('hidden');
 		    }
 		});
 
@@ -407,20 +415,21 @@ var ServerComm = new Class({
 	    if (!this.editing) {
 		return;
 	    }
-	    var waitel = new Element('div');
-	    waitel.set('class', 'pagewait');
-	    $('pdfholder').adopt(waitel);
+	    this.waitel.removeClass('hidden');
 
 	    if (!$defined(details.id)) {
 		details.id = -1;
 	    }
 
+	    var pageloadcount = this.pageloadcount;
+
 	    var request = new Request.JSON({
 		url: this.url,
 
 		onSuccess: function(resp) {
+		    if (pageloadcount != this.pageloadcount) { return; }
 		    server.retrycount = 0;
-		    if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
+		    server.waitel.addClass('hidden');
 
 		    if (resp.error == 0) {
 			if (details.id < 0) { // A new line
@@ -438,7 +447,8 @@ var ServerComm = new Class({
 		},
 
 		onFailure: function(resp) {
-		    if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
+		    if (pageloadcount != this.pageloadcount) { return; }
+		    server.waitel.addClass('hidden');
 		    showsendfailed(function() {server.addannotation(details, annotation);});
 		}
 	    });
@@ -1733,6 +1743,7 @@ function gotopage(pageno) {
 	}
 
 	server.pageno = ""+pageno;
+	server.pageloadcount++;
 	server.getimageurl(pageno, true);
     }
 }

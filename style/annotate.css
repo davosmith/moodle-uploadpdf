@@ -79,6 +79,10 @@
     -moz-background-inline-policy: -moz-initial;
 }
 
+#pdfholder .hidden {
+    display: none;
+}
+
 .comment .wait {
     background-image: url('wait.gif');
     width: 16px;
