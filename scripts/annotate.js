@@ -73,7 +73,7 @@ var ServerComm = new Class({
 		    timeout: resendtimeout,
 
 		    onSuccess: function(resp) {
-			if (pageloadcount != this.pageloadcount) { return; }
+			if (pageloadcount != server.pageloadcount) { return; }
 			server.retrycount = 0;
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 
@@ -94,7 +94,7 @@ var ServerComm = new Class({
 		    },
 
 		    onFailure: function(req) {
-			if (pageloadcount != this.pageloadcount) { return; }
+			if (pageloadcount != server.pageloadcount) { return; }
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 			// TODO The following should really be on the 'cancel' (but probably unimportant)
@@ -102,7 +102,7 @@ var ServerComm = new Class({
 		    },
 
 		    onTimeout: function() {
-			if (pageloadcount != this.pageloadcount) { return; }
+			if (pageloadcount != server.pageloadcount) { return; }
 			if (typeof waitel.destroy != 'undefined') { waitel.destroy(); }
 			showsendfailed(function() {server.updatecomment(comment);});
 		    }
@@ -427,7 +427,7 @@ var ServerComm = new Class({
 		url: this.url,
 
 		onSuccess: function(resp) {
-		    if (pageloadcount != this.pageloadcount) { return; }
+		    if (pageloadcount != server.pageloadcount) { return; }
 		    server.retrycount = 0;
 		    server.waitel.addClass('hidden');
 
@@ -447,7 +447,7 @@ var ServerComm = new Class({
 		},
 
 		onFailure: function(resp) {
-		    if (pageloadcount != this.pageloadcount) { return; }
+		    if (pageloadcount != server.pageloadcount) { return; }
 		    server.waitel.addClass('hidden');
 		    showsendfailed(function() {server.addannotation(details, annotation);});
 		}
