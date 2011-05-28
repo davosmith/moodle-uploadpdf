@@ -32,18 +32,19 @@ var allannotations = new Array();
 var $defined = function(obj) { return (obj != undefined); };
 
 var ServerComm = new Class({
-	Implements: [Events],
-	id: null,
-	userid: null,
-	pageno: null,
-	sesskey: null,
-	url: null,
-	js_navigation: true,
-	retrycount: 0,
-        editing: true,
-        waitel: null,
-        pageloadcount: 0,  // Store how many page loads there have been
-        // (to allow ignoring of messages from server that arrive after page has changed)
+    Implements: [Events],
+    id: null,
+    userid: null,
+    pageno: null,
+    sesskey: null,
+    url: null,
+    js_navigation: true,
+    retrycount: 0,
+    editing: true,
+    waitel: null,
+    pageloadcount: 0,  // Store how many page loads there have been
+    // (to allow ignoring of messages from server that arrive after page has changed)
+    scrolltocommentid: 0,
 
 	initialize: function(settings) {
 	    this.id = settings.id;
@@ -161,6 +162,9 @@ var ServerComm = new Class({
 	getcomments: function() {
 	    this.waitel.removeClass('hidden');
 	    var pageno = this.pageno;
+	    var scrolltocommentid = this.scrolltocommentid;
+	    this.scrolltocommentid = 0;
+
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -205,6 +209,8 @@ var ServerComm = new Class({
 				    }
 				    makeline(coords, annotation.type, annotation.id, annotation.colour);
 				});
+
+				doscrolltocomment(scrolltocommentid);
 			    }
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
@@ -504,6 +510,10 @@ var ServerComm = new Class({
 			    sesskey: this.sesskey
 			    }
 		});
+	},
+
+        scrolltocomment: function(commentid) {
+	    this.scrolltocommentid = commentid;
 	}
 
     });
@@ -1412,6 +1422,20 @@ function removefromfindcomments(id) {
     }
 }
 
+function doscrolltocomment(commentid) {
+    $('pdfholder').getElements('.comment').each( function(comment) {
+	if (comment.retrieve('id') == commentid) {
+	    var commentpos = comment.getPosition();
+	    var windowsize = window.getSize();
+	    var windowscroll = window.getScroll();
+
+	    if (windowscroll.y + windowsize.y + 20 < commentpos.y) {
+	    }
+	    return;
+	}
+    });
+}
+
 function startjs() {
     new Asset.css('style/annotate.css');
     new Asset.css(server_config.css_path+'menu.css');
@@ -1483,12 +1507,14 @@ function startjs() {
 	menu: "findcommentsselect",
 	lazyloadmenu: false });
     findcommentsmenu.on("selectedMenuItemChange", function(e) {
-	    var pageno = e.newValue.value;
-	    pageno = pageno.split(':')[0].toInt();
-	    if (pageno > 0 && server.pageno.toInt() != pageno) {
-		gotopage(pageno);
-	    }
-	});
+	var menuval = e.newValue.value;
+	pageno = menuval.split(':')[0].toInt();
+	commentid = menuval.split(':')[1].toInt();
+	if (pageno > 0 && server.pageno.toInt() != pageno) {
+	    gotopage(pageno);
+	    server.scrolltocomment(commentid);
+	}
+    });
 
     server.getcomments();
 
