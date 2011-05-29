@@ -10,6 +10,7 @@ var waitingforpage = -1;  // Waiting for this page from the server - display as 
 var pagestopreload = 4; // How many pages ahead to load when you hit a non-preloaded page
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 var pageunloading = false;
+var lasthighlight = null;
 
 var colourmenu = null;
 var linecolourmenu = null;
@@ -44,6 +45,7 @@ var ServerComm = new Class({
     waitel: null,
     pageloadcount: 0,  // Store how many page loads there have been
     // (to allow ignoring of messages from server that arrive after page has changed)
+    scrolltocommentid: 0,
 
 	initialize: function(settings) {
 	    this.id = settings.id;
@@ -159,8 +161,10 @@ var ServerComm = new Class({
 
 	getcomments: function() {
 	    this.waitel.removeClass('hidden');
-
 	    var pageno = this.pageno;
+	    var scrolltocommentid = this.scrolltocommentid;
+	    this.scrolltocommentid = 0;
+
 	    var request = new Request.JSON({
 		    url: this.url,
 
@@ -205,6 +209,8 @@ var ServerComm = new Class({
 					}
 					makeline(coords, annotation.type, annotation.id, annotation.colour);
 				    });
+
+				doscrolltocomment(scrolltocommentid);
 			    }
 			} else {
 			    if (confirm(server_config.lang_errormessage+resp.errmsg+'\n'+server_config.lang_okagain)) {
@@ -504,7 +510,11 @@ var ServerComm = new Class({
 			    sesskey: this.sesskey
 			    }
 		});
-	}
+	},
+
+        scrolltocomment: function(commentid) {
+	    this.scrolltocommentid = commentid;
+ 	}
 
     });
 
@@ -1398,6 +1408,56 @@ function removefromfindcomments(id) {
     }
 }
 
+function doscrolltocomment(commentid) {
+    if (commentid == 0) {
+	return;
+    }
+    if (lasthighlight) {
+	lasthighlight.removeClass('comment-highlight');
+	lasthighlight = null;
+    }
+    var comments = $('pdfholder').getElements('.comment');
+    comments.each( function(comment) {
+	if (comment.retrieve('id') == commentid) {
+	    comment.addClass('comment-highlight');
+	    lasthighlight = comment;
+
+	    var dims = comment.getCoordinates();
+	    var win = window.getCoordinates();
+	    var scroll = window.getScroll();
+	    var view = win;
+	    view.right += scroll.x;
+	    view.bottom += scroll.y;
+
+	    var scrolltocoord = {x:scroll.x, y:scroll.y}
+
+	    if (view.right < (dims.right+10)) {
+		if ((dims.width + 20) < win.width) {
+		    // Scroll right of comment onto the screen (if it will all fit)
+		    scrolltocoord.x = dims.right + 10 - win.width;
+		} else {
+		    // Just scroll the left of the comment onto the screen
+		    scrolltocoord.x = dims.left - 10;
+		}
+	    }
+
+	    if (view.bottom < (dims.bottom+10)) {
+		if ((dims.height + 20) < win.height) {
+		    // Scroll bottom of comment onto the screen (if it will all fit)
+		    scrolltocoord.y = dims.bottom + 10 - win.height;
+		} else {
+		    // Just scroll top of comment onto the screen
+		    scrolltocoord.y = dims.top - 10;
+		}
+	    }
+
+	    window.scrollTo(scrolltocoord.x, scrolltocoord.y);
+
+	    return;
+	}
+    });
+}
+
 function startjs() {
     new Asset.css('style/annotate.css');
     new Asset.css(server_config.css_path+'menu.css');
@@ -1469,10 +1529,16 @@ function startjs() {
 	menu: "findcommentsselect",
 	lazyloadmenu: false });
     findcommentsmenu.on("selectedMenuItemChange", function(e) {
-	var pageno = e.newValue.value;
-	pageno = pageno.split(':')[0].toInt();
-	if (pageno > 0 && server.pageno.toInt() != pageno) {
-	    gotopage(pageno);
+	var menuval = e.newValue.value;
+	pageno = menuval.split(':')[0].toInt();
+	commentid = menuval.split(':')[1].toInt();
+	if (pageno > 0) {
+	    if (server.pageno.toInt() == pageno) {
+		doscrolltocomment(commentid);
+	    } else {
+		server.scrolltocomment(commentid);
+ 		gotopage(pageno);
+	    }
 	}
     });
 
@@ -1691,6 +1757,7 @@ function gotopage(pageno) {
 	abortline(); // Abandon any lines currently being drawn
 	currentcomment = null; // Throw away any comments in progress
 	editbox = null;
+	lasthighlight = null;
 
 	// Set the dropdown selects to have the correct page number in them
 	var el = $('selectpage');
