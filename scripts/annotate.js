@@ -10,6 +10,7 @@ var waitingforpage = -1;  // Waiting for this page from the server - display as 
 var pagestopreload = 4; // How many pages ahead to load when you hit a non-preloaded page
 var pagesremaining = pagestopreload; // How many more pages to preload before waiting
 var pageunloading = false;
+var lasthighlight = null;
 
 var colourMenu = null;
 var lineColourMenu = null;
@@ -1423,14 +1424,49 @@ function removefromfindcomments(id) {
 }
 
 function doscrolltocomment(commentid) {
-    $('pdfholder').getElements('.comment').each( function(comment) {
+    if (commentid == 0) {
+	return;
+    }
+    if (lasthighlight) {
+	lasthighlight.removeClass('comment-highlight');
+	lasthighlight = null;
+    }
+    var comments = $('pdfholder').getElements('.comment');
+    comments.each( function(comment) {
 	if (comment.retrieve('id') == commentid) {
-	    var commentpos = comment.getPosition();
-	    var windowsize = window.getSize();
-	    var windowscroll = window.getScroll();
+	    comment.addClass('comment-highlight');
+	    lasthighlight = comment;
 
-	    if (windowscroll.y + windowsize.y + 20 < commentpos.y) {
+	    var dims = comment.getCoordinates();
+	    var win = window.getCoordinates();
+	    var scroll = window.getScroll();
+	    var view = win;
+	    view.right += scroll.x;
+	    view.bottom += scroll.y;
+
+	    var scrolltocoord = {x:scroll.x, y:scroll.y}
+
+	    if (view.right < (dims.right+10)) {
+		if ((dims.width + 20) < win.width) {
+		    // Scroll right of comment onto the screen (if it will all fit)
+		    scrolltocoord.x = dims.right + 10 - win.width;
+		} else {
+		    // Just scroll the left of the comment onto the screen
+		    scrolltocoord.x = dims.left - 10;
+		}
 	    }
+
+	    if (view.bottom < (dims.bottom+10)) {
+		if ((dims.height + 20) < win.height) {
+		    // Scroll bottom of comment onto the screen (if it will all fit)
+		    scrolltocoord.y = dims.bottom + 10 - win.height;
+		} else {
+		    // Just scroll top of comment onto the screen
+		    scrolltocoord.y = dims.top - 10;
+		}
+	    }
+
+	    window.scrollTo(scrolltocoord.x, scrolltocoord.y);
 	    return;
 	}
     });
@@ -1510,9 +1546,13 @@ function startjs() {
 	var menuval = e.newValue.value;
 	pageno = menuval.split(':')[0].toInt();
 	commentid = menuval.split(':')[1].toInt();
-	if (pageno > 0 && server.pageno.toInt() != pageno) {
-	    gotopage(pageno);
-	    server.scrolltocomment(commentid);
+	if (pageno > 0) {
+	    if (server.pageno.toInt() == pageno) {
+		doscrolltocomment(commentid);
+	    } else {
+		server.scrolltocomment(commentid);
+		gotopage(pageno);
+	    }
 	}
     });
 
@@ -1727,6 +1767,7 @@ function gotopage(pageno) {
 	abortline(); // Abandon any lines currently being drawn
 	currentcomment = null; // Throw away any comments in progress
 	editbox = null;
+	lasthighlight = null;
 
 	// Set the dropdown selects to have the correct page number in them
 	var el = $('selectpage');
