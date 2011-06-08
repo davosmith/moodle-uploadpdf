@@ -191,9 +191,6 @@ class assignment_uploadpdf extends assignment_base {
         echo '<tr>';
         echo '<td class="left side">&nbsp;</td>';
         echo '<td class="content">';
-        $viewurl = new moodle_url('/mod/assignment/type/uploadpdf/viewcomment.php',array('id'=>$this->cm->id));
-        echo $OUTPUT->action_link($viewurl, get_string('viewfeedback','assignment_uploadpdf'), new popup_action('click', $viewurl, 'viewcomment'.$submission->id, array('width'=>1000, 'height'=>700))).'<br/>';
-
         echo $this->print_responsefiles($USER->id, true);
         echo '</tr>';
 
@@ -521,7 +518,9 @@ class assignment_uploadpdf extends assignment_base {
         $strdelete   = get_string('delete');
 
         if ($submission = $this->get_submission($userid)) {
-            $output = $OUTPUT->box_start('responsefiles');
+            $viewurl = new moodle_url('/mod/assignment/type/uploadpdf/viewcomment.php',array('id'=>$this->cm->id, 'userid'=>$userid));
+            $output = $OUTPUT->action_link($viewurl, get_string('viewfeedback','assignment_uploadpdf'), new popup_action('click', $viewurl, 'viewcomment'.$submission->id, array('width'=>1000, 'height'=>700))).'<br/>';
+            $output .= $OUTPUT->box_start('responsefiles');
             $renderer = $PAGE->get_renderer('mod_assignment');
             $output .= $renderer->assignment_files($this->context, $submission->id, 'response');
             $output .= $OUTPUT->box_end();
