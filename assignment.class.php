@@ -551,14 +551,16 @@ class assignment_uploadpdf extends assignment_base {
                     $icon = mimeinfo('icon', $file);
                     $ffurl   = "$CFG->wwwroot/file.php?file=/$filearea/$file";
                     if ($file == 'response.pdf') {
-                        $file = get_string('viewresponse', 'assignment_uploadpdf');
+                        $filedisplay = get_string('viewresponse', 'assignment_uploadpdf');
                         $viewurl = '/mod/assignment/type/uploadpdf/viewcomment.php?id='.$this->cm->id.'&amp;userid='.$userid;
                         $output .= link_to_popup_window($viewurl, 'viewcomment'.$userid,
                                                         get_string('viewfeedback', 'assignment_uploadpdf'), 700, 1000,
                                                         get_string('viewfeedback', 'assignment_uploadpdf'), 'none', true, 'viewcommentbutton'.$userid);
                         $output .= '<br/>';
+                    } else {
+                        $filedisplay = $file;
                     }
-                    $output .= '<a href="'.$ffurl.'" ><img class="align" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$file.'</a>';
+                    $output .= '<a href="'.$ffurl.'" ><img class="align" src="'.$CFG->pixpath.'/f/'.$icon.'" alt="'.$icon.'" />'.$filedisplay.'</a>';
                     if ($candelete) {
                         $delurl  = "$CFG->wwwroot/mod/assignment/delete.php?id={$this->cm->id}&amp;file=$file&amp;userid=$userid&amp;mode=$mode&amp;offset=$offset&amp;action=response&amp;sesskey=".sesskey();
                         $output .= '<a href="'.$delurl.'">&nbsp;'
