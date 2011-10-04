@@ -15,6 +15,8 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 
 ==Installation==
 
+Note: this plugin needs PHP 5.2.0 (or above) for the JSON library.
+
 1. Download and install GhostScript ( http://pages.cs.wisc.edu/~ghost )
   - or install from standard respositories, if using Linux.
   Under Windows, do not install to a path with a space in it - that
