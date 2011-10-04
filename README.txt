@@ -15,6 +15,8 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/master
 
 ==Installation==
 
+Note: this plugin needs PHP 5.2.0 (or above) for the JSON library.
+
 1. Download and install GhostScript ( http://pages.cs.wisc.edu/~ghost )
   - or install from standard respositories, if using Linux.
   Under Windows, do not install to a path with a space in it - that
@@ -186,6 +188,7 @@ will just join them in the order they are uploaded).
 
 There is no way of configuring the GhostScript path via the
 Administration menu (this is a Moodle limitation that I have not
+
 yet found a solution to).
 
 There is no way of deleting this from the Administration menu (Moodle
