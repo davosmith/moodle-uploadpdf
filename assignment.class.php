@@ -1505,8 +1505,8 @@ class assignment_uploadpdf extends assignment_base {
 
         // FIXME - check I don't need all of these
         require_js(array('yui_yahoo','yui_event','yui_dom','yui_dom-event','yui_container','yui_element','yui_button','yui_menu','yui_utilities'));
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-core-1.3.js');
-        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-core-1.4.1.js');
+        require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/mootools-more-1.4.0.1.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
         require_js($CFG->wwwroot.'/mod/assignment/type/uploadpdf/scripts/annotate.js');
