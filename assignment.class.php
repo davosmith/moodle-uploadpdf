@@ -1390,8 +1390,8 @@ class assignment_uploadpdf extends assignment_base {
 
         list($imageurl, $imgwidth, $imgheight, $pagecount) = $this->get_page_image($pageno, $submission);
 
-        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-core-1.3.js');
-        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-more.js');
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-core-1.4.1.js');
+        $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/mootools-more-1.4.0.1.js');
         $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/raphael-min.js');
         $PAGE->requires->js('/mod/assignment/type/uploadpdf/scripts/contextmenu.js');
 

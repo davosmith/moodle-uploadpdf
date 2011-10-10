@@ -176,7 +176,7 @@ var ServerComm = new Class({
 				//$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
 				resp.comments.each(function(comment) {
 					cb = makecommentbox(comment.position, comment.text, comment.colour);
-					if (Browser.ie) {
+					if (Browser.ie && Browser.version < 9) {
 					    // Does not work with FF & Moodle
 					    cb.setStyle('width',comment.width);
 					} else {
@@ -221,7 +221,7 @@ var ServerComm = new Class({
 
 		    onFailure: function(resp) {
 			showsendfailed(function() {server.getcomments();});
-			this.waitel.addClass('hidden');
+			server.waitel.addClass('hidden');
 		    }
 		});
 
@@ -434,7 +434,7 @@ var ServerComm = new Class({
 		    onSuccess: function(resp) {
 			if (pageloadcount != server.pageloadcount) { return; }
 			server.retrycount = 0;
-			this.waitel.addClass('hidden');
+			server.waitel.addClass('hidden');
 
 			if (resp.error == 0) {
 			    if (details.id < 0) { // A new line
@@ -453,7 +453,7 @@ var ServerComm = new Class({
 
 		    onFailure: function(resp) {
 			if (pageloadcount != server.pageloadcount) { return; }
-			this.waitel.addClass('hidden');
+			server.waitel.addClass('hidden');
 			showsendfailed(function() {server.addannotation(details, annotation);});
 		    }
 
@@ -630,7 +630,7 @@ function makecommentbox(position, content, colour) {
     }
     newcomment.store('oldcolour',colour);
     //newcomment.set('class', 'comment');
-    if (Browser.ie) {
+    if (Browser.ie && Browser.version < 9) {
 	// Does not work with FF & Moodle
 	newcomment.setStyles({ left: position.x, top: position.y });
     } else {
@@ -1148,7 +1148,7 @@ function makeline(coords, type, id, colour) {
 	if (boundary.h < 14) {
 	    boundary.h = 14;
 	}
-	if (Browser.ie) {
+	if (Browser.ie && Browser.version < 9) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
 	} else {
@@ -1183,7 +1183,7 @@ function makeline(coords, type, id, colour) {
 	if (boundary.h < 14) {
 	    boundary.h = 14;
 	}
-	if (Browser.ie) {
+	if (Browser.ie && Browser.version < 9) {
 	    // Does not work with FF & Moodle
 	    container.setStyles({ left: boundary.x, top: boundary.y, width: boundary.w+2, height: boundary.h+2, position: 'absolute' });
 	} else {
@@ -1617,7 +1617,7 @@ function addtoquicklist(item) {
 	    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
 	    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
 	    // Nasty hack to reposition the comment box in IE
-	    if (Browser.ie) {
+	    if (Browser.ie && Browser.version < 9) {
 		if (Browser.ie6 || Browser.ie7) {
 		    pos.x += 40;
 		    pos.y -= 20;
@@ -1626,7 +1626,7 @@ function addtoquicklist(item) {
 		}
 	    }
 	    var cb = makecommentbox(pos, quicklist[id].text, quicklist[id].colour);
-	    if (Browser.ie) {
+	    if (Browser.ie && Browser.version < 9) {
 		// Does not work with FF & Moodle
 		cb.setStyle('width',quicklist[id].width);
 	    } else {
@@ -1716,7 +1716,7 @@ function initcontextmenu() {
 
 function showpage(pageno) {
     var pdfsize = $('pdfsize');
-    if (Browser.ie) {
+    if (Browser.ie && Browser.version < 9) {
 	// Does not work with FF & Moodle
 	pdfsize.setStyle('width',pagelist[pageno].width);
 	pdfsize.setStyle('height',pagelist[pageno].height);
