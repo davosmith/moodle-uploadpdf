@@ -1654,10 +1654,15 @@ function initcontextmenu() {
     if (!server.editing) {
 	return;
     }
+    var offs;
     var content = $('region-main');
-    offs = content.getPosition();
-    offs.x = -offs.x;
-    offs.y = -offs.y;
+    if (content) {
+        offs = content.getPosition();
+        offs.x = -offs.x;
+        offs.y = -offs.y;
+    } else {
+        offs = {x:0, y:0}
+    }
 
     //create a context menu
     context_quicklist = new ContextMenu({
