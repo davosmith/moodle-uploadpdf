@@ -4440,7 +4440,7 @@ window.Raphael.svg && function (R) {
         eve("remove", this);
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
         for (var i in this) {
-            this[i] = removed(i);
+            this[i] = null; //removed(i);
         }
     };
     var setproto = R.st;
