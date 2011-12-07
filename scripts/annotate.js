@@ -58,7 +58,7 @@ var ServerComm = new Class({
 
 	    this.waitel = new Element('div');
 	    this.waitel.set('class', 'pagewait hidden');
-	    $('pdfholder').adopt(this.waitel);
+	    document.id('pdfholder').adopt(this.waitel);
 	},
 
 	updatecomment: function(comment) {
@@ -174,7 +174,7 @@ var ServerComm = new Class({
 			server.waitel.addClass('hidden');
 			if (resp.error == 0) {
 			    if (pageno == server.pageno) { // Make sure the page hasn't changed since we sent this request
-				//$('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
+				//document.id('pdfholder').getElements('div').destroy(); // Destroy all the currently displayed comments (just in case!) - this turned out to be a bad idea
 				resp.comments.each(function(comment) {
 					cb = makecommentbox(comment.position, comment.text, comment.colour);
 					if (Browser.ie && Browser.version < 9) {
@@ -349,7 +349,7 @@ var ServerComm = new Class({
 		} else {
 		    waitingforpage = pageno;
 		    pagesremaining = pagestopreload; // Wanted a page that wasn't preloaded, so load a few more
-		    $('pdfimg').setProperty('src',server_config.blank_image);
+		    document.id('pdfimg').setProperty('src',server_config.blank_image);
 		}
 	    }
 
@@ -532,15 +532,15 @@ function showsendfailed(resend) {
 	return;
     }
 
-    var el = $('sendagain');
+    var el = document.id('sendagain');
     el.addEvent('click', resend);
     el.addEvent('click', hidesendfailed);
-    $('sendfailed').setStyles({display: 'block', position: 'absolute', top: 200, left: 200, 'z-index': 9999, 'background-color': '#d0d0d0', 'border': 'black 1px solid', padding: 10});
+    document.id('sendfailed').setStyles({display: 'block', position: 'absolute', top: 200, left: 200, 'z-index': 9999, 'background-color': '#d0d0d0', 'border': 'black 1px solid', padding: 10});
 }
 
 function hidesendfailed() {
-    $('sendagain').removeEvents();
-    $('sendfailed').setStyle('display', 'none');
+    document.id('sendagain').removeEvents();
+    document.id('sendfailed').setStyle('display', 'none');
 }
 
 function setcommentcontent(el, content) {
@@ -622,7 +622,7 @@ function makeeditbox(comment, content) {
 function makecommentbox(position, content, colour) {
     // Create the comment box
     newcomment = new Element('div');
-    $('pdfholder').adopt(newcomment);
+    document.id('pdfholder').adopt(newcomment);
 
     if ($defined(colour)) {
 	setcolourclass(colour, newcomment);
@@ -722,7 +722,7 @@ function addcomment(e) {
     var modifier = Browser.Platform.mac ? e.alt : e.control;
     if (!modifier) {  // If control pressed, then drawing line
 	// Calculate the relative position of the comment
-	imgpos = $('pdfimg').getPosition();
+	imgpos = document.id('pdfimg').getPosition();
 	var offs = new Object();
 	offs.x = e.page.x - imgpos.x;
 	offs.y = e.page.y - imgpos.y;
@@ -908,12 +908,12 @@ function setlinecolour(colour, line) {
 function changelinecolour(e) {
 /*
     if ($defined(lineselect)) {
-	var canvas = $(lineselect.paper.canvas);
+	var canvas = document.id(lineselect.paper.canvas);
 	if (!lineselectid) {
 	    // Cannot change the colour before the server has responded
 	    setcurrentlinecolour(canvas.retrieve("colour"));
 	} else {
-	    var canvas = $(lineselect.paper.canvas);
+	    var canvas = document.id(lineselect.paper.canvas);
 	    var line = canvas.retrieve("line");
 	    var colour = getcurrentlinecolour();
 	    if (canvas.retrieve("colour") != colour) {
@@ -992,12 +992,12 @@ function startline(e) {
 
     e.preventDefault(); // Stop FF from dragging the image
 
-    var dims = $('pdfimg').getCoordinates();
+    var dims = document.id('pdfimg').getCoordinates();
     var sx = e.page.x - dims.left;
     var sy = e.page.y - dims.top;
 
     currentpaper = Raphael(dims.left,dims.top,dims.width,dims.height);
-    $(document).addEvent('mousemove', updateline);
+    document.id(document).addEvent('mousemove', updateline);
     linestartpos = {x: sx, y: sy};
     if (tool == 'freehand') {
 	freehandpoints = new Array({x:linestartpos.x, y:linestartpos.y});
@@ -1011,7 +1011,7 @@ function updateline(e) {
 	return;
     }
 
-    var dims = $('pdfimg').getCoordinates();
+    var dims = document.id('pdfimg').getCoordinates();
     var ex = e.page.x - dims.left;
     var ey = e.page.y - dims.top;
 
@@ -1034,7 +1034,7 @@ function updateline(e) {
 	currentline.remove();
     } else {
 	// Doing this earlier catches the starting mouse click by mistake
-	$(document).addEvent('mouseup',finishline);
+	document.id(document).addEvent('mouseup',finishline);
     }
     switch (currenttool) {
     case 'rectangle':
@@ -1078,14 +1078,14 @@ function finishline(e) {
 	return;
     }
 
-    $(document).removeEvent('mousemove', updateline);
-    $(document).removeEvent('mouseup', finishline);
+    document.id(document).removeEvent('mousemove', updateline);
+    document.id(document).removeEvent('mouseup', finishline);
 
     if (!$defined(currentpaper)) {
 	return;
     }
 
-    var dims = $('pdfimg').getCoordinates();
+    var dims = document.id('pdfimg').getCoordinates();
     var coords;
     var tool = getcurrenttool();
     if (tool == 'freehand') {
@@ -1119,8 +1119,8 @@ function abortline() {
     }
 
     if (currentline) {
-	$(document).removeEvent('mousemove', updateline);
-	$(document).removeEvent('mouseup', finishline);
+	document.id(document).removeEvent('mousemove', updateline);
+	document.id(document).removeEvent('mouseup', finishline);
 	if ($defined(currentpaper)) {
 	    currentpaper.remove();
 	    currentpaper = null;
@@ -1132,7 +1132,7 @@ function abortline() {
 function makeline(coords, type, id, colour) {
     var linewidth = 3.0;
     var halflinewidth = linewidth * 0.5;
-    var dims = $('pdfimg').getCoordinates();
+    var dims = document.id('pdfimg').getCoordinates();
     var paper;
     var line;
     var details;
@@ -1169,7 +1169,7 @@ function makeline(coords, type, id, colour) {
 	    // Does not work with IE
 	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+'px;');
 	}
-	$('pdfholder').adopt(container);
+	document.id('pdfholder').adopt(container);
 	paper = Raphael(container);
 	minx -= halflinewidth;
 	miny -= halflinewidth;
@@ -1207,7 +1207,7 @@ function makeline(coords, type, id, colour) {
 	    // Does not work with IE
 	    container.set('style', 'position:absolute; top:'+boundary.y+'px; left:'+boundary.x+'px; width:'+(boundary.w+2)+'px; height:'+(boundary.h+2)+'px;');
 	}
-	$('pdfholder').adopt(container);
+	document.id('pdfholder').adopt(container);
 	paper = Raphael(container);
 	switch (type) {
 	case 'rectangle':
@@ -1235,7 +1235,7 @@ function makeline(coords, type, id, colour) {
     line.attr("stroke-width", linewidth);
     setlinecolour(colour, line);
 
-    var domcanvas = $(paper.canvas);
+    var domcanvas = document.id(paper.canvas);
 
     domcanvas.store('container',container);
     domcanvas.store('width',boundary.w);
@@ -1434,7 +1434,7 @@ function doscrolltocomment(commentid) {
 	lasthighlight.removeClass('comment-highlight');
 	lasthighlight = null;
     }
-    var comments = $('pdfholder').getElements('.comment');
+    var comments = document.id('pdfholder').getElements('.comment');
     comments.each( function(comment) {
 	if (comment.retrieve('id') == commentid) {
 	    comment.addClass('comment-highlight');
@@ -1562,9 +1562,9 @@ function startjs() {
     server.getcomments();
 
     if (server.editing) {
-	$('pdfimg').addEvent('click', addcomment);
-	$('pdfimg').addEvent('mousedown', startline);
-	$('pdfimg').ondragstart = function() { return false; }; // To stop ie trying to drag the image
+	document.id('pdfimg').addEvent('click', addcomment);
+	document.id('pdfimg').addEvent('mousedown', startline);
+	document.id('pdfimg').ondragstart = function() { return false; }; // To stop ie trying to drag the image
 	var colour = Cookie.read('uploadpdf_colour');
 	if (!$defined(colour)) {
 	    colour = 'yellow';
@@ -1583,7 +1583,7 @@ function startjs() {
 	pagelist = new Array();
 	var pageno = server.pageno.toInt();
 	// Little fix as Firefox remembers the selected option after a page refresh
-	var sel = $('selectpage');
+	var sel = document.id('selectpage');
 	var selidx = sel.selectedIndex;
 	var selpage = sel[selidx].value;
 	if (selpage != pageno) {
@@ -1630,7 +1630,7 @@ function addtoquicklist(item) {
     quicklist[itemid] = item;
 
     context_quicklist.addItem(itemid, itemtext, server_config.deleteicon, function(id, menu) {
-	    var imgpos = $('pdfimg').getPosition();
+	    var imgpos = document.id('pdfimg').getPosition();
 	    var pos = new Object();
 	    pos.x = menu.menu.getStyle('left').toInt() - imgpos.x;
 	    pos.y = menu.menu.getStyle('top').toInt() - imgpos.y + 20;
@@ -1684,7 +1684,7 @@ function initcontextmenu() {
 		}
 	    }
 	});
-    context_quicklist.addmenu($('pdfimg'));
+    context_quicklist.addmenu(document.id('pdfimg'));
     context_quicklist.quickcount = 0;
     context_quicklistnoitems();
     quicklist = new Array();
@@ -1728,7 +1728,7 @@ function initcontextmenu() {
 }
 
 function showpage(pageno) {
-    var pdfsize = $('pdfsize');
+    var pdfsize = document.id('pdfsize');
     if (Browser.ie && Browser.version < 9) {
 	// Does not work with FF & Moodle
 	pdfsize.setStyle('width',pagelist[pageno].width);
@@ -1738,7 +1738,7 @@ function showpage(pageno) {
 	var style = 'height:'+pagelist[pageno].height+'px; width:'+pagelist[pageno].width+'px;'+' clear: both;';
 	pdfsize.set('style',style);
     }
-    var pdfimg = $('pdfimg');
+    var pdfimg = document.id('pdfimg');
     pdfimg.setProperty('width',pagelist[pageno].width);
     pdfimg.setProperty('height',pagelist[pageno].height);
     if (pagelist[pageno].image.complete) {
@@ -1755,7 +1755,7 @@ function check_pageimage(pageno) {
 	return; // Moved off the page in question
     }
     if (pagelist[pageno].image.complete) {
-	$('pdfimg').setProperty('src',pagelist[pageno].url);
+	document.id('pdfimg').setProperty('src',pagelist[pageno].url);
     } else {
 	setTimeout('check_pageimage('+pageno+')', 200);
     }
@@ -1764,7 +1764,7 @@ function check_pageimage(pageno) {
 function gotopage(pageno) {
     var pagecount = server_config.pagecount.toInt();
     if ((pageno <= pagecount) && (pageno > 0)) {
-	$('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
+	document.id('pdfholder').getElements('.comment').destroy(); // Destroy all the currently displayed comments
 	allannotations.each(function(p) { p.dispose(); });
 	allannotations.empty();
 	abortline(); // Abandon any lines currently being drawn
@@ -1773,7 +1773,7 @@ function gotopage(pageno) {
 	lasthighlight = null;
 
 	// Set the dropdown selects to have the correct page number in them
-	var el = $('selectpage');
+	var el = document.id('selectpage');
 	var i;
 	for (i=0; i<el.length; i++) {
 	    if (el[i].value == pageno) {
@@ -1781,7 +1781,7 @@ function gotopage(pageno) {
 		break;
 	    }
 	}
-	el = $('selectpage2');
+	el = document.id('selectpage2');
 	for (i=0; i<el.length; i++) {
 	    if (el[i].value == pageno) {
 		el.selectedIndex = i;
@@ -1791,7 +1791,7 @@ function gotopage(pageno) {
 
 	if (server.editing) {
 	    // Update the 'open in new window' link
-	    var opennew = $('opennewwindow');
+	    var opennew = document.id('opennewwindow');
 	    var on_link = opennew.get('href').replace(/pageno=\d+/,"pageno="+pageno);
 	    opennew.set('href', on_link);
 	}
@@ -1799,17 +1799,17 @@ function gotopage(pageno) {
 	//Update the next/previous buttons
 	if (pageno == pagecount) {
 	    nextbutton.set('disabled',true);
-	    $('nextpage2').set('disabled', 'disabled');
+	    document.id('nextpage2').set('disabled', 'disabled');
 	} else {
 	    nextbutton.set('disabled',false);
-	    $('nextpage2').erase('disabled');
+	    document.id('nextpage2').erase('disabled');
 	}
 	if (pageno == 1) {
 	    prevbutton.set('disabled',true);
-	    $('prevpage2').set('disabled', 'disabled');
+	    document.id('prevpage2').set('disabled', 'disabled');
 	} else {
 	    prevbutton.set('disabled',false);
-	    $('prevpage2').erase('disabled');
+	    document.id('prevpage2').erase('disabled');
 	}
 
 	server.pageno = ""+pageno;
@@ -1831,13 +1831,13 @@ function gotoprevpage() {
 }
 
 function selectpage() {
-    var el = $('selectpage');
+    var el = document.id('selectpage');
     var idx = el.selectedIndex;
     gotopage(el[idx].value);
 }
 
 function selectpage2() {
-    var el = $('selectpage2');
+    var el = document.id('selectpage2');
     var idx = el.selectedIndex;
     gotopage(el[idx].value);
 }

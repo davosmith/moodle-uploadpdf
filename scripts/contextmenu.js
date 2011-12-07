@@ -27,7 +27,7 @@ var ContextMenu = new Class({
 		this.setOptions(options)
 		
 		//option diffs menu
-		this.menu = $(this.options.menu);
+		this.menu = document.id(this.options.menu);
 		this.targets = $$(this.options.targets);
 
 		//fx
@@ -49,14 +49,14 @@ var ContextMenu = new Class({
 		this.menu.getElements('a').each(function(item) {
 			item.addEvent('click',function(e) {
 				if(!item.hasClass('disabled')) {
-					this.execute(item.get('href').split('#')[1],$(this.options.element));
+					this.execute(item.get('href').split('#')[1],document.id(this.options.element));
 					this.fireEvent('click',[item,e]);
 				}
 			}.bind(this));
 		},this);
 		
 		//hide on body click
-		$(document.body).addEvent('click', function() {
+		document.id(document.body).addEvent('click', function() {
 			this.hide();
 		}.bind(this));
 	},
@@ -69,7 +69,7 @@ var ContextMenu = new Class({
 			//prevent default, if told to
 			if(this.options.stopEvent) { e.stop(); }
 			//record this as the trigger
-			this.options.element = $(target);
+			this.options.element = document.id(target);
 			//position the menu
 			this.menu.setStyles({
 				    position: 'absolute',
@@ -149,7 +149,7 @@ var ContextMenu = new Class({
 	    //	    this.options.actions[item] = func;
 	    link.addEvent('click',function(e) {
 		    if(!link.hasClass('disabled')) {
-			//this.execute(link.get('href').split('#')[1],$(this.options.element));
+			//this.execute(link.get('href').split('#')[1],document.id(this.options.element));
 			func(item,this);
 			this.fireEvent('click',[link,e]);
 		    }
