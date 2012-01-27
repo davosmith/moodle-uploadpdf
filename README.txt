@@ -13,6 +13,15 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 !! THERE ARE A FEW IMPORTANT ITEMS TO NOTE IN THE INSTALLATION, PLEASE
    READ CAREFULLY !!
 
+==Recent changes==
+
+(Note that the previous version posted on Moodle.org was in August 2011)
+
+* 2011-12-07 - Fixed jquery conflicts
+* 2011-10-21 - Fixed issues with updated version of Raphael library
+* 2011-10-10 - Fixed IE9 incompatibility issues
+* 2011-08-30 - Previous version posted on Moodle.org
+
 ==Installation==
 
 Note: this plugin needs PHP 5.2.0 (or above) for the JSON library.
