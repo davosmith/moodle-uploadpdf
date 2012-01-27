@@ -89,6 +89,7 @@ $string['openlinknewwindow'] = 'Open links in new window';
 $string['opennewwindow'] = 'Open this page in a new window';
 $string['ovalicon'] = 'o - ovals';
 $string['pagenumber'] = 'Page';
+$string['pluginname'] = 'Upload PDF';
 $string['previewinstructions'] = 'Please upload a coversheet (PDF) to help preview this template';
 $string['previous'] = 'Prev';
 $string['previousnone'] = 'None';
