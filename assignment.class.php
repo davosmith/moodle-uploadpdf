@@ -944,7 +944,7 @@ class assignment_uploadpdf extends assignment_base {
         if (is_enrolled($this->context, $USER, 'mod/assignment:submit')           // can submit
             and $this->isopen()                                                 // assignment not closed yet
             and (empty($submission) or $submission->userid == $USER->id)        // his/her own submission
-            and (empty($submission) or $this->count_user_files($submission->id) < $this->assignment->var1)
+            and (empty($submission) or $this->count_user_files($submission->id) <= $this->assignment->var1)
             and !$this->is_finalized($submission)) {
             return true;
         } else {
