@@ -560,20 +560,20 @@ class assignment_uploadpdf extends assignment_base {
         // Count the number of assignments that have been submitted and for
         // which a response file has been generated (ie data2 = 'responded',
         // not 'submitted')
-        $markedcount = $DB->count_records_sql('SELECT COUNT("x")
+        $markedcount = $DB->count_records_sql("SELECT COUNT('x')
                                 FROM {assignment_submissions}
                                 WHERE assignment = ? AND
-                                data2 = "'.ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED.'" AND
-                                userid '.$usql, $uparam);
+                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED."' AND
+                                userid ".$usql, $uparam);
 
         // Count the number of assignments that have been submitted, but for
         // which a response file has not been generated (ie data2 = 'submitted',
         // not 'responded')
-        $unmarkedcount = $DB->count_records_sql('SELECT COUNT("x")
+        $unmarkedcount = $DB->count_records_sql("SELECT COUNT('x')
                                 FROM {assignment_submissions}
                                 WHERE assignment = ? AND
-                                data2 = "'.ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED.'" AND
-                                userid '.$usql, $uparam);
+                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED."' AND
+                                userid ".$usql, $uparam);
 
         $totalcount = $markedcount + $unmarkedcount;
 
@@ -1427,7 +1427,7 @@ class assignment_uploadpdf extends assignment_base {
             $ps_sql = 'SELECT asn.id, asn.name FROM {assignment} asn ';
             $ps_sql .= 'INNER JOIN {assignment_submissions} sub ON sub.assignment = asn.id ';
             $ps_sql .= 'WHERE course = ? ';
-            $ps_sql .= 'AND asn.assignmenttype = "uploadpdf" ';
+            $ps_sql .= 'AND asn.assignmenttype = \'uploadpdf\' ';
             $ps_sql .= 'AND userid = ? ';
             $ps_sql .= 'AND asn.id != ? ';
             $ps_sql .= 'ORDER BY sub.timemodified DESC;';
@@ -2217,8 +2217,8 @@ class assignment_uploadpdf extends assignment_base {
 
         $deletetime = time() - (21 * 86400); // 3 weeks ago - as students can now view feedback online, we need to keep images around for longer
         //FIXME $fs->get_area_files('mod_assignment', 'image');
-        $to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "image" AND timemodified < ?', array($deletetime));
-        $tmpl_to_clear = $DB->get_records_select('files', 'component = "mod_assignment" AND filearea = "previewimage" AND timemodified < ?', array($deletetime));
+        $to_clear = $DB->get_records_select('files', "component = 'mod_assignment' AND filearea = 'image' AND timemodified < ?", array($deletetime));
+        $tmpl_to_clear = $DB->get_records_select('files', "component = 'mod_assignment' AND filearea = 'previewimage' AND timemodified < ?", array($deletetime));
         $to_clear = array_merge($to_clear, $tmpl_to_clear);
 
         foreach ($to_clear as $filerecord) {

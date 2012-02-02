@@ -17,6 +17,7 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 
 (Note that the previous version posted on Moodle.org was in August 2011)
 
+* 2012-02-02 - Fixed postgres compatibility - thanks to Ruslan Kabalin
 * 2011-12-07 - Fixed jquery conflicts
 * 2011-10-21 - Fixed issues with updated version of Raphael library
 * 2011-10-10 - Fixed IE9 incompatibility issues
