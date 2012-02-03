@@ -554,26 +554,28 @@ class assignment_uploadpdf extends assignment_base {
             return 0;
         }
 
-        list($usql, $uparam) = $DB->get_in_or_equal($users);
-        $uparam = array_merge(array($this->cm->instance),$uparam);
+        list($usql, $uparam) = $DB->get_in_or_equal($users, SQL_PARAMS_NAMED);
+        $uparam['cminstance'] = $this->cm->instance;
 
         // Count the number of assignments that have been submitted and for
         // which a response file has been generated (ie data2 = 'responded',
         // not 'submitted')
-        $markedcount = $DB->count_records_sql("SELECT COUNT('x')
+        $uparam['data2'] = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
+        $markedcount = $DB->count_records_sql('SELECT COUNT(*)
                                 FROM {assignment_submissions}
-                                WHERE assignment = ? AND
-                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED."' AND
-                                userid ".$usql, $uparam);
+                                WHERE assignment = :cminstance AND
+                                data2 = :data2 AND
+                                userid ' . $usql, $uparam);
 
         // Count the number of assignments that have been submitted, but for
         // which a response file has not been generated (ie data2 = 'submitted',
         // not 'responded')
-        $unmarkedcount = $DB->count_records_sql("SELECT COUNT('x')
+        $uparam['data2'] = ASSIGNMENT_UPLOADPDF_STATUS_RESPONDED;
+        $unmarkedcount = $DB->count_records_sql('SELECT COUNT(*)
                                 FROM {assignment_submissions}
-                                WHERE assignment = ? AND
-                                data2 = '".ASSIGNMENT_UPLOADPDF_STATUS_SUBMITTED."' AND
-                                userid ".$usql, $uparam);
+                                WHERE assignment = :cminstance AND
+                                data2 = :data2 AND
+                                userid ' . $usql, $uparam);
 
         $totalcount = $markedcount + $unmarkedcount;
 
