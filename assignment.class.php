@@ -1607,7 +1607,7 @@ class assignment_uploadpdf extends assignment_base {
                         'js_navigation' => $CFG->uploadpdf_js_navigation,
                         'blank_image' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/style/blank.gif',
                         'image_path' => $CFG->wwwroot.'/mod/assignment/type/uploadpdf/pix/',
-                        'css_path' => $CFG->wwwroot.'/lib/yui/2.8.2/build/assets/skins/sam/',
+                        'css_path' => $CFG->wwwroot.'/lib/yui/'.$CFG->yui2version.'/build/assets/skins/sam/',
                         'editing' => ($enableedit ? 1 : 0),
                         'lang_nocomments' => get_string('findcommentsempty', 'assignment_uploadpdf')
                         );
