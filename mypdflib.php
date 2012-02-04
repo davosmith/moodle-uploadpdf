@@ -168,24 +168,30 @@ class MyPDFLib extends FPDI {
         if (!$this->filename) {
             return false;
         }
-        switch($colour) {
+        switch($colour) { // Fill colours are only used by the highligher
         case 'yellow':
             $this->SetDrawColor(255, 255, 0);
+            $this->SetFillColor(255, 255, 176);
             break;
         case 'green':
             $this->SetDrawColor(0, 255, 0);
+            $this->SetFillColor(176, 255, 176);
             break;
         case 'blue':
             $this->SetDrawColor(0, 0, 255);
+            $this->SetFillColor(208, 208, 255);
             break;
         case 'white':
             $this->SetDrawColor(255, 255, 255);
+            $this->SetFillColor(255, 255, 255);
             break;
         case 'black':
             $this->SetDrawColor(0, 0, 0);
+            $this->SetFillColor(50, 50, 50);
             break;
         default:                /* Red */
             $this->SetDrawColor(255, 0, 0);
+            $this->SetFillColor(255, 176, 176);
             break;
         }
 
@@ -209,6 +215,13 @@ class MyPDFLib extends FPDI {
             $sx = min($sx, $ex);
             $sy = min($sy, $ey);
             $this->Rect($sx, $sy, $w, $h);
+            break;
+        case 'highlight':
+            $w = abs($sx - $ex);
+            $h = 12.0 * $this->scale;
+            $sx = min($sx, $ex);
+            $sy = min($sy, $ey) - $h * 0.5;
+            $this->MultiCell($w, $h, '', 0, 'L', true, 0, $sx, $sy); // Fill appears behind original text
             break;
         case 'freehand':
             if ($path) {

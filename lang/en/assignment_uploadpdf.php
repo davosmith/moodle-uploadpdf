@@ -58,6 +58,7 @@ $string['findcommentsempty'] = 'No comments';
 $string['freehandicon'] = 'f - freehand lines';
 $string['generateresponse'] = 'Generate Response';
 $string['heading_templatedatamissing'] = 'Coversheet information not filled in';
+$string['highlighticon'] = 'h - highlight text';
 $string['invalidpdf'] = '\'{$a}\' does not appear to be a valid PDF';
 $string['isresubmission'] = 'This is a resubmission - ';
 $string['itemdate'] = 'Date';

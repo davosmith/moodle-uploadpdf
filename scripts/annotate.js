@@ -30,6 +30,9 @@ var freehandpoints = null;
 //var lineselectid = null;
 var allannotations = new Array();
 
+const LINEWIDTH = 3.0;
+const HIGHLIGHT_LINEWIDTH = 14.0;
+
 var $defined = function(obj) { return (obj != undefined); };
 
 var ServerComm = new Class({
@@ -884,15 +887,24 @@ function prevlinecolour() {
     }
 }
 
-function setlinecolour(colour, line) {
+function setlinecolour(colour, line, currenttool) {
     if (line) {
 	var rgb;
-	if (colour == "yellow") { rgb = "#ff0"; }
-	else if (colour == "green") { rgb = "#0f0"; }
-	else if (colour == "blue") { rgb = "#00f"; }
-	else if (colour == "white") { rgb = "#fff"; }
-	else if (colour == "black") { rgb = "#000"; }
-	else { rgb = "#f00"; } // Red
+        if (currenttool == 'highlight') {
+	    if (colour == "yellow") { rgb = "#ffffb0"; }
+	    else if (colour == "green") { rgb = "#b0ffb0"; }
+	    else if (colour == "blue") { rgb = "#d0d0ff"; }
+	    else if (colour == "white") { rgb = "#ffffff"; }
+	    else if (colour == "black") { rgb = "#323232"; }
+	    else { rgb = "#ffb0b0"; } // Red
+        } else {
+	    if (colour == "yellow") { rgb = "#ff0"; }
+	    else if (colour == "green") { rgb = "#0f0"; }
+	    else if (colour == "blue") { rgb = "#00f"; }
+	    else if (colour == "white") { rgb = "#fff"; }
+	    else if (colour == "black") { rgb = "#000"; }
+	    else { rgb = "#f00"; } // Red
+        }
 	line.attr("stroke", rgb);
     }
 }
@@ -1053,12 +1065,21 @@ function updateline(e) {
 	linestartpos.x = ex;
 	linestartpos.y = ey;
 	break;
+    case 'highlight':
+	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+linestartpos.y);
+        break;
     default: // Comment + Ctrl OR line
 	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
 	break;
     }
-    currentline.attr("stroke-width", 3);
-    setlinecolour(getcurrentlinecolour(), currentline);
+    if (currenttool == 'highlight') {
+        currentline.attr("stroke-width", HIGHLIGHT_LINEWIDTH);
+        currentline.attr("stroke-opacity", 0.5);
+    } else {
+        currentline.attr("stroke-width", LINEWIDTH);
+        currentline.attr("stroke-opacity", 1);
+    }
+    setlinecolour(getcurrentlinecolour(), currentline, currenttool);
 }
 
 function finishline(e) {
@@ -1116,7 +1137,10 @@ function abortline() {
 }
 
 function makeline(coords, type, id, colour) {
-    var linewidth = 3.0;
+    var linewidth = LINEWIDTH;
+    if (type == 'highlight') {
+        linewidth = HIGHLIGHT_LINEWIDTH;
+    }
     var halflinewidth = linewidth * 0.5;
     var dims = document.id('pdfimg').getCoordinates();
     var paper;
@@ -1179,7 +1203,7 @@ function makeline(coords, type, id, colour) {
 	    boundary = {x: (coords.sx-(halflinewidth*0.5)), y: (coords.ey-(halflinewidth*0.5)), w: (coords.ex+linewidth-coords.sx), h: (coords.sy+linewidth-coords.ey)};
 	    coords.sy = boundary.h - halflinewidth; coords.ey = halflinewidth;
 	}
-	coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
+        coords.sx = halflinewidth; coords.ex = boundary.w - halflinewidth;
 	if (boundary.h < 14) {
 	    boundary.h = 14;
 	}
@@ -1207,6 +1231,10 @@ function makeline(coords, type, id, colour) {
 	    var sy = Math.min(coords.sy, coords.ey)+ry;
 	    line = paper.ellipse(sx, sy, rx, ry);
 	    break;
+        case 'highlight':
+	    line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.sy);
+            line.attr('stroke-opacity', 0.5);
+            break;
 	default:
 	    line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
 	    details.type = 'line';
@@ -1214,7 +1242,7 @@ function makeline(coords, type, id, colour) {
 	}
     }
     line.attr("stroke-width", linewidth);
-    setlinecolour(colour, line);
+    setlinecolour(colour, line, type);
 
     var domcanvas = document.id(paper.canvas);
 
@@ -1325,6 +1353,8 @@ function keyboardnavigation(e) {
 	    setcurrenttool('oval');
 	} else if (e.key == 'f') {
 	    setcurrenttool('freehand');
+        } else if (e.key == 'h') {
+            setcurrenttool('highlight');
 	} else if (e.key == 'e') {
 	    setcurrenttool('erase');
 	} else if (e.key == 'g' && modifier) {

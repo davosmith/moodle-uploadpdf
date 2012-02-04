@@ -1567,7 +1567,7 @@ class assignment_uploadpdf extends assignment_base {
             echo '</ul></div></div>';
 
             // Choose annotation type
-            $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon','eraseicon');
+            $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon','highlighticon','eraseicon');
             $checked = ' yui-button-checked';
             echo '<div id="choosetoolgroup" class="yui-buttongroup">';
 
