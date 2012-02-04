@@ -268,7 +268,7 @@ class MyPDFLib extends FPDI {
             $gsexec = $CFG->gs_path;
             $imageres = 100;
             $filename = $this->filename;
-            $command = "$gsexec -q -sDEVICE=png16m -dBATCH -dNOPAUSE -r$imageres -dFirstPage=$pageno -dLastPage=$pageno -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -sOutputFile=\"$imagefile\" \"$filename\" 2>&1";
+            $command = "$gsexec -q -sDEVICE=png16m -dSAFER -dBATCH -dNOPAUSE -r$imageres -dFirstPage=$pageno -dLastPage=$pageno -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -sOutputFile=\"$imagefile\" \"$filename\" 2>&1";
             $result = exec($command);
             if (!file_exists($imagefile)) {
                 echo htmlspecialchars($command).'<br/>';
@@ -279,5 +279,61 @@ class MyPDFLib extends FPDI {
 
         return 'image_page'.$pageno.'.png';
     }
+
+    // Check to see if PDF is version 1.4 (or below); if not: use ghostscript to convert it
+    // Return - false for invalid PDF, true for no change needed or if file has been updated
+    static function ensure_pdf_compatible($file) {
+        global $CFG;
+
+        $fp = $file->get_content_file_handle();
+        $ident = fread($fp, 10);
+        if (substr_compare('%PDF-', $ident, 0, 5) !== 0) {
+            return false; // This is not a PDF file at all
+        }
+        $ident = substr($ident, 5); // Remove the '%PDF-' part
+        $ident = explode('\x0A', $ident); // Truncate to first '0a' character
+        list($major, $minor) = explode('.', $ident[0]); // Split the major / minor version
+        $major = intval($major);
+        $minor = intval($minor);
+        if ($major == 0 || $minor == 0) {
+            return false; // Not a valid PDF version number
+        }
+        if ($major = 1 && $minor <= 4) {
+            return true; // We can handle this version - nothing else to do
+        }
+
+        $temparea = $CFG->dataroot.'/temp/uploadpdf';
+        $tempsrc = $temparea.'/src.pdf';
+        $tempdst = $temparea.'/dst.pdf';
+
+        if (!file_exists($temparea)) {
+            if (!mkdir($temparea, 0777, true)) {
+                die("Unable to create temporary folder $temparea");
+            }
+        }
+
+        $file->copy_content_to($tempsrc); // Copy the file
+
+        $gsexec = $CFG->gs_path;
+        $command = "$gsexec -q -sDEVICE=pdfwrite -dBATCH -dNOPAUSE -sOutputFile=\"$tempdst\" \"$tempsrc\" 2>&1";
+        $result = exec($command);
+        if (!file_exists($tempdst)) {
+            return false; // Something has gone wrong in the conversion
+        }
+
+        $file->delete(); // Delete the original file
+        $fs = get_file_storage();
+        $fileinfo = array('contextid' => $file->get_contextid(),
+                          'component' => $file->get_component(),
+                          'filearea' => $file->get_filearea(),
+                          'itemid' => $file->get_itemid(),
+                          'filename' => $file->get_filename(),
+                          'filepath' => $file->get_filepath());
+        $fs->create_file_from_pathname($fileinfo, $tempdst); // Create replacement file
+        @unlink($tempsrc); // Delete the temporary files
+        @unlink($tempdst);
+
+        return true;
+    }
 }
-?>
+

@@ -692,6 +692,18 @@ class assignment_uploadpdf extends assignment_base {
             $submission = $this->get_submission($USER->id, true); //create new submission if needed
             $fs->delete_area_files($this->context->id, 'mod_assignment', 'submission', $submission->id);
             $formdata = file_postupdate_standard_filemanager($formdata, 'files', $options, $this->context, 'mod_assignment', 'submission', $submission->id);
+
+            // Make sure all submitted PDFs are compatible with FPDI
+            if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submission->id, 'timemodified', false)) {
+                foreach ($files as $file) {
+                    if ($file->get_mimetype() == 'application/pdf') {
+                        if (!MyPDFLib::ensure_pdf_compatible($file)) { // Uses ghostscript to convert any PDFs > v1.4
+                            throw new moodle_exception('invalidpdf', 'uploadpdf', $file->get_filename());
+                        }
+                    }
+                }
+            }
+
             $updates = new object();
             $updates->id = $submission->id;
             $updates->timemodified = time();
