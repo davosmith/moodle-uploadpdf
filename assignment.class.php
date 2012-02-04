@@ -1247,6 +1247,12 @@ class assignment_uploadpdf extends assignment_base {
         if ( $pagecount && ($file = $fs->get_file($this->context->id, 'mod_assignment', 'image', $submission->id, '/', $pagefilename)) ) {
             if ($imageinfo = $file->get_imageinfo()) {
                 $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$submission->id.'/'.$pagefilename);
+                // Prevent browser from caching image if it has changed
+                if (strpos('?', $imgurl) === false) {
+                    $imgurl .= '?ts='.$file->get_timemodified();
+                } else {
+                    $imgurl .= '&amp;ts='.$file->get_timemodified();
+                }
                 return array($imgurl, $imageinfo['width'], $imageinfo['height'], $pagecount);
             }
             // If the image is bad in some way, try to create a new image instead
@@ -1312,6 +1318,12 @@ class assignment_uploadpdf extends assignment_base {
 
         if ($imageinfo = $file->get_imageinfo()) {
             $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$submission->id.'/'.$pagefilename);
+            // Prevent browser from caching image if it has changed
+            if (strpos('?', $imgurl) === false) {
+                $imgurl .= '?ts='.$file->get_timemodified();
+            } else {
+                $imgurl .= '&amp;ts='.$file->get_timemodified();
+            }
             return array($imgurl, $imageinfo['width'], $imageinfo['height'], $pagecount);
         }
 
