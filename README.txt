@@ -15,7 +15,7 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 
 ==Recent changes==
 
-* 2012-02-04 - Added 'highlighter' tool (see 'known issues' below)
+* 2012-02-04 - Added 'highlighter' tool
 * 2012-02-04 - Can now cope with any PDF version; fixed browser caching of images when PDF is changed, YUI CSS path
 * 2012-02-02 - Fixed postgres compatibility - thanks to Ruslan Kabalin
 * 2011-12-07 - Fixed jquery conflicts
@@ -211,10 +211,9 @@ in it. If you need to, you can get the old version of the user interface
 here (install it over the current version):
 https://github.com/davosmith/moodle-uploadpdf/zipball/moodle20-originalui
 
-Highlighter tool - due to limitations in the way the PDF generation works
-the highlighter tool draws a box *behind* the text, rather than a
-transparent box over the top of the text. This works with text on a
-plain background, but will not work with textboxes or images.
+Highlighter tool was (briefly - for about 2 hours, until I realised a better
+way of coding it) unable to export highlights properly to the PDF -
+this has now been fixed.
 
 ==Thanks==
 This is heavily based on the 'Advanced Uploading of Files' Assignment

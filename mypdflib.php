@@ -165,33 +165,29 @@ class MyPDFLib extends FPDI {
     }
 
     function add_annotation($sx, $sy, $ex, $ey, $colour='red', $type='line', $path=null) { /* Add an annotation to the current page */
+        global $CFG;
         if (!$this->filename) {
             return false;
         }
-        switch($colour) { // Fill colours are only used by the highligher
+        switch($colour) {
         case 'yellow':
             $this->SetDrawColor(255, 255, 0);
-            $this->SetFillColor(255, 255, 176);
             break;
         case 'green':
             $this->SetDrawColor(0, 255, 0);
-            $this->SetFillColor(176, 255, 176);
             break;
         case 'blue':
             $this->SetDrawColor(0, 0, 255);
-            $this->SetFillColor(208, 208, 255);
             break;
         case 'white':
             $this->SetDrawColor(255, 255, 255);
-            $this->SetFillColor(255, 255, 255);
             break;
         case 'black':
             $this->SetDrawColor(0, 0, 0);
-            $this->SetFillColor(50, 50, 50);
             break;
         default:                /* Red */
+            $colour = 'red';
             $this->SetDrawColor(255, 0, 0);
-            $this->SetFillColor(255, 176, 176);
             break;
         }
 
@@ -221,7 +217,8 @@ class MyPDFLib extends FPDI {
             $h = 12.0 * $this->scale;
             $sx = min($sx, $ex);
             $sy = min($sy, $ey) - $h * 0.5;
-            $this->MultiCell($w, $h, '', 0, 'L', true, 0, $sx, $sy); // Fill appears behind original text
+            $imgfile = $CFG->dirroot.'/mod/assignment/type/uploadpdf/pix/trans'.$colour.'.png';
+            $this->Image($imgfile, $sx, $sy, $w, $h);
             break;
         case 'freehand':
             if ($path) {
