@@ -229,6 +229,16 @@ class MyPDFLib extends FPDI {
                 $this->PolyLine($scalepath, 'S');
             }
             break;
+        case 'stamp':
+            if (!$imgfile = self::get_stamp_file($path)) {
+                break;
+            }
+            $w = abs($sx - $ex);
+            $h = abs($sy - $ey);
+            $sx = min($sx, $ex);
+            $sy = min($sy, $ey);
+            $this->Image($imgfile, $sx, $sy, $w, $h);
+            break;
         default: // Line
             $this->Line($sx, $sy, $ex, $ey);
             break;
@@ -237,6 +247,35 @@ class MyPDFLib extends FPDI {
         $this->SetLineWidth(1.0 * $this->scale);
 
         return true;
+    }
+
+    public static function get_stamps() {
+        global $CFG;
+        static $stamplist = null;
+        if ($stamplist == null) {
+            $stamplist = array();
+            $basedir = $CFG->dirroot.'/mod/assignment/type/uploadpdf/pix/stamps';
+            if ($dir = opendir($basedir)) {
+                while (false !== ($file = readdir($dir))) {
+                    $pathinfo = pathinfo($file);
+                    if (isset($pathinfo['extension']) && strtolower($pathinfo['extension']) == 'png') {
+                        $stamplist[$pathinfo['filename']] = $basedir.'/'.$file;
+                    }
+                }
+            }
+        }
+        return $stamplist;
+    }
+
+    public static function get_stamp_file($path) {
+        if (!$path) {
+            return false;
+        }
+        $stamps = self::get_stamps();
+        if (!array_key_exists($path, $stamps)) {
+            return false;
+        }
+        return $stamps[$path];
     }
 
     function save_pdf($filename) {

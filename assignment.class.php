@@ -1218,7 +1218,7 @@ class assignment_uploadpdf extends assignment_base {
                     $mypdf->add_annotation(0,0,0,0, $annotation->colour, 'freehand', $path);
                 } else {
                     $mypdf->add_annotation($annotation->startx, $annotation->starty, $annotation->endx,
-                                           $annotation->endy, $annotation->colour, $annotation->type);
+                                           $annotation->endy, $annotation->colour, $annotation->type, $annotation->path);
                 }
                 $annotation = next($annotations);
             }
@@ -1564,8 +1564,18 @@ class assignment_uploadpdf extends assignment_base {
             }
             echo '</ul></div></div>';
 
+            // Stamps
+            echo '<input type="submit" id="choosestamp" style="line-height:normal;" name="choosestamp" value="" title="'.get_string('stamp','assignment_uploadpdf').'">';
+            echo '<div id="choosestampmenu" class="yuimenu"><div class="bd"><ul class="first-of-type">';
+            $stamps = MyPDFLib::get_stamps();
+            foreach ($stamps as $stamp => $filename) {
+                echo '<li class="yuimenuitem choosestamp-'.$stamp.'-"><img width="32" height="32" src="'.$OUTPUT->pix_url('stamps/'.$stamp, 'assignment_uploadpdf').'"/></li>';
+            }
+            echo '</ul></div></div>';
+
+
             // Choose annotation type
-            $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon','highlighticon','eraseicon');
+            $drawingtools = array('commenticon','lineicon','rectangleicon','ovalicon','freehandicon','highlighticon','stampicon','eraseicon');
             $checked = ' yui-button-checked';
             echo '<div id="choosetoolgroup" class="yui-buttongroup">';
 
@@ -1580,6 +1590,7 @@ class assignment_uploadpdf extends assignment_base {
                 $checked = '';
             }
             echo '</div>';
+
         }
         echo '</div>'; // toolbar-line-2
 
@@ -1753,6 +1764,9 @@ class assignment_uploadpdf extends assignment_base {
                     $respannotation['coords'] = array('startx'=> $annotation->startx, 'starty'=> $annotation->starty,
                                                       'endx'=> $annotation->endx, 'endy'=> $annotation->endy );
                 }
+                if ($annotation->type == 'stamp') {
+                    $respannotation['path'] = $annotation->path;
+                }
                 $respannotation['colour'] = $annotation->colour;
                 $respannotations[] = $respannotation;
             }
@@ -1862,7 +1876,9 @@ class assignment_uploadpdf extends assignment_base {
                     }
                 }
             } else {
-                $annotation->path = null;
+                if ($annotation->type != 'stamp') {
+                    $annotation->path = null;
+                }
                 if (($annotation->startx < 0) || ($annotation->starty < 0) || ($annotation->endx < 0) || ($annotation->endy < 0)) {
                     if ($annotation->id < 0) {
                         send_error('Missing annotation data');

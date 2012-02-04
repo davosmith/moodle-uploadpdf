@@ -18,6 +18,7 @@ var nextbutton = null;
 var prevbutton = null;
 var choosedrawingtool = null;
 var findcommentsmenu = null;
+var stampmenu = null;
 
 var resendtimeout = 4000;
 
@@ -210,7 +211,7 @@ var ServerComm = new Class({
 						ey: annotation.coords.endy.toInt()
 					    };
 					}
-					makeline(coords, annotation.type, annotation.id, annotation.colour);
+				    makeline(coords, annotation.type, annotation.id, annotation.colour, annotation.path);
 				    });
 
 				doscrolltocomment(scrolltocommentid);
@@ -481,6 +482,9 @@ var ServerComm = new Class({
 		requestdata.annotation_endx = details.coords.ex;
 		requestdata.annotation_endy = details.coords.ey;
 	    }
+            if (details.type == 'stamp') {
+                requestdata.annotation_path = details.path;
+            }
 	    request.send({ data: requestdata }); // Move this line down, once all working
 	},
 
@@ -934,6 +938,35 @@ function changelinecolour(e) {
     Cookie.write('uploadpdf_linecolour', getcurrentlinecolour());
 }
 
+function getcurrentstamp() {
+    if (!server.editing) {
+        return '';
+    }
+    return stampmenu.get("value");
+}
+
+function getstampimage(stamp) {
+    return server_config.image_path+'stamps/'+stamp+'.png';
+}
+
+function setcurrentstamp(stamp) {
+    if (!server.editing) {
+        return;
+    }
+    // Check valid stamp?
+    stampmenu.set("label", '<img width="32" height="32" src="'+getstampimage(stamp)+'" />');
+    stampmenu.set("value", stamp);
+    changestamp();
+}
+
+function changestamp(e) {
+    if (!server.editing) {
+	return;
+    }
+    Cookie.write('uploadpdf_stamp', getcurrentstamp());
+    setcurrenttool('stamp');
+}
+
 function getcurrenttool() {
     if (!server.editing) {
 	return 'comment';
@@ -1003,6 +1036,9 @@ function startline(e) {
     if (tool == 'freehand') {
 	freehandpoints = new Array({x:linestartpos.x, y:linestartpos.y});
     }
+    if (tool == 'stamp') {
+        document.id(document).addEvent('mouseup', finishline); // Click without move = default sized stamp
+    }
 
     return false;
 }
@@ -1067,6 +1103,13 @@ function updateline(e) {
 	break;
     case 'highlight':
 	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+linestartpos.y);
+        break;
+    case 'stamp':
+	var w = Math.abs(ex-linestartpos.x);
+	var h = Math.abs(ey-linestartpos.y);
+	var sx = Math.min(linestartpos.x, ex);
+	var sy = Math.min(linestartpos.y, ey);
+	currentline = currentpaper.image(getstampimage(getcurrentstamp()), sx, sy, w, h);
         break;
     default: // Comment + Ctrl OR line
 	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+ey);
@@ -1136,7 +1179,7 @@ function abortline() {
     }
 }
 
-function makeline(coords, type, id, colour) {
+function makeline(coords, type, id, colour, stamp) {
     var linewidth = LINEWIDTH;
     if (type == 'highlight') {
         linewidth = HIGHLIGHT_LINEWIDTH;
@@ -1190,6 +1233,12 @@ function makeline(coords, type, id, colour) {
 	}
 	line = paper.path(pathstr);
     } else {
+        if (type == 'stamp') {
+            if (Math.abs(coords.sx - coords.ex) < 4 && Math.abs(coords.sy - coords.ey) < 4) {
+                coords.ex = coords.sx + 40;
+                coords.ey = coords.sy + 40;
+            }
+        }
 	details.coords = { sx: coords.sx, sy: coords.sy, ex: coords.ex, ey: coords.ey };
 
 	if (coords.sx > coords.ex) { // Always go left->right
@@ -1234,6 +1283,17 @@ function makeline(coords, type, id, colour) {
         case 'highlight':
 	    line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.sy);
             line.attr('stroke-opacity', 0.5);
+            break;
+        case 'stamp':
+	    var w = Math.abs(coords.ex - coords.sx);
+	    var h = Math.abs(coords.ey - coords.sy);
+	    var sx = Math.min(coords.sx, coords.ex);
+	    var sy = Math.min(coords.sy, coords.ey);
+            if (!$defined(stamp)) {
+                stamp = getcurrentstamp();
+            }
+	    line = paper.image(getstampimage(stamp), sx, sy, w, h);
+            details.path = stamp;
             break;
 	default:
 	    line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.ey);
@@ -1355,6 +1415,8 @@ function keyboardnavigation(e) {
 	    setcurrenttool('freehand');
         } else if (e.key == 'h') {
             setcurrenttool('highlight');
+        } else if (e.key == 's') {
+            setcurrenttool('stamp');
 	} else if (e.key == 'e') {
 	    setcurrenttool('erase');
 	} else if (e.key == 'g' && modifier) {
@@ -1524,6 +1586,19 @@ function startjs() {
 		changelinecolour();
 	    });
 	}
+	if (document.getElementById('choosestamp')) {
+	    stampmenu = new YAHOO.widget.Button("choosestamp", {
+		type: "menu",
+		menu: "choosestampmenu",
+		lazyloadmenu: false });
+	    stampmenu.on("selectedMenuItemChange", function(e) {
+		var menuItem = e.newValue;
+		var stamp = (/choosestamp-([a-z]*)-/i.exec(menuItem.element.className))[1];
+		this.set("label", '<img width="32" height="32" src="'+getstampimage(stamp)+'" />');
+		this.set("value", stamp);
+		changestamp();
+	    });
+	}
 	if (document.getElementById('showpreviousbutton')) {
 	    var showPreviousMenu = new YAHOO.widget.Button("showpreviousbutton", {
 		type: "menu",
@@ -1588,6 +1663,11 @@ function startjs() {
 	    linecolour = 'red';
 	}
 	setcurrentlinecolour(linecolour);
+        var stamp = Cookie.read('uploadpdf_stamp');
+        if (!$defined(stamp)) {
+            stamp = 'tick';
+        }
+        setcurrentstamp(stamp);
     }
 
     // Start preloading pages if using js navigation method
