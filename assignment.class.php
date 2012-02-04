@@ -1203,8 +1203,7 @@ class assignment_uploadpdf extends assignment_base {
 
             while ($nextpage > $mypdf->current_page()) {
                 if (!$mypdf->copy_page()) {
-                    print_error('Ran out of pages - this should not happen! - comment.pageno = '.$comment->pageno.'; currrentpage = '.$mypdf->CurrentPage());
-                    return false;
+                    break 2;
                 }
             }
 
@@ -1223,7 +1222,6 @@ class assignment_uploadpdf extends assignment_base {
                 }
                 $annotation = next($annotations);
             }
-
         }
 
         $mypdf->copy_remaining_pages();
