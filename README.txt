@@ -15,6 +15,7 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 
 ==Recent changes==
 
+* 2012-02-07 - Fixed bug in temporary path when creating submissions
 * 2012-02-04 - Added 'highlighter' tool & 'stamps' tool
 * 2012-02-04 - Can now cope with any PDF version; fixed browser caching of images when PDF is changed, YUI CSS path
 * 2012-02-02 - Fixed postgres compatibility - thanks to Ruslan Kabalin
