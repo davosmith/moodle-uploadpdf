@@ -1095,9 +1095,9 @@ class assignment_uploadpdf extends assignment_base {
         $mypdf = new MyPDFLib();
 
         $temparea = $CFG->dataroot.'/temp/uploadpdf/';
-        $destfile = $temparea.'/sub/submission.pdf';
+        $destfile = $temparea.'sub/submission.pdf';
 
-        if (!file_exists($temparea)) {
+        if (!file_exists($temparea) || !file_exists($temparea.'sub')) {
             if (!mkdir($temparea.'sub', 0777, true)) {
                 echo "Unable to create temporary folder";
                 die;
