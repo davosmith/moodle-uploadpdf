@@ -901,6 +901,8 @@ function setlinecolour(colour, line, currenttool) {
 	    else if (colour == "white") { rgb = "#ffffff"; }
 	    else if (colour == "black") { rgb = "#323232"; }
 	    else { rgb = "#ffb0b0"; } // Red
+            line.attr("fill", rgb);
+            line.attr("opacity", 0.5);
         } else {
 	    if (colour == "yellow") { rgb = "#ff0"; }
 	    else if (colour == "green") { rgb = "#0f0"; }
@@ -1102,7 +1104,11 @@ function updateline(e) {
 	linestartpos.y = ey;
 	break;
     case 'highlight':
-	currentline = currentpaper.path("M "+linestartpos.x+" "+linestartpos.y+"L"+ex+" "+linestartpos.y);
+	var w = Math.abs(ex-linestartpos.x);
+	var h = HIGHLIGHT_LINEWIDTH;
+	var sx = Math.min(linestartpos.x, ex);
+	var sy = linestartpos.y - 0.5 * HIGHLIGHT_LINEWIDTH;
+	currentline = currentpaper.rect(sx, sy, w, h);
         break;
     case 'stamp':
 	var w = Math.abs(ex-linestartpos.x);
@@ -1116,11 +1122,9 @@ function updateline(e) {
 	break;
     }
     if (currenttool == 'highlight') {
-        currentline.attr("stroke-width", HIGHLIGHT_LINEWIDTH);
-        currentline.attr("stroke-opacity", 0.5);
+        currentline.attr("stroke-width", 0);
     } else {
         currentline.attr("stroke-width", LINEWIDTH);
-        currentline.attr("stroke-opacity", 1);
     }
     setlinecolour(getcurrentlinecolour(), currentline, currenttool);
 }
@@ -1182,7 +1186,7 @@ function abortline() {
 function makeline(coords, type, id, colour, stamp) {
     var linewidth = LINEWIDTH;
     if (type == 'highlight') {
-        linewidth = HIGHLIGHT_LINEWIDTH;
+        linewidth = 0;
     }
     var halflinewidth = linewidth * 0.5;
     var dims = document.id('pdfimg').getCoordinates();
@@ -1245,6 +1249,10 @@ function makeline(coords, type, id, colour, stamp) {
 	    var temp = coords.sx; coords.sx = coords.ex; coords.ex = temp;
 	    temp = coords.sy;     coords.sy = coords.ey; coords.ey = temp;
 	}
+        if (type == 'highlight') {
+            coords.sy -= HIGHLIGHT_LINEWIDTH * 0.5;
+            coords.ey = coords.sy + HIGHLIGHT_LINEWIDTH;
+        }
 	if (coords.sy < coords.ey) {
 	    boundary = {x: (coords.sx-(halflinewidth*0.5)), y: (coords.sy-(halflinewidth*0.5)), w: (coords.ex+linewidth-coords.sx), h: (coords.ey+linewidth-coords.sy)};
 	    coords.sy = halflinewidth; coords.ey = boundary.h - halflinewidth;
@@ -1281,8 +1289,11 @@ function makeline(coords, type, id, colour, stamp) {
 	    line = paper.ellipse(sx, sy, rx, ry);
 	    break;
         case 'highlight':
-	    line = paper.path("M "+coords.sx+" "+coords.sy+" L "+coords.ex+" "+coords.sy);
-            line.attr('stroke-opacity', 0.5);
+	    var w = Math.abs(coords.ex - coords.sx);
+	    var h = HIGHLIGHT_LINEWIDTH;
+	    var sx = Math.min(coords.sx, coords.ex);
+	    var sy = Math.min(coords.sy, coords.ey);
+	    line = paper.rect(sx, sy, w, h);
             break;
         case 'stamp':
 	    var w = Math.abs(coords.ex - coords.sx);
