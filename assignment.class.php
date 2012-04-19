@@ -127,15 +127,6 @@ class assignment_uploadpdf extends assignment_base {
             $submission = $this->get_submission($USER->id);
         }
 
-        if (empty($submission->timemarked)) {   /// Nothing to show, so print nothing
-            if ($this->count_responsefiles($USER->id)) {
-                echo $OUTPUT->heading(get_string('responsefiles', 'assignment'), 3);
-                $responsefiles = $this->print_responsefiles($USER->id, true);
-                echo $OUTPUT->box($responsefiles, 'generalbox boxaligncenter');
-            }
-            return;
-        }
-
         $grading_info = grade_get_grades($this->course->id, 'mod', 'assignment', $this->assignment->id, $USER->id);
         $item = $grading_info->items[0];
         $grade = $item->grades[$USER->id];
@@ -145,6 +136,11 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         if ($grade->grade === null and empty($grade->str_feedback)) {   /// Nothing to show yet
+            if ($this->count_responsefiles($USER->id)) {
+                echo $OUTPUT->heading(get_string('responsefiles', 'assignment'), 3);
+                $responsefiles = $this->print_responsefiles($USER->id, true);
+                echo $OUTPUT->box($responsefiles, 'generalbox boxaligncenter');
+            }
             return;
         }
 
