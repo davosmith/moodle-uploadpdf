@@ -15,6 +15,7 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 
 ==Recent changes==
 
+* 2012-04-16 - Fixed broken image URLs when 'slasharguments' is disabled
 * 2012-02-11 - Fixed alignment of 'highlighter' tool
 * 2012-02-07 - Fixed bug in temporary path when creating submissions
 * 2012-02-04 - Added 'highlighter' tool & 'stamps' tool

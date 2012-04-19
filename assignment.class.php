@@ -1260,7 +1260,7 @@ class assignment_uploadpdf extends assignment_base {
             if ($imageinfo = $file->get_imageinfo()) {
                 $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$submission->id.'/'.$pagefilename);
                 // Prevent browser from caching image if it has changed
-                if (strpos('?', $imgurl) === false) {
+                if (strpos($imgurl, '?') === false) {
                     $imgurl .= '?ts='.$file->get_timemodified();
                 } else {
                     $imgurl .= '&amp;ts='.$file->get_timemodified();
@@ -1331,7 +1331,7 @@ class assignment_uploadpdf extends assignment_base {
         if ($imageinfo = $file->get_imageinfo()) {
             $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$submission->id.'/'.$pagefilename);
             // Prevent browser from caching image if it has changed
-            if (strpos('?', $imgurl) === false) {
+            if (strpos($imgurl, '?') === false) {
                 $imgurl .= '?ts='.$file->get_timemodified();
             } else {
                 $imgurl .= '&amp;ts='.$file->get_timemodified();
