@@ -31,8 +31,8 @@ var freehandpoints = null;
 //var lineselectid = null;
 var allannotations = new Array();
 
-const LINEWIDTH = 3.0;
-const HIGHLIGHT_LINEWIDTH = 14.0;
+var LINEWIDTH = 3.0;
+var HIGHLIGHT_LINEWIDTH = 14.0;
 
 var $defined = function(obj) { return (obj != undefined); };
 
