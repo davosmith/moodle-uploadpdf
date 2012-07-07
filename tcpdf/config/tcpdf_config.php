@@ -66,6 +66,8 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 		}
 		$k_path_url .= $_SERVER['HTTP_HOST'];
 		$k_path_url .= str_replace( '\\', '/', substr($_SERVER['PHP_SELF'], 0, -24));
+	} else {
+	    $k_path_url = '';
 	}
 	
 	/**
