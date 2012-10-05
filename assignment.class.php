@@ -1084,15 +1084,20 @@ class assignment_uploadpdf extends assignment_base {
         return $count;
     }
 
-    function create_submission_pdf($submissionid, $template) {
+    protected function get_temp_folder($submissionid) {
         global $CFG, $USER;
 
+        $tempfolder = $CFG->dataroot.'/temp/uploadpdf/';
+        $tempfolder .= sha1("{$submissionid}_{$USER->id}_".time()).'/';
+        return $tempfolder;
+    }
+
+    function create_submission_pdf($submissionid, $template) {
         $fs = get_file_storage();
 
         $mypdf = new MyPDFLib();
 
-        $temparea = $CFG->dataroot.'/temp/uploadpdf/';
-        $temparea .= sha1($submissionid.$USER->id.time()).'/'; // Ensure the area has a unique name.
+        $temparea = $this->get_temp_folder($submissionid);
         $destfile = $temparea.'sub/submission.pdf';
 
         if (!file_exists($temparea) || !file_exists($temparea.'sub')) {
@@ -1160,14 +1165,14 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function create_response_pdf($submissionid) {
-        global $CFG, $DB, $USER;
+        global $DB;
 
         $fs = get_file_storage();
         if (!$file = $fs->get_file($this->context->id, 'mod_assignment', 'submissionfinal', $submissionid, '/', 'submission.pdf')) {
             print_error('Submitted PDF not found');
             return false;
         }
-        $temparea = $CFG->dataroot.'/temp/uploadpdf/'.sha1($submissionid.$USER->id.time()).'/sub';
+        $temparea = $this->get_temp_folder($submissionid).'sub';
         if (!file_exists($temparea)) {
             if (!mkdir($temparea, 0777, true)) {
                 echo "Unable to create temporary folder";
@@ -1251,7 +1256,7 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function get_page_image($pageno, $submission) {
-        global $CFG, $DB, $USER;
+        global $CFG, $DB;
 
         $pagefilename = 'page'.$pageno.'.png';
         $pdf = new MyPDFLib();
@@ -1275,7 +1280,7 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         // Generate the image
-        $tempfolder = $CFG->dataroot.'/temp/uploadpdf/'.sha1($submission->id.$USER->id.time()).'/';
+        $tempfolder = $this->get_temp_folder($submission->id);
         $imagefolder = $tempfolder.'img';
         if (!file_exists($imagefolder)) {
             if (!mkdir($imagefolder, 0777, true)) {
