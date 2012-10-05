@@ -15,6 +15,7 @@ https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
 
 ==Recent changes==
 
+* 2012-10-05 - Fixed possible file confusion during submission (which could result in students ending up with another's work)
 * 2012-04-30 - Fixed JS bug preventing plugin from working in IE
 * 2012-04-16 - Fixed broken image URLs when 'slasharguments' is disabled
 * 2012-02-11 - Fixed alignment of 'highlighter' tool
