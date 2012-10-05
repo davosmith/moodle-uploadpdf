@@ -331,7 +331,7 @@ class MyPDFLib extends FPDI {
 
     // Check to see if PDF is version 1.4 (or below); if not: use ghostscript to convert it
     // Return - false for invalid PDF, true for no change needed or if file has been updated
-    static function ensure_pdf_compatible($file) {
+    static function ensure_pdf_compatible(stored_file $file) {
         global $CFG;
 
         $fp = $file->get_content_file_handle();
@@ -352,8 +352,9 @@ class MyPDFLib extends FPDI {
         }
 
         $temparea = $CFG->dataroot.'/temp/uploadpdf';
-        $tempsrc = $temparea.'/src.pdf';
-        $tempdst = $temparea.'/dst.pdf';
+        $hash = $file->get_contenthash();
+        $tempsrc = $temparea."/src-$hash.pdf";
+        $tempdst = $temparea."/dst-$hash.pdf";
 
         if (!file_exists($temparea)) {
             if (!mkdir($temparea, 0777, true)) {

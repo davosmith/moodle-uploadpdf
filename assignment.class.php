@@ -692,6 +692,7 @@ class assignment_uploadpdf extends assignment_base {
             $formdata = file_postupdate_standard_filemanager($formdata, 'files', $options, $this->context, 'mod_assignment', 'submission', $submission->id);
 
             // Make sure all submitted PDFs are compatible with FPDI
+            /** @var $files stored_file[] */
             if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submission->id, 'timemodified', false)) {
                 foreach ($files as $file) {
                     if ($file->get_mimetype() == 'application/pdf') {
@@ -1084,13 +1085,14 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function create_submission_pdf($submissionid, $template) {
-        global $CFG, $DB;
+        global $CFG, $USER;
 
         $fs = get_file_storage();
 
         $mypdf = new MyPDFLib();
 
         $temparea = $CFG->dataroot.'/temp/uploadpdf/';
+        $temparea .= sha1($submissionid.$USER->id.time()).'/'; // Ensure the area has a unique name.
         $destfile = $temparea.'sub/submission.pdf';
 
         if (!file_exists($temparea) || !file_exists($temparea.'sub')) {
@@ -1101,6 +1103,7 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         $combine_files = array();
+        /** @var $files stored_file[] */
         if ($files = $fs->get_area_files($this->context->id, 'mod_assignment', 'submission', $submissionid, 'timemodified', false)) {
             foreach ($files as $key=>$file) {
                 if ($file->get_mimetype() != 'application/pdf') {
@@ -1143,6 +1146,9 @@ class assignment_uploadpdf extends assignment_base {
                 foreach ($combine_files as $fl) {
                     unlink($fl);
                 }
+                // Try to clean up the temporary folder.
+                @rmdir($temparea.'sub');
+                @rmdir($temparea);
 
                 return $pagecount;
 
@@ -1154,14 +1160,14 @@ class assignment_uploadpdf extends assignment_base {
     }
 
     function create_response_pdf($submissionid) {
-        global $CFG, $DB;
+        global $CFG, $DB, $USER;
 
         $fs = get_file_storage();
         if (!$file = $fs->get_file($this->context->id, 'mod_assignment', 'submissionfinal', $submissionid, '/', 'submission.pdf')) {
             print_error('Submitted PDF not found');
             return false;
         }
-        $temparea = $CFG->dataroot.'/temp/uploadpdf/sub';
+        $temparea = $CFG->dataroot.'/temp/uploadpdf/'.sha1($submissionid.$USER->id.time()).'/sub';
         if (!file_exists($temparea)) {
             if (!mkdir($temparea, 0777, true)) {
                 echo "Unable to create temporary folder";
@@ -1236,14 +1242,16 @@ class assignment_uploadpdf extends assignment_base {
                           'filepath'=>'/');
         $fs->create_file_from_pathname($fileinfo, $destfile);
 
-        unlink($sourcefile);
-        unlink($destfile);
+        @unlink($sourcefile);
+        @unlink($destfile);
+        @rmdir($temparea);
+        @rmdir(dirname($temparea));
 
         return true;
     }
 
     function get_page_image($pageno, $submission) {
-        global $CFG, $DB;
+        global $CFG, $DB, $USER;
 
         $pagefilename = 'page'.$pageno.'.png';
         $pdf = new MyPDFLib();
@@ -1267,14 +1275,15 @@ class assignment_uploadpdf extends assignment_base {
         }
 
         // Generate the image
-        $imagefolder = $CFG->dataroot.'/temp/uploadpdf/img';
+        $tempfolder = $CFG->dataroot.'/temp/uploadpdf/'.sha1($submission->id.$USER->id.time()).'/';
+        $imagefolder = $tempfolder.'img';
         if (!file_exists($imagefolder)) {
             if (!mkdir($imagefolder, 0777, true)) {
                 echo "Unable to create temporary image folder";
                 die;
             }
         }
-        $pdffolder = $CFG->dataroot.'/temp/sub';
+        $pdffolder = $tempfolder.'sub';
         $pdffile = $pdffolder.'/submission.pdf';
         if (!file_exists($pdffolder)) {
             if (!mkdir($pdffolder, 0777, true)) {
@@ -1323,6 +1332,9 @@ class assignment_uploadpdf extends assignment_base {
         //Delete the temporary files
         unlink($pdffile);
         unlink($imagefolder.'/'.$imgname);
+        rmdir($imagefolder);
+        rmdir($pdffolder);
+        rmdir($tempfolder);
 
         if ($imageinfo = $file->get_imageinfo()) {
             $imgurl = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/image/'.$submission->id.'/'.$pagefilename);
