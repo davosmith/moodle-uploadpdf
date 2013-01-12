@@ -1,8 +1,8 @@
 <?php
 //
-//  FPDI - Version 1.3.2
+//  FPDI - Version 1.4.2
 //
-//    Copyright 2004-2010 Setasign - Jan Slabon
+//    Copyright 2004-2011 Setasign - Jan Slabon
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -26,8 +26,7 @@ if (!defined('ORD_u'))
 if (!defined('ORD_tilde'))
 	define('ORD_tilde', ord('~'));
 
-$__tmp = version_compare(phpversion(), "5") == -1 ? array('FilterASCII85') : array('FilterASCII85', false);
-if (!call_user_func_array('class_exists', $__tmp)) {
+if (!class_exists('FilterASCII85', false)) {
 
     class FilterASCII85 {
         
@@ -52,7 +51,7 @@ if (!call_user_func_array('class_exists', $__tmp)) {
                     continue;
                 }
                 if ($ch == ORD_z && $state == 0) {
-                    $out .= chr(0).chr(0).chr(0).chr(0);
+                    $out .= chr(0) . chr(0) . chr(0) . chr(0);
                     continue;
                 }
                 if ($ch < ORD_exclmark || $ch > ORD_u) {
@@ -100,5 +99,3 @@ if (!call_user_func_array('class_exists', $__tmp)) {
         }
     }
 }
-
-unset($__tmp);

@@ -1,8 +1,15 @@
 <?php
 
-//require_once('../../../../config.php');
-require_once('tcpdf/tcpdf.php');
-require_once('fpdi/fpdi.php');
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->libdir.'/pdflib.php');
+
+if (file_exists($CFG->dirroot.'/mod/assign/submission/pdf/fpdi/fpdi.php')) {
+    // If new pdf submission plugin exists - load the fpdi library from there, to avoid conflicts
+    require_once($CFG->dirroot.'/mod/assign/submission/pdf/fpdi/fpdi.php');
+} else {
+    require_once($CFG->dirroot.'/mod/assignment/type/uploadpdf/fpdi/fpdi.php');
+}
 require_once('uploadpdf_config.php');
 
 class MyPDFLib extends FPDI {

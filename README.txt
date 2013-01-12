@@ -5,16 +5,22 @@ Teachers can add and position comments and draw lines, ovals and rectangles
 onto the student's work, from within the browser, before returning the
 work to the student.
 
-This plugin is available in Moodle 2.0 and Moodle 1.9 versions.
+This plugin is available in Moodle 2.0-2.2 and Moodle 1.9 versions.
 This is the **Moodle 2.0** version - you can download the Moodle 1.9 version
 from here:
 https://github.com/davosmith/moodle-uploadpdf/zipball/MOODLE_19_STABLE
+
+There is a replacement plugin set for the Moodle 2.3+ assign module, which can be
+found here:
+https://moodle.org/plugins/view.php?plugin=assignsubmission_pdf
+https://moodle.org/plugins/view.php?plugin=assignfeedback_pdf
 
 !! THERE ARE A FEW IMPORTANT ITEMS TO NOTE IN THE INSTALLATION, PLEASE
    READ CAREFULLY !!
 
 ==Recent changes==
 
+* 2013-01-12 - Fix for possible conflicts when both this and the new assignsubmission_pdf plugin is installed
 * 2012-10-05 - Fixed possible file confusion during submission (which could result in students ending up with another's work)
 * 2012-04-30 - Fixed JS bug preventing plugin from working in IE
 * 2012-04-16 - Fixed broken image URLs when 'slasharguments' is disabled
