@@ -1671,6 +1671,9 @@ class assignment_uploadpdf extends assignment_base {
                           'fullpath' => new moodle_url('/mod/assignment/type/uploadpdf/scripts/annotate.js'),
                           'requires' => array('yui2-yahoo-dom-event', 'yui2-container', 'yui2-element',
                                               'yui2-button', 'yui2-menu', 'yui2-utilities'));
+        if ($CFG->version >= 2012120300) {
+            $jsmodule['fullpath'] = new moodle_url('/mod/assignment/type/uploadpdf/scripts/annotate24.js');
+        }
         $PAGE->requires->js_init_call('uploadpdf_init', null, true, $jsmodule);
 
         echo $OUTPUT->footer();
