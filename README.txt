@@ -20,6 +20,7 @@ https://moodle.org/plugins/view.php?plugin=assignfeedback_pdf
 
 ==Recent changes==
 
+* 2013-03-27 - Improve compatibility with new assignfeedback_pdf + assignsubmission_pdf plugins
 * 2013-02-22 - Fix handling of 'landscape' pages, fix submission count, Fix Moodle 2.4 compatibility
 * 2013-01-12 - Fix for possible conflicts when both this and the new assignsubmission_pdf plugin is installed
 * 2012-10-05 - Fixed possible file confusion during submission (which could result in students ending up with another's work)
