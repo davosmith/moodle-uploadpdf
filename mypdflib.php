@@ -4,7 +4,10 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/pdflib.php');
 
-if (file_exists($CFG->dirroot.'/mod/assign/submission/pdf/fpdi/fpdi.php')) {
+if (file_exists($CFG->dirroot.'/mod/assign/feedback/pdf/fpdi/fpdi.php')) {
+    // If new pdf feedback plugin exists - load the fpdi library from there, to avoid conflicts
+    require_once($CFG->dirroot.'/mod/assign/feedback/pdf/fpdi/fpdi.php');
+} else if (file_exists($CFG->dirroot.'/mod/assign/submission/pdf/fpdi/fpdi.php')) {
     // If new pdf submission plugin exists - load the fpdi library from there, to avoid conflicts
     require_once($CFG->dirroot.'/mod/assign/submission/pdf/fpdi/fpdi.php');
 } else {
