@@ -50,7 +50,8 @@ class assignment_uploadpdf extends assignment_base {
         $files = $fs->get_area_files($this->context->id, 'mod_assignment', 'coversheet', false, '', false);
 
         if (!empty($files)) {
-            $coversheet_filename = array_shift(array_values($files))->get_filename();
+            $coversheet_filename = array_shift($files);
+            $coversheet_filename = $coversheet_filename->get_filename();
             $coversheet_url = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->context->id.'/mod_assignment/coversheet/0/'.$coversheet_filename);
         }
 
