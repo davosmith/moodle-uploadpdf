@@ -238,6 +238,5 @@ been possible without their hard work (and their free software licensing)
 
 ==Contact==
 moodle AT davosmith DOT co DOT uk
-or via http://www.davodev.co.uk/contact
 
 Davo Smith
